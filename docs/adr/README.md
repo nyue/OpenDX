@@ -9,3 +9,4 @@ are not rewritten.
 |---|---|---|
 | [0001](0001-ui-toolkit.md) | UI toolkit: Dear ImGui and noodles, not Qt or Motif | Accepted |
 | [0002](0002-cmake-build.md) | CMake build for the executive, with Python code generators | Accepted |
+| [0003](0003-gpu-rendering-split.md) | GPU rendering: the executive exports scenes, the UI draws them | Accepted |
