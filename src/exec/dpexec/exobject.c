@@ -30,7 +30,7 @@ static node *FuncFreeList	= NULL;
 
 PFIP _dxd_EXO_default_methods[] =
 {
-    _dxf__EXO_delete
+    (PFIP)_dxf__EXO_delete
 };
 
 static lock_type *allocLock;

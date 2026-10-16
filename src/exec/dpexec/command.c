@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <stdint.h>
 #include <dxbounded.h>
 
 
@@ -1236,7 +1237,7 @@ static int KillGraph (char *c, Object *in)
     if (!_dxf_ExGQAllDone ()) {
 	*_dxd_exKillGraph = TRUE;
         _dxf_ExDistributeMsg(DM_KILLEXECGRAPH,
-                             (Pointer)_dxd_exContext->graphId, 0, TOPEERS);
+                             (Pointer)(intptr_t)_dxd_exContext->graphId, 0, TOPEERS);
     }
     return (OK);
 }
@@ -1353,7 +1354,7 @@ static int Pfsmgr (char *c, Object *in)
 
     for (b = buf; *b; b++)
 	if (isspace (*b))
-	    *b = (char) NULL;
+	    *b = '\0';
 
     ret = _dxf_pfsmgr (argc, argv);
 

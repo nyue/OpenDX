@@ -45,7 +45,7 @@ int _dxf_ExNode__Delete(node *n);
 static PFIP
 node_methods[] =
 {
-    _dxf_ExNode__Delete
+    (PFIP)_dxf_ExNode__Delete
 };
 
 #if 0
@@ -740,7 +740,7 @@ _dxf_ExEvalConstant (node *n)
     {
 	cp = (char *) n->v.constant.data;
 	for (i = 0, nstrs = 0; i < n->v.constant.items; i++)
-	    if (cp[i] == (char) NULL)
+	    if (cp[i] == '\0')
 		nstrs++;
 
 	if (nstrs <= 1)
@@ -767,7 +767,7 @@ _dxf_ExEvalConstant (node *n)
 		    strlist[nstrs++] = cp+i;
 		    strstart = FALSE;
 		}
-		if (cp[i] == (char) NULL)
+		if (cp[i] == '\0')
 		    strstart = TRUE;
 	    }
 

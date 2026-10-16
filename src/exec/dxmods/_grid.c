@@ -404,6 +404,7 @@ static Error grid_crosshair (point, shape, density, dim, outo)
     float		*point;
     float		*shape;
     int			*density;
+    int			dim;
     Object		*outo;
 {
     int			count[3];
@@ -660,6 +661,7 @@ static Error grid_brick (point, shape, density, dim, outo)
     float		*point;
     float		*shape;
     int			*density;
+    int			dim;
     Object		*outo;
 {
     int			count[3];
@@ -944,6 +946,7 @@ static Error generate_ellipse_pos (pos, point, shape, count, dim)
     float		*point;
     float		*shape;
     int			*count;
+    int			dim;
 {
     double		delta;
     int			i;

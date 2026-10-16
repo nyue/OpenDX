@@ -195,6 +195,11 @@ typedef union YYSTYPE {
 # define YYSTYPE_IS_TRIVIAL 1
 #endif
 
+/* Defined in _complex.c (lexer) and at the end of this file. */
+int _dxfcclex(YYSTYPE *lvalp);
+int _dxfcclexerror(void);
+int _dxfccerror(char *s);
+
 
 
 /* Copy the second part of user declarations.  */

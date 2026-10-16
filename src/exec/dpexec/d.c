@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <stdint.h>
 
 
 #include <stdio.h>
@@ -327,7 +328,7 @@ DXMarkTimeLocal("D search");
     if (d->items == 0)
 	return (NULL);
 
-    h = (Pointer) _dxf_ExCRCString (EX_INITIAL_CRC, key);
+    h = (Pointer)(uintptr_t) _dxf_ExCRCString (EX_INITIAL_CRC, key);
     b = (long) h & d->mask;
     l = d->locking;
 
@@ -388,7 +389,7 @@ DXMarkTimeLocal("D insert");
 
     ExReference (obj);
 
-    h = (Pointer) _dxf_ExCRCString (EX_INITIAL_CRC, key);
+    h = (Pointer)(uintptr_t) _dxf_ExCRCString (EX_INITIAL_CRC, key);
     b = (long) h & d->mask;
     l = d->locking;
 
@@ -523,7 +524,7 @@ DXMarkTimeLocal("D delete");
     if (d->items == 0)
 	return (ERROR);
 
-    h = (Pointer) _dxf_ExCRCString (EX_INITIAL_CRC, key);
+    h = (Pointer)(uintptr_t) _dxf_ExCRCString (EX_INITIAL_CRC, key);
     b = (long) h & d->mask;
     l = d->locking;
 
@@ -588,7 +589,7 @@ DXMarkTimeLocal("D del NL");
     if (d->items == 0)
 	return (ERROR);
 
-    h = (Pointer) _dxf_ExCRCString (EX_INITIAL_CRC, key);
+    h = (Pointer)(uintptr_t) _dxf_ExCRCString (EX_INITIAL_CRC, key);
     b = (long) h & d->mask;
 
     e = ExDictionarySearchE (d, b, key, h);

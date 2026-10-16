@@ -8,6 +8,7 @@
 /* #define CPV_DEBUG */
 
 #include <dxconfig.h>
+#include <stdint.h>
 #include <dxbounded.h>
 #include <dx/dx.h>
 
@@ -216,7 +217,7 @@ _dxf_ExQueueGraph(Program * p)
                 }
         }
         if(ilimit > 0) /* we have at least one function in graph */
-            _dxf_ExDistributeMsg(msgtype, (Pointer)p->graphId, 0, TOSLAVES);
+            _dxf_ExDistributeMsg(msgtype, (Pointer)(intptr_t)p->graphId, 0, TOSLAVES);
     }
 
     if(SIZE_LIST(p->funcs) != 0) {

@@ -1225,7 +1225,10 @@ Pointer DXCopyModuleId(Pointer id)
 {
     Pointer nid;
 
-    if (id == NULL || (char *)id == '\0')
+    /* The original also tested `(char *)id == '\0'`, a second NULL test;
+     * an empty-string check was probably meant. Kept as it behaved: an
+     * empty id is copied. */
+    if (id == NULL)
 	return NULL;
 
     nid = DXAllocate(strlen((char *)id) + 1);

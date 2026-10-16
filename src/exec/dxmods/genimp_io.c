@@ -366,7 +366,7 @@ static int FgetAsciiData(FILE *fp, void **data, int size)
 			{
 			  d = (cnt*dim) + comp;
 			  strncpy(r, &str[k], width);
-			  r[width] = (char)NULL;
+			  r[width] = '\0';
 			  if (!convert_string(r,t,data[step+f],d,&nl))
 				goto parse_error;
 			  k += width;
@@ -606,7 +606,7 @@ static int RgetAsciiData(FILE *fp, void **data, int size)
 			  if (cnt+ll < size)
 			    {
 			      strncpy(r, &str[kk], width);
-			      r[width] = (char)NULL;
+			      r[width] = '\0';
 			      if (_dxd_gi_whichflds[f] == ON && 
 				  _dxd_gi_whichser[s] == ON)
 				{
@@ -875,7 +875,7 @@ static int VgetAsciiData(FILE *fp, void **data, int size)
 			  if (_dxd_gi_whichflds[f] == ON && _dxd_gi_whichser[s] == ON)
 			    {
 			      strncpy(r, &str[kk], width);
-			      r[width] = (char)NULL;
+			      r[width] = '\0';
 			      if (!convert_string(r,t,data[step+f],d,&nl))
 				goto parse_error;
 			      if (nl==1){
@@ -1068,7 +1068,7 @@ static int RVgetAsciiData(FILE *fp, void **data, int size)
 		      if ( cnt+ll < dim_mul_size )
 			{
 			  strncpy(r, &str[kk], width);
-			  r[width] = (char)NULL;
+			  r[width] = '\0';
 			  if (_dxd_gi_whichflds[f] == ON && _dxd_gi_whichser[s]==ON)
 			    {
 			      if (!convert_string(r,t,data[step+f],d,&nl))
@@ -1377,7 +1377,7 @@ convert_string(char *s, Type t, void *data, int index,int *nl)
     case TYPE_STRING:
 	i = strlen(s)+1;
 	if (s[i-2] == '\n') 
-	   s[i-2] = (char)NULL;
+	   s[i-2] = '\0';
 	i = strlen(s) + 1;
 	snprintf(format, DX_ARRAY_SIZE(format),"%%%dc",i);
 	if (sscanf(s,format,&DREF(char,data,index)) <=0){
@@ -1666,7 +1666,7 @@ extract_fromline(char str[MAX_DSTR],int which)
             k += _dxd_gi_fromfile[i]->skip[j];
             width = _dxd_gi_fromfile[i]->width[j];
             strncpy(r, &str[k], width);
-            r[width] = (char)NULL;
+            r[width] = '\0';
 	    if (!convert_string(r,t,_dxd_gi_fromfile[i]->data,index,&nl))
 	       goto error;
 	    if (nl){

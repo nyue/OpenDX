@@ -121,12 +121,12 @@ Error m__badfunc(Object *in, Object *out)
 
 static PFIP gvar_methods[] =
 {
-    GvarDelete
+    (PFIP)GvarDelete
 };
 
 static PFIP progobj_methods[] =
 {
-    progobjDelete
+    (PFIP)progobjDelete
 };
 
 void ResetSubGraphIds()

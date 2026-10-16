@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <stdint.h>
 
 
 #include "hwDeclarations.h"
@@ -64,7 +65,7 @@ _dxf_QueryObject(HashTable ht, dxObject keyO)
     if (! ht)
         return NULL;
 
-    key = (Key)DXGetObjectTag(keyO);
+    key = (Key)(uintptr_t)DXGetObjectTag(keyO);
     ptr = (OHashP)DXQueryHashElement(ht, (Pointer)&key);
     if (ptr)
     {
@@ -85,7 +86,7 @@ _dxf_InsertObject(HashTable ht, dxObject keyO, dxObject obj)
     if (! ht)
         return;
 
-    key = (Key)DXGetObjectTag(keyO);
+    key = (Key)(uintptr_t)DXGetObjectTag(keyO);
     ptr = (OHashP)DXQueryHashElement(ht, (Pointer)&key);
     if (ptr)
     {
