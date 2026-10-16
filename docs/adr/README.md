@@ -8,3 +8,4 @@ are not rewritten.
 | ADR | Title | Status |
 |---|---|---|
 | [0001](0001-ui-toolkit.md) | UI toolkit: Dear ImGui and noodles, not Qt or Motif | Accepted |
+| [0002](0002-cmake-build.md) | CMake build for the executive, with Python code generators | Accepted |
