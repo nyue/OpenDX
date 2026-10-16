@@ -142,8 +142,18 @@ bool parseScene(const std::vector<unsigned char>& bytes, Scene& out, std::string
             return fail(error, "bad chunk " + std::to_string(c));
         Reader chunk(bytes.data() + r.at(), size);
         r.skip(size);
-        if (type == DXS_CHUNK_MESH) {
+        if (type == DXS_CHUNK_MESH || type == DXS_CHUNK_SCREEN) {
             SceneMesh m;
+            if (type == DXS_CHUNK_SCREEN) {
+                std::uint32_t z;
+                m.screen = true;
+                if (!chunk.u32(m.screenPosition) || !chunk.u32(z) || !chunk.f32(m.origin[0]) ||
+                    !chunk.f32(m.origin[1]) || !chunk.f32(m.origin[2]))
+                    return fail(error, "truncated screen object");
+                if (m.screenPosition > DXS_SCREEN_STATIONARY)
+                    return fail(error, "unknown screen position " + std::to_string(m.screenPosition));
+                m.screenZ = static_cast<std::int32_t>(z) > 0 ? 1 : static_cast<std::int32_t>(z) < 0 ? -1 : 0;
+            }
             if (!readMesh(chunk, m, error))
                 return false;
             out.meshes.push_back(std::move(m));

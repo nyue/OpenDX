@@ -2,6 +2,7 @@
 #include "Camera.h"
 
 #include <GL/glew.h>
+#include <dxuiscene.h>
 
 #include <algorithm>
 #include <cmath>
@@ -69,6 +70,35 @@ void main() {
 }
 )";
 
+// Screen objects (captions, colour bars): pixels from an origin, as DX's
+// _dxfScreen_Shade places them; not lit.
+const char* kScreenVertex = R"(#version 330 core
+layout(location = 0) in vec3 aPosition;
+layout(location = 2) in vec3 aColor;
+layout(location = 3) in float aOpacity;
+uniform mat4 uModel;           // the screen object's own transforms, in pixels
+uniform vec2 uOrigin;          // normalised device coordinates
+uniform vec2 uHalfImage;       // half the executive's image size, pixels
+out vec3 vColor;
+out float vOpacity;
+void main() {
+    vec2 p = (uModel * vec4(aPosition, 1.0)).xy;
+    gl_Position = vec4(uOrigin + p / uHalfImage, 0.0, 1.0);
+    vColor = aColor;
+    vOpacity = aOpacity;
+}
+)";
+
+const char* kScreenFragment = R"(#version 330 core
+in vec3 vColor;
+in float vOpacity;
+uniform float uInvGamma;
+out vec4 fragColor;
+void main() {
+    fragColor = vec4(pow(min(vColor, vec3(1.0)), vec3(uInvGamma)), vOpacity);
+}
+)";
+
 using Mat4 = std::array<float, 16>;   // column-major
 
 Mat4 multiply(const Mat4& a, const Mat4& b)
@@ -133,7 +163,7 @@ struct SceneView::Impl {
     };
     std::vector<GpuMesh> meshes;
 
-    GLuint program = 0;
+    GLuint program = 0, screenProgram = 0;
     GLuint fbo = 0, colour = 0, depth = 0;
     int fbWidth = 0, fbHeight = 0;
     std::string error;
@@ -142,6 +172,7 @@ struct SceneView::Impl {
     {
         clearMeshes();
         if (program) glDeleteProgram(program);
+        if (screenProgram) glDeleteProgram(screenProgram);
         if (fbo) glDeleteFramebuffers(1, &fbo);
         if (colour) glDeleteTextures(1, &colour);
         if (depth) glDeleteRenderbuffers(1, &depth);
@@ -157,28 +188,37 @@ struct SceneView::Impl {
         meshes.clear();
     }
 
-    bool buildProgram()
+    GLuint link(const char* vertex, const char* fragment)
     {
-        if (program)
-            return true;
-        GLuint vs = compile(GL_VERTEX_SHADER, kVertex, error);
-        GLuint fs = vs ? compile(GL_FRAGMENT_SHADER, kFragment, error) : 0;
-        if (!vs || !fs)
-            return false;
-        program = glCreateProgram();
-        glAttachShader(program, vs);
-        glAttachShader(program, fs);
-        glLinkProgram(program);
+        GLuint vs = compile(GL_VERTEX_SHADER, vertex, error);
+        GLuint fs = vs ? compile(GL_FRAGMENT_SHADER, fragment, error) : 0;
+        if (!vs || !fs) {
+            if (vs) glDeleteShader(vs);
+            return 0;
+        }
+        GLuint prog = glCreateProgram();
+        glAttachShader(prog, vs);
+        glAttachShader(prog, fs);
+        glLinkProgram(prog);
         glDeleteShader(vs);
         glDeleteShader(fs);
         GLint ok = 0;
-        glGetProgramiv(program, GL_LINK_STATUS, &ok);
+        glGetProgramiv(prog, GL_LINK_STATUS, &ok);
         if (!ok) {
             error = "scene shader did not link";
-            glDeleteProgram(program);
-            program = 0;
+            glDeleteProgram(prog);
+            return 0;
         }
-        return program != 0;
+        return prog;
+    }
+
+    bool buildProgram()
+    {
+        if (!program)
+            program = link(kVertex, kFragment);
+        if (!screenProgram)
+            screenProgram = link(kScreenVertex, kScreenFragment);
+        return program && screenProgram;
     }
 
     void upload()
@@ -287,7 +327,8 @@ bool SceneView::load(const std::filesystem::path& path, std::string* error)
 bool SceneView::loaded() const { return impl_->loaded; }
 const Scene& SceneView::scene() const { return impl_->scene; }
 
-unsigned int SceneView::render(int width, int height, const DxCamera& camera)
+unsigned int SceneView::render(int width, int height, const DxCamera& camera, int imageWidth,
+                               int imageHeight)
 {
     Impl& s = *impl_;
     if (!s.loaded || width <= 0 || height <= 0 || !s.buildProgram())
@@ -384,6 +425,60 @@ unsigned int SceneView::render(int width, int height, const DxCamera& camera)
         glUniform3fv(loc("uLightColor"), static_cast<GLsizei>(cols.size() / 3), cols.data());
     }
 
+    const Mat4 viewProj = multiply(proj, view);
+    const float imgW = static_cast<float>(imageWidth > 0 ? imageWidth : width);
+    const float imgH = static_cast<float>(imageHeight > 0 ? imageHeight : height);
+    // Screen objects: behind everything (z -1) before the scene, the rest after.
+    auto drawScreen = [&](bool front) {
+        glUseProgram(s.screenProgram);
+        auto sloc = [&](const char* name) { return glGetUniformLocation(s.screenProgram, name); };
+        glUniform2f(sloc("uHalfImage"), imgW * 0.5f, imgH * 0.5f);
+        glUniform1f(sloc("uInvGamma"), static_cast<float>(1.0 / displayGamma()));
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(GL_FALSE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        for (const Impl::GpuMesh& g : s.meshes) {
+            const SceneMesh& m = s.scene.meshes[g.source];
+            if (!m.screen || (m.screenZ < 0) == front)
+                continue;
+            // Where the origin lands, in normalised device coordinates.
+            float ox = 0, oy = 0;
+            if (m.screenPosition == DXS_SCREEN_VIEWPORT) {
+                ox = 2 * m.origin[0] - 1;
+                oy = 2 * m.origin[1] - 1;
+            } else if (m.screenPosition == DXS_SCREEN_PIXEL) {
+                ox = m.origin[0] / (imgW * 0.5f) - 1;
+                oy = m.origin[1] / (imgH * 0.5f) - 1;
+            } else if (m.screenPosition == DXS_SCREEN_WORLD) {
+                float c[4];
+                for (int row = 0; row < 4; ++row)
+                    c[row] = viewProj[0 * 4 + row] * m.origin[0] + viewProj[1 * 4 + row] * m.origin[1] +
+                             viewProj[2 * 4 + row] * m.origin[2] + viewProj[3 * 4 + row];
+                if (std::fabs(c[3]) > 1e-30f) {
+                    ox = c[0] / c[3];
+                    oy = c[1] / c[3];
+                }
+            }
+            glUniform2f(sloc("uOrigin"), ox, oy);
+            glUniformMatrix4fv(sloc("uModel"), 1, GL_FALSE, m.matrix.data());
+            glBindVertexArray(g.vao);
+            if (!g.hasColors)
+                glVertexAttrib3f(2, 0.7f, 0.7f, 0.7f);
+            if (!g.hasOpacities)
+                glVertexAttrib1f(3, 1);
+            if (g.indexed)
+                glDrawElements(g.mode, g.count, GL_UNSIGNED_INT, nullptr);
+            else
+                glDrawArrays(g.mode, 0, g.count);
+        }
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+        glUseProgram(s.program);
+    };
+    drawScreen(false);
+
     // Opaque first, then translucent blended without depth writes.
     for (bool translucentPass : {false, true}) {
         if (translucentPass) {
@@ -394,7 +489,7 @@ unsigned int SceneView::render(int width, int height, const DxCamera& camera)
             glDisable(GL_BLEND);
         }
         for (const Impl::GpuMesh& g : s.meshes) {
-            if (g.translucent != translucentPass)
+            if (g.translucent != translucentPass || s.scene.meshes[g.source].screen)
                 continue;
             const SceneMesh& m = s.scene.meshes[g.source];
             const Mat4 mv = multiply(view, m.matrix);
@@ -427,6 +522,8 @@ unsigned int SceneView::render(int width, int height, const DxCamera& camera)
                 glDrawArrays(g.mode, 0, g.count);
         }
     }
+
+    drawScreen(true);
 
     glDepthMask(depthMask);
     (depthOn ? glEnable : glDisable)(GL_DEPTH_TEST);

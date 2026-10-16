@@ -30,7 +30,10 @@ public:
 
     // Renders at width x height pixels with `camera` and returns the GL
     // texture name (rows bottom-up, as GL stores them). 0 if nothing loaded.
-    unsigned int render(int width, int height, const DxCamera& camera);
+    // imageWidth x imageHeight is the executive's image size, which screen
+    // objects' pixel coordinates refer to (0: use width x height).
+    unsigned int render(int width, int height, const DxCamera& camera, int imageWidth = 0,
+                        int imageHeight = 0);
 
 private:
     struct Impl;

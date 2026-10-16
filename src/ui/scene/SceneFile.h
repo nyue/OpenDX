@@ -22,6 +22,14 @@ struct SceneMesh {
     std::vector<float> opacities;            // 1 per vertex, or empty
     std::vector<std::uint32_t> indices;      // empty: vertices in order
     std::size_t vertexCount() const { return positions.size() / 3; }
+
+    // A screen object's mesh (captions, colour bars): positions are pixels
+    // from `origin`, which DXS_SCREEN_* `screenPosition` interprets; screenZ
+    // +1 in front, -1 behind, 0 in place.
+    bool screen = false;
+    std::uint32_t screenPosition = 0;
+    int screenZ = 0;
+    std::array<float, 3> origin{};
 };
 
 struct SceneLight {

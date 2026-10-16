@@ -154,6 +154,16 @@ std::filesystem::file_time_type ImagePanel::sceneStamp(const std::string& id) co
     return it == scenes_.end() ? std::filesystem::file_time_type{} : it->second;
 }
 
+bool ImagePanel::imageSize(const std::string& id, int& width, int& height) const
+{
+    auto it = images_.find(id);
+    if (it == images_.end() || !it->second.texture)
+        return false;
+    width = it->second.width;
+    height = it->second.height;
+    return true;
+}
+
 bool ImagePanel::gpuShown(const std::string& id) const
 {
     auto it = gpuOff_.find(id);
@@ -186,8 +196,11 @@ ImageGesture ImagePanel::draw()
                 ImGui::SetTooltip("ticked: drawn here on the GPU\nunticked: the executive's own render");
             ImGui::SameLine();
         }
-        ImGui::TextDisabled("%dx%d   drag: rotate   middle/right drag: pan   wheel: zoom",
-                            image.width, image.height);
+        if (!movable || movable(id))
+            ImGui::TextDisabled("%dx%d   drag: rotate   middle/right drag: pan   wheel: zoom",
+                                image.width, image.height);
+        else
+            ImGui::TextDisabled("%dx%d", image.width, image.height);
         if (gpuShown(id) && gpuNote) {
             std::string note = gpuNote(id);
             if (!note.empty())

@@ -518,7 +518,9 @@ struct App {
         if (it == gpuScenes.end() || !it->second.view || !it->second.view->loaded() ||
             cam == cameras.end() || !cam->second.valid())
             return 0;
-        return it->second.view->render(w, h, cam->second);
+        int iw = 0, ih = 0;
+        images.imageSize(id, iw, ih);
+        return it->second.view->render(w, h, cam->second, iw, ih);
     }
 
     std::string gpuNote(const std::string& id)
@@ -527,7 +529,7 @@ struct App {
         if (it == gpuScenes.end() || !it->second.view || !it->second.view->loaded())
             return {};
         const auto& sk = it->second.view->scene().skipped;
-        static const char* names[] = {"screen objects (captions, colour bars)", "volumes",
+        static const char* names[] = {"screen objects", "volumes",
                                       "textures", "clipping", "other objects"};
         std::string out;
         for (std::size_t k = 0; k < sk.size(); ++k)
@@ -1221,6 +1223,10 @@ int main(int argc, char** argv)
         return app.gpuTexture(id, w, h);
     };
     app.images.gpuNote = [&app](const std::string& id) { return app.gpuNote(id); };
+    app.images.movable = [&app](const std::string& id) {
+        auto it = app.cameras.find(id);
+        return it != app.cameras.end() && it->second.valid() && app.imageNode(id) >= 0;
+    };
     if (!initial.empty())
         app.open(initial);
 

@@ -55,6 +55,12 @@
 typedef struct {
     float ambient, diffuse, specular, shininess;
     Matrix m;                       /* object to world, DX row-vector form */
+    /* Inside a screen object: its position kind, depth flag and origin;
+     * m then maps contents to pixels from the origin. */
+    int screen;
+    unsigned int screenPosition;
+    int screenZ;
+    float origin[3];
 } State;
 
 typedef struct {
@@ -183,6 +189,9 @@ gatherLight(Ctx *c, Light l, const State *st)
 {
     Vector d;
     RGBColor col;
+
+    if (st->screen)                 /* DX ignores lights in screen objects */
+        return OK;
 
     if (DXQueryAmbientLight(l, &col)) {
         c->ambient[0] += col.r;
@@ -372,6 +381,8 @@ writeMesh(Ctx *c, const State *st, unsigned int primitive,
     if (opa) flags |= DXS_HAS_OPACITIES;
 
     bytes = 4.0 * (4 + 16 + 4) + 12.0 * nv + 4.0 * ni;
+    if (st->screen)
+        bytes += 4.0 * 5;           /* position, z, origin */
     if (nrm) bytes += 12.0 * nv;
     if (col) bytes += 12.0 * nv;
     if (opa) bytes += 4.0 * nv;
@@ -401,8 +412,15 @@ writeMesh(Ctx *c, const State *st, unsigned int primitive,
     header[2] = (unsigned int)ni;
     header[3] = flags;
 
-    if (!writeU32(c, DXS_CHUNK_MESH) || !writeU32(c, (unsigned int)bytes) ||
-        !writeWords(c, header, 4) || !writeWords(c, matrix, 16) ||
+    if (st->screen) {
+        unsigned int z = (unsigned int)st->screenZ;     /* int32 on disk */
+        if (!writeU32(c, DXS_CHUNK_SCREEN) || !writeU32(c, (unsigned int)bytes) ||
+            !writeU32(c, st->screenPosition) || !writeU32(c, z) ||
+            !writeWords(c, st->origin, 3))
+            goto done;
+    } else if (!writeU32(c, DXS_CHUNK_MESH) || !writeU32(c, (unsigned int)bytes))
+        goto done;
+    if (!writeWords(c, header, 4) || !writeWords(c, matrix, 16) ||
         !writeWords(c, shading, 4))
         goto done;
 
@@ -414,7 +432,7 @@ writeMesh(Ctx *c, const State *st, unsigned int primitive,
         if (opa && !writeWords(c, opa, (size_t)npos)) goto done;
         if (!writeWords(c, pv, (size_t)nout))
             goto done;
-        for (i = 0; i < nout; i++)
+        for (i = 0; i < nout && !st->screen; i++)
             addBounds(c, pos + 3*pv[i], &st->m);
     } else {
         buf = (float *)DXAllocate((size_t)nv * 3 * sizeof(float));
@@ -433,7 +451,7 @@ writeMesh(Ctx *c, const State *st, unsigned int primitive,
         if (col) EXPAND(col, cdep, 3);
         if (opa) EXPAND(opa, odep, 1);
 #undef EXPAND
-        for (i = 0; i < nout; i++)
+        for (i = 0; i < nout && !st->screen; i++)
             addBounds(c, pos + 3*pv[i], &st->m);
     }
     c->chunkCount++;
@@ -736,9 +754,39 @@ traverse(Ctx *c, Object o, State st)
         return traverse(c, child, st);
     }
 
-    case CLASS_SCREEN:
-        c->skipped[DXS_SKIPPED_SCREEN]++;
-        return OK;
+    case CLASS_SCREEN: {
+        /* As _dxfScreen_Shade (lbshade.Z):
+         * - stationary: the origin resets to zero but the camera still
+         *   applies, so this only drops the enclosing transforms;
+         * - otherwise, at the first screen object: its contents become
+         *   pixels from an origin, the translation of the transforms so far
+         *   (a viewport fraction, pixels, or a world point);
+         * - a screen object inside one: rotation and scale are dropped, the
+         *   origin stays.
+         * Captions are a stationary screen, a translation, then a viewport
+         * screen around the text. */
+        Object child;
+        int fixed, z;
+        if (!DXGetScreenInfo((Screen)o, &child, &fixed, &z))
+            return ERROR;
+        if (fixed == SCREEN_STATIONARY) {
+            memset(&st.m, 0, sizeof(st.m));
+            st.m.A[0][0] = st.m.A[1][1] = st.m.A[2][2] = 1.0f;
+        } else if (!st.screen) {
+            st.screen = 1;
+            st.screenPosition = (unsigned int)fixed;
+            st.screenZ = z > 0 ? 1 : (z < 0 ? -1 : 0);
+            st.origin[0] = st.m.b[0];
+            st.origin[1] = st.m.b[1];
+            st.origin[2] = st.m.b[2];
+            memset(&st.m, 0, sizeof(st.m));
+            st.m.A[0][0] = st.m.A[1][1] = st.m.A[2][2] = 1.0f;
+        } else {
+            memset(&st.m.A, 0, sizeof(st.m.A));
+            st.m.A[0][0] = st.m.A[1][1] = st.m.A[2][2] = 1.0f;
+        }
+        return traverse(c, child, st);
+    }
 
     case CLASS_CLIPPED: {
         Object render = NULL, clipping = NULL;
@@ -851,6 +899,7 @@ m_DxuiScene(Object *in, Object *out)
         return ERROR;
     }
 
+    memset(&st, 0, sizeof(st));      /* not in a screen object */
     st.ambient = DEFAULT_AMBIENT;
     st.diffuse = DEFAULT_DIFFUSE;
     st.specular = DEFAULT_SPECULAR;

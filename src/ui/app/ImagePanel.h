@@ -58,7 +58,12 @@ public:
     // tab (e.g. what the GPU view does not draw).
     std::function<unsigned int(const std::string& id, int width, int height)> gpuTexture;
     std::function<std::string(const std::string& id)> gpuNote;
+    // Whether the image's view can be moved (an Image node with a known
+    // camera); the mouse hint shows only then.
+    std::function<bool(const std::string& id)> movable;
     bool gpuShown(const std::string& id) const;
+    // The executive's image size for `id`; false if not loaded.
+    bool imageSize(const std::string& id, int& width, int& height) const;
 
 private:
     struct Image {

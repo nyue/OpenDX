@@ -43,6 +43,21 @@
  *     float32 direction[3]     towards the light; unused for ambient
  *   The lights are the ones DX would render with, defaults included.
  *
+ *   DXS_CHUNK_SCREEN payload: a mesh drawn in image pixels, as DX draws
+ *   screen objects (captions, colour bars; libdx lbshade.Z _dxfScreen_Shade):
+ *     uint32  position         DXS_SCREEN_* below: what `origin` means
+ *     int32   z                +1 in front of everything, -1 behind, 0 in place
+ *     float32 origin[3]        DXS_SCREEN_VIEWPORT: fraction of the image,
+ *                              (0,0) lower left, (1,1) upper right;
+ *                              DXS_SCREEN_PIXEL: pixels from the lower left;
+ *                              DXS_SCREEN_WORLD: a world point, placed where
+ *                              the camera sees it;
+ *                              DXS_SCREEN_STATIONARY: ignored (image centre)
+ *     then the DXS_CHUNK_MESH payload, its positions (after `matrix`) in
+ *     pixels from the origin, x right, y up, at the executive's image size
+ *   Readers that do not know a chunk type skip it, so this addition keeps
+ *   the DXSCENE1 magic.
+ *
  *   DXS_CHUNK_INFO payload:
  *     uint32  skipped[DXS_SKIPPED_COUNT]  what was not exported, by kind
  *     float32 bounds[6]        xmin ymin zmin xmax ymax zmax, world space
@@ -56,6 +71,13 @@
 #define DXS_CHUNK_MESH  1
 #define DXS_CHUNK_LIGHT 2
 #define DXS_CHUNK_INFO  3
+#define DXS_CHUNK_SCREEN 4
+
+/* DXS_CHUNK_SCREEN positions; the same numbers as DX's SCREEN_* (dx/screen.h). */
+#define DXS_SCREEN_WORLD      0
+#define DXS_SCREEN_VIEWPORT   1
+#define DXS_SCREEN_PIXEL      2
+#define DXS_SCREEN_STATIONARY 3
 
 #define DXS_POINTS    1
 #define DXS_LINES     2
@@ -69,7 +91,7 @@
 #define DXS_LIGHT_DISTANT 2
 
 /* Indices into DXS_CHUNK_INFO's skipped[]. */
-#define DXS_SKIPPED_SCREEN   0   /* screen-space objects: captions, colour bars, ... */
+#define DXS_SKIPPED_SCREEN   0   /* screen objects not exported (none at present) */
 #define DXS_SKIPPED_VOLUME   1   /* cubes, tetrahedra: volume rendering */
 #define DXS_SKIPPED_TEXTURE  2   /* textured fields (drawn untextured) */
 #define DXS_SKIPPED_CLIPPED  3   /* clipped objects (drawn unclipped) */
