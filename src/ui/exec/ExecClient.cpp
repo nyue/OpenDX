@@ -44,7 +44,15 @@ struct ExecClientCallbacks {
     static void info(DXLConnection*, const char* text, void* data)
     {
         auto* self = static_cast<ExecClient*>(data);
-        self->push(ExecMessage::Kind::Info, text ? text : "");
+        std::string s = text ? text : "";
+        // DXLOutput values: "LINK:  DXLOutput VALUE <label> <value>".
+        static const std::string token = "DXLOutput VALUE ";
+        std::size_t at = s.find(token);
+        if (at != std::string::npos) {
+            self->push(ExecMessage::Kind::Value, s.substr(at + token.size()));
+            return;
+        }
+        self->push(ExecMessage::Kind::Info, std::move(s));
     }
     static void error(DXLConnection*, const char* text, void* data)
     {
@@ -224,6 +232,7 @@ bool ExecClient::start(const ExecConfig& config, std::chrono::milliseconds timeo
     DXLSetMessageHandler(conn_, PACK_MESSAGE, nullptr,
                          &ExecClientCallbacks::message, this);
     DXLSetMessageHandler(conn_, PACK_INFO, nullptr, &ExecClientCallbacks::info, this);
+    DXLSetMessageHandler(conn_, PACK_LINK, nullptr, &ExecClientCallbacks::info, this);
     DXLSetErrorHandler(conn_, &ExecClientCallbacks::error, this);
     if (std::getenv("DXUI_TRACE_PROTOCOL"))
         DXLSetMessageDebugging(conn_, 1);   // packets to stderr

@@ -34,7 +34,34 @@ std::string displayMacros(const std::filesystem::path& imageDir)
         "    dxuiImage = Switch(dxuiNoCamera, dxuiRendered, object);\n"
         "    dxuiName = Format(" + quoted(imageDir.string() + "/%s") + ", id);\n"
         "    WriteImage(dxuiImage, dxuiName, \"rgb\", 0);\n";
-    return "macro DxuiShow(id, object, camera, where, throttle, x5, x6, x7, x8) -> ()\n" + body + "}\n" +
+    // DxuiCamera reports an Image's camera to the UI (DXLOutput), so mouse
+    // interaction can start from it: labels "dxuicam:<id>:<what>". Width is
+    // only defined for orthographic cameras and angle for perspective ones;
+    // Switch evaluates only the input it selects.
+    const std::string camera =
+        "macro DxuiCamera(id, camera) -> ()\n"
+        "{\n"
+        "    dxuiCamTo = Inquire(camera, \"camera to\");\n"
+        "    dxuiCamFrom = Inquire(camera, \"camera from\");\n"
+        "    dxuiCamUp = Inquire(camera, \"camera up\");\n"
+        "    dxuiCamPersp = Inquire(camera, \"camera perspective\");\n"
+        "    dxuiCamWhich = Compute(\"$0+1\", dxuiCamPersp);\n"
+        "    dxuiCamWidth = Inquire(camera, \"camera width\");\n"
+        "    dxuiCamAngle = Inquire(camera, \"camera angle\");\n"
+        "    dxuiCamSize = Switch(dxuiCamWhich, dxuiCamWidth, dxuiCamAngle);\n"
+        "    dxuiLabelTo = Format(\"dxuicam:%s:to\", id);\n"
+        "    dxuiLabelFrom = Format(\"dxuicam:%s:from\", id);\n"
+        "    dxuiLabelUp = Format(\"dxuicam:%s:up\", id);\n"
+        "    dxuiLabelPersp = Format(\"dxuicam:%s:perspective\", id);\n"
+        "    dxuiLabelSize = Format(\"dxuicam:%s:size\", id);\n"
+        "    DXLOutput(dxuiLabelTo, dxuiCamTo);\n"
+        "    DXLOutput(dxuiLabelFrom, dxuiCamFrom);\n"
+        "    DXLOutput(dxuiLabelUp, dxuiCamUp);\n"
+        "    DXLOutput(dxuiLabelPersp, dxuiCamPersp);\n"
+        "    DXLOutput(dxuiLabelSize, dxuiCamSize);\n"
+        "}\n";
+    return camera +
+           "macro DxuiShow(id, object, camera, where, throttle, x5, x6, x7, x8) -> ()\n" + body + "}\n" +
            "macro DxuiDisplay(id, object, camera, where, throttle, x5, x6, x7, x8)"
            " -> (whereOut)\n" + body +
            "    whereOut = where;\n}\n";
@@ -71,6 +98,9 @@ NetScript netScriptForUi(std::string_view netText, const std::filesystem::path& 
         if (!inImage && line.rfind("macro Image(", 0) == 0) {
             inImage = true;
         } else if (inImage && line.rfind("}", 0) == 0) {
+            // Report the camera before the wrapper ends (`camera` is one of
+            // the Image macro's outputs in every DX version's wrapper).
+            out.text += "    DxuiCamera(id, camera);\n";
             inImage = false;
         } else if (std::regex_search(line, m, nodeComment)) {
             node = m[1] == "Display" ? "Display_" + m[2].str() : "";

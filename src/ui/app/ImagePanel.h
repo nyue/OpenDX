@@ -14,6 +14,17 @@
 
 namespace dxui {
 
+// Mouse work over the shown image this frame, in pixels of the image as drawn.
+struct ImageGesture {
+    std::string id;            // the image under the pointer or being dragged
+    float dx = 0, dy = 0;      // pointer movement while a button is held
+    float wheel = 0;
+    bool rotate = false;       // left button held
+    bool pan = false;          // middle or right button held
+    bool released = false;     // a drag ended this frame
+    float width = 0, height = 0;
+};
+
 class ImagePanel {
 public:
     ImagePanel();
@@ -26,12 +37,17 @@ public:
     const std::filesystem::path& directory() const { return dir_; }
 
     // Reloads images whose files changed. Cheap enough to call every frame;
-    // it looks at the folder at most a few times a second.
-    void update();
+    // it looks at the folder at most a few times a second, or every frame
+    // while `eager` (an image is expected soon).
+    void update(bool eager = false);
     // Drops the textures and the files (e.g. before running another program).
     void clear();
-    // Draws inside the current ImGui window.
-    void draw();
+    // Draws inside the current ImGui window; returns the mouse gesture made
+    // over the visible image (left drag rotates, middle/right drag pans, the
+    // wheel zooms -- the caller decides what that means).
+    ImageGesture draw();
+    // When the image `id` last changed on disk (zero if not seen).
+    std::filesystem::file_time_type stamp(const std::string& id) const;
 
 private:
     struct Image {

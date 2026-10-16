@@ -126,12 +126,12 @@ bool ImagePanel::load(const std::string& id, Image& image)
     return true;
 }
 
-void ImagePanel::update()
+void ImagePanel::update(bool eager)
 {
     if (dir_.empty())
         return;
     double now = ImGui::GetTime();
-    if (lastScan_ >= 0 && now - lastScan_ < 0.25)
+    if (!eager && lastScan_ >= 0 && now - lastScan_ < 0.25)
         return;
     lastScan_ = now;
 
@@ -151,17 +151,26 @@ void ImagePanel::update()
     }
 }
 
-void ImagePanel::draw()
+std::filesystem::file_time_type ImagePanel::stamp(const std::string& id) const
 {
+    auto it = images_.find(id);
+    return it == images_.end() ? std::filesystem::file_time_type{} : it->second.stamp;
+}
+
+ImageGesture ImagePanel::draw()
+{
+    ImageGesture gesture;
     if (images_.empty()) {
         ImGui::TextWrapped("Run the program (Ctrl+E) to see its images.");
-        return;
+        return gesture;
     }
     if (!ImGui::BeginTabBar("images"))
-        return;
+        return gesture;
     for (auto& [id, image] : images_) {
         if (!image.texture || !ImGui::BeginTabItem(id.c_str()))
             continue;
+        ImGui::TextDisabled("%dx%d   drag: rotate   middle/right drag: pan   wheel: zoom",
+                            image.width, image.height);
         ImVec2 avail = ImGui::GetContentRegionAvail();
         float scale = std::min(avail.x / static_cast<float>(image.width),
                                avail.y / static_cast<float>(image.height));
@@ -171,13 +180,36 @@ void ImagePanel::draw()
             ImGui::SetCursorPos(ImVec2(cur.x + (avail.x - size.x) * 0.5f,
                                        cur.y + (avail.y - size.y) * 0.5f));
             // Rows arrive top first, as GL stores them: no flip.
+            ImVec2 at = ImGui::GetCursorPos();
             ImGui::Image(static_cast<ImTextureID>(image.texture), size);
-            if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("%s  %dx%d", id.c_str(), image.width, image.height);
+            // An invisible button over the image takes the drags.
+            ImGui::SetCursorPos(at);
+            ImGui::InvisibleButton("##view", size,
+                                   ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonMiddle |
+                                       ImGuiButtonFlags_MouseButtonRight);
+            ImGuiIO& io = ImGui::GetIO();
+            const bool active = ImGui::IsItemActive();
+            if (ImGui::IsItemHovered() || active || ImGui::IsItemDeactivated()) {
+                gesture.id = id;
+                gesture.width = size.x;
+                gesture.height = size.y;
+                if (ImGui::IsItemHovered())
+                    gesture.wheel = io.MouseWheel;
+                if (active) {
+                    gesture.dx = io.MouseDelta.x;
+                    gesture.dy = io.MouseDelta.y;
+                    gesture.rotate = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+                    gesture.pan = ImGui::IsMouseDown(ImGuiMouseButton_Middle) ||
+                                  ImGui::IsMouseDown(ImGuiMouseButton_Right);
+                }
+                gesture.released = ImGui::IsItemDeactivated();
+            }
+
         }
         ImGui::EndTabItem();
     }
     ImGui::EndTabBar();
+    return gesture;
 }
 
 } // namespace dxui

@@ -32,6 +32,7 @@ const char* kindName(dxui::ExecMessage::Kind k)
     case dxui::ExecMessage::Kind::Warning: return "warn";
     case dxui::ExecMessage::Kind::Error: return "ERROR";
     case dxui::ExecMessage::Kind::Output: return "out";
+    case dxui::ExecMessage::Kind::Value: return "value";
     }
     return "?";
 }

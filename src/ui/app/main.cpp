@@ -9,6 +9,7 @@
 
 #include "ExecClient.h"
 #include "GraphView.h"
+#include "Camera.h"
 #include "ImagePanel.h"
 #include "NetFile.h"
 #include "NetWriter.h"
@@ -187,6 +188,10 @@ struct App {
         loadLibrary(path.parent_path());
         loaded = parsed;
         valueEdits.clear();
+        cameras.clear();
+        viewing.clear();
+        viewPending = viewToModel = false;
+        programRan = false;
         net = std::move(parsed);
         netText = text.str();
         netPath = path;
@@ -222,6 +227,8 @@ struct App {
         if (imagesReady) {
             if (!client.runNetFileForUi(fs::absolute(netPath), images.directory()))
                 note(dxui::ExecMessage::Kind::Error, client.error());
+            else
+                programRan = true;
         } else {
             client.runNetFile(fs::absolute(netPath));
         }
@@ -459,9 +466,151 @@ struct App {
         return -1;
     }
 
+    // Cameras the executive reported per image id (DxuiCamera), and the
+    // interaction in progress: changed since last sent, when last sent.
+    std::map<std::string, dxui::DxCamera> cameras;
+    std::string viewing;          // image id being interacted with
+    bool viewPending = false;
+    double lastViewSend = 0;
+    bool viewToModel = false;     // the model has not got the latest camera yet
+    double lastViewMove = 0;
+    // One re-render in flight at a time: sent, waiting for its image file.
+    bool viewInFlight = false;
+    std::filesystem::file_time_type viewStampBefore{};
+    bool programRan = false;
+    const bool timing = std::getenv("DXUI_TIMING") != nullptr;   // per-step latency to stderr
+
+    void takeValue(const std::string& text)
+    {
+        // "dxuicam:<id>:<what> <value>"
+        static const std::string prefix = "dxuicam:";
+        if (text.rfind(prefix, 0) != 0)
+            return;
+        std::size_t sp = text.find(' ');
+        std::string label = text.substr(prefix.size(), sp - prefix.size());
+        std::size_t colon = label.rfind(':');
+        if (sp == std::string::npos || colon == std::string::npos)
+            return;
+        std::string id = label.substr(0, colon), what = label.substr(colon + 1);
+        if (id == viewing && viewPending)
+            return;   // our own newer camera is on its way
+        cameras[id].set(what, text.substr(sp + 1));
+    }
+
+    // The Image node behind an image id ("Image_2" -> Image[2]).
+    int imageNode(const std::string& id) const
+    {
+        const dxui::NetMacro* m = macro();
+        static const std::string prefix = "Image_";
+        if (!m || id.rfind(prefix, 0) != 0)
+            return -1;
+        int instance = std::atoi(id.c_str() + prefix.size());
+        for (std::size_t i = 0; i < m->nodes.size(); ++i)
+            if (m->nodes[i].module == "Image" && m->nodes[i].instance == instance)
+                return static_cast<int>(i);
+        return -1;
+    }
+
+    // Image inputs (ui.mdf): 4 useVector, 5 to, 6 from, 7 width, 10 up,
+    // 11 angle, 12 perspective.
+    std::vector<std::pair<int, std::string>> cameraInputs(const dxui::DxCamera& c) const
+    {
+        using C = dxui::DxCamera;
+        return {{4, "1"},
+                {5, C::format(c.to)},
+                {6, C::format(c.from)},
+                {10, C::format(c.up)},
+                {c.perspective ? 11 : 7, C::format(c.size)},
+                {12, c.perspective ? "1" : "0"}};
+    }
+
+    // Sends the camera of `id` to the executive and re-runs: only the Image's
+    // part of the network recomputes (DX caches the rest).
+    void sendView(const std::string& id)
+    {
+        int node = imageNode(id);
+        const dxui::NetMacro* m = macro();
+        if (node < 0 || !m || !client.running())
+            return;
+        const auto& n = m->nodes[static_cast<std::size_t>(node)];
+        std::string var = m->name + "_Image_" + std::to_string(n.instance) + "_in_";
+        std::string script;
+        for (const auto& [k, value] : cameraInputs(cameras[id]))
+            script += var + std::to_string(k) + " = " + value + ";\n";
+        script += m->name + "();";
+        viewStampBefore = images.stamp(id);
+        client.send(script);
+        lastViewSend = ImGui::GetTime();
+        viewPending = false;
+        viewInFlight = true;
+    }
+
+    void handleImageGesture(const dxui::ImageGesture& g)
+    {
+        // A zoom with the wheel has no release: keep it once the wheel rests.
+        if (viewToModel && !g.rotate && !g.pan && ImGui::GetTime() - lastViewMove > 0.6) {
+            if (viewPending)
+                sendView(viewing);
+            keepView(viewing);
+            viewToModel = false;
+        }
+        if (g.id.empty() || !programRan)
+            return;
+        auto it = cameras.find(g.id);
+        if (it == cameras.end() || !it->second.valid() || imageNode(g.id) < 0)
+            return;
+        dxui::DxCamera& cam = it->second;
+        bool moved = false;
+        if ((g.dx != 0 || g.dy != 0) && g.width > 0) {
+            if (g.rotate)
+                cam.orbit(g.dx, g.dy, g.width, g.height);
+            else if (g.pan)
+                cam.pan(g.dx, g.dy, g.width, g.height);
+            moved = g.rotate || g.pan;
+        }
+        if (g.wheel != 0) {
+            cam.zoom(g.wheel);
+            moved = true;
+        }
+        if (moved) {
+            viewing = g.id;
+            viewPending = true;
+            viewToModel = true;
+            lastViewMove = ImGui::GetTime();
+        }
+        // Stepped: the next camera goes out as soon as the previous image has
+        // arrived (one render in flight); the last one when the drag ends.
+        if (viewPending && (!viewInFlight || g.released))
+            sendView(g.id);
+        if (g.released && viewToModel) {
+            keepView(g.id);
+            viewToModel = false;
+        }
+    }
+
+    // The camera into the Image node's inputs: undoable, and saved with the
+    // program.
+    void keepView(const std::string& id)
+    {
+        int node = imageNode(id);
+        if (node < 0)
+            return;
+        auto inputs = cameraInputs(cameras[id]);
+        apply([&](dxui::NetMacro& mm, std::string& why) {
+            for (const auto& [k, value] : inputs)
+                if (!dxui::setInputValue(mm, node, k, value, &why))
+                    return false;
+            return true;
+        });
+    }
+
     void pollExec()
     {
         for (auto& m : client.poll()) {
+            if (m.kind == dxui::ExecMessage::Kind::Value) {
+                takeValue(m.text);
+                continue;
+            }
             if (m.kind == dxui::ExecMessage::Kind::Error && graphReady) {
                 int node = nodeInError(m.text);
                 if (node >= 0)
@@ -858,8 +1007,18 @@ struct App {
     {
         ImGui::Begin("Image");
         if (imagesReady) {
-            images.update();
-            images.draw();
+            images.update(viewInFlight);
+            if (viewInFlight) {
+                // The image arrived, or give up waiting after a second.
+                double waited = ImGui::GetTime() - lastViewSend;
+                if (images.stamp(viewing) != viewStampBefore || waited > 1.0) {
+                    if (timing)
+                        std::fprintf(stderr, "dxui2: camera to image %.0f ms%s\n", waited * 1000,
+                                     waited > 1.0 ? " (gave up)" : "");
+                    viewInFlight = false;
+                }
+            }
+            handleImageGesture(images.draw());
         } else {
             ImGui::TextWrapped("No image folder; Image nodes open their own windows.");
         }
@@ -990,7 +1149,8 @@ int main(int argc, char** argv)
     std::string shownTitle;
     while (!app.quitNow && !quitRequested) {
         // Wake at least 10 times a second so exec messages show up while idle.
-        glfwWaitEventsTimeout(0.1);
+        // Short waits while a re-rendered image is due, so it shows at once.
+        glfwWaitEventsTimeout(app.viewInFlight ? 0.002 : 0.1);
         app.pollExec();
 
         ImGui_ImplOpenGL3_NewFrame();

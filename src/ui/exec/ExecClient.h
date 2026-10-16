@@ -21,7 +21,8 @@ struct DXLConnection;
 namespace dxui {
 
 struct ExecMessage {
-    enum class Kind { Info, Message, Warning, Error, Output };
+    // Value: a DXLOutput value, `text` = "<label> <value>".
+    enum class Kind { Info, Message, Warning, Error, Output, Value };
     Kind kind;
     std::string text;
 };
