@@ -11,6 +11,7 @@
 
 #include <dxconfig.h>
 
+
 /*---------------------------------------------------------------------------*\
  $Source: /src/master/dx/src/exec/hwrender/starbase/hwTetraDrawSB.c,v $
   Author: Mark Hood
@@ -25,14 +26,14 @@
 
 #include "hwDebug.h"
 
-#define Polyhedra Tetra
-#define CpfPolyhedra "CpfTetra"
-#define CpcPolyhedra "CpcTetra"
-#define CpvPolyhedra "CpvTetra"
-#define tdmPolyhedraDraw _dxfTetraDraw
+#define Polyhedra                 Tetra
+#define CpfPolyhedra             "CpfTetra"
+#define CpcPolyhedra             "CpcTetra"
+#define CpvPolyhedra             "CpvTetra"
+#define tdmPolyhedraDraw          _dxfTetraDraw
 
-#define PolyhedraSize 4
-#define FacetsPerPolyhedron 4
-#define VerticesPerFacet 3
+#define PolyhedraSize             4
+#define FacetsPerPolyhedron       4
+#define VerticesPerFacet          3
 
 #include "hwPolyhedraDrawSB.c.h"

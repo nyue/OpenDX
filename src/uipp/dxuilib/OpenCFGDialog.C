@@ -9,49 +9,59 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
+
 #include "Network.h"
 #include "OpenCFGDialog.h"
 #include "ControlPanel.h"
 #include "Application.h"
 #include "ErrorDialogManager.h"
 
+
 boolean OpenCFGDialog::ClassInitialized = FALSE;
 
-String OpenCFGDialog::DefaultResources[] = {
-    "*dialogTitle:         Open Configuration...", "*dirMask:         *.cfg",
-    NULL};
-
-void OpenCFGDialog::okFileWork( const char *string )
+String OpenCFGDialog::DefaultResources[] =
 {
-  boolean result;
-  char *op;
+        "*dialogTitle:         Open Configuration...",
+        "*dirMask:         *.cfg",
+        NULL
+};
 
-  result = this->network->openCfgFile( string, TRUE );
-  op = "reading";
+void OpenCFGDialog::okFileWork(const char *string)
+{
+    boolean  result;
+    char *op;
 
-  if ( NOT result )
-    ErrorMessage( "Error while %s configuration file %s", op, string );
+    result = this->network->openCfgFile(string, TRUE);
+    op = "reading";
+
+    if(NOT result)
+        ErrorMessage("Error while %s configuration file %s", op, string);
+
 }
 
-OpenCFGDialog::OpenCFGDialog( Widget parent, Network *net )
-    : FileDialog( "openCFGDialog", parent )
+OpenCFGDialog::OpenCFGDialog(Widget parent, Network *net) : 
+                       FileDialog("openCFGDialog", parent)
 {
 
-  this->network = net;
-  this->hasCommentButton = FALSE;
+    this->network = net;
+    this->hasCommentButton = FALSE;
 
-  if ( NOT OpenCFGDialog::ClassInitialized )
-  {
-    OpenCFGDialog::ClassInitialized = TRUE;
-    this->installDefaultResources( theApplication->getRootWidget() );
-  }
+    if (NOT OpenCFGDialog::ClassInitialized)
+    {
+        OpenCFGDialog::ClassInitialized = TRUE;
+	this->installDefaultResources(theApplication->getRootWidget());
+    }
+
 }
 
 //
 // Install the default resources for this class.
 //
-void OpenCFGDialog::installDefaultResources( Widget baseWidget )
+void OpenCFGDialog::installDefaultResources(Widget  baseWidget)
 {
-  this->setDefaultResources( baseWidget, OpenCFGDialog::DefaultResources );
-  this->FileDialog::installDefaultResources( baseWidget );
+    this->setDefaultResources(baseWidget, OpenCFGDialog::DefaultResources);
+    this->FileDialog::installDefaultResources( baseWidget);
 }

@@ -8,42 +8,44 @@
 
 #include <dxconfig.h>
 
+
 #include <stdio.h>
 #include <math.h>
 #include <dx/dx.h>
 #include "_normals.h"
 
-int m_Normals( Object *in, Object *out )
+int
+m_Normals (Object *in, Object *out)
 {
-  char *method;
+    char		*method;
 
-  out[0] = NULL;
+    out[0] = NULL;
 
-  if ( in[0] == NULL )
-  {
-    DXSetError( ERROR_BAD_PARAMETER, "#10000", "input" );
-    goto error;
-  }
-
-  if ( in[1] )
-  {
-    if ( !DXExtractString( in[1], &method ) )
+    if (in[0] == NULL)
     {
-      DXSetError( ERROR_BAD_PARAMETER, "#10200", "method" );
-      goto error;
+	DXSetError(ERROR_BAD_PARAMETER, "#10000", "input");
+	goto error;
     }
-  }
-  else
-    method = "positions";
 
-  out[0] = _dxfNormals( in[0], method );
+    if (in[1])
+    {
+	if (! DXExtractString(in[1], &method))
+	{
+	    DXSetError(ERROR_BAD_PARAMETER, "#10200", "method");
+	    goto error;
+	}
+    }
+    else
+	method = "positions";
 
-  if ( out[0] == NULL || DXGetError() != ERROR_NONE )
-    goto error;
+    out[0] = _dxfNormals(in[0], method);
 
-  return OK;
+    if (out[0] == NULL || DXGetError() != ERROR_NONE)
+	goto error;
+    
+    return OK;
 
 error:
-  DXDelete( out[0] );
-  return ERROR;
+    DXDelete(out[0]);
+    return ERROR;
 }

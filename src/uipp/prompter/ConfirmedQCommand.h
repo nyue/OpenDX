@@ -9,57 +9,64 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
 #ifndef _ConfirmedQCommand_h
 #define _ConfirmedQCommand_h
+
 
 #include "../base/OptionalPreActionCommand.h"
 
 #include <Xm/Xm.h>
 
-class Command;
+class   Command;
 
 //
 // Class name definition:
 //
-#define ClassConfirmedQCommand "ConfirmedQCommand"
+#define ClassConfirmedQCommand	"ConfirmedQCommand"
+
 
 //
 // ConfirmedQCommand class definition:
-//
-class ConfirmedQCommand : public OptionalPreActionCommand
+//				
+class ConfirmedQCommand : public OptionalPreActionCommand 
 {
- private:
-  Command* command;
+  private:
 
- protected:
-  //
-  // Implements the command:
+    Command     *command;
 
-  virtual boolean needsConfirmation();
-  virtual void doPreAction();
+  protected:
+    //
+    // Implements the command:
 
-  virtual boolean doIt( CommandInterface* ci );
+    virtual boolean needsConfirmation();
+    virtual void    doPreAction();
 
- public:
-  //
-  // Constructor:
-  //
-  ConfirmedQCommand( const char* name, CommandScope* scope, boolean active );
+    virtual boolean doIt(CommandInterface *ci);
 
-  //
-  // Destructor:
-  //
-  ~ConfirmedQCommand()
-  {
-  }
+  public:
+    //
+    // Constructor:
+    //
+    ConfirmedQCommand(const char*   name,
+                        CommandScope* scope,
+                        boolean       active);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassConfirmedQCommand;
-  }
+    //
+    // Destructor:
+    //
+    ~ConfirmedQCommand(){}
+
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassConfirmedQCommand;
+    }
 };
 
-#endif  // _ConfirmedQCommand_h
+
+#endif // _ConfirmedQCommand_h

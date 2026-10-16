@@ -8,78 +8,62 @@
 
 #include <dxconfig.h>
 
+
 #ifndef _ImageFormatGIF_h
 #define _ImageFormatGIF_h
+
 
 #include "PixelImageFormat.h"
 
 //
 // Class name definition:
 //
-#define ClassImageFormatGIF "ImageFormatGIF"
+#define ClassImageFormatGIF	"ImageFormatGIF"
 
 //
 // SaveImageDialog class definition:
-//
+//				
 class ImageFormatGIF : public PixelImageFormat
 {
- private:
-  static String DefaultResources[];
-  static boolean ClassInitialized;
+  private:
 
- protected:
-  virtual void initialize();
+    static String  DefaultResources[];
+    static boolean ClassInitialized;
 
-  virtual boolean supportsPrinting()
-  {
-    return TRUE;
-  }
+  protected:
 
- public:
-  //
-  // Constructor:
-  //
-  ImageFormatGIF( ImageFormatDialog* dialog );
+    virtual void	initialize();
 
-  static ImageFormat* Allocator( ImageFormatDialog* dialog )
-  {
-    return new ImageFormatGIF( dialog );
-  }
+    virtual boolean		supportsPrinting() { return TRUE; }
 
-  //
-  // Destructor:
-  //
-  ~ImageFormatGIF();
+  public:
 
-  virtual const char* paramString()
-  {
-    return "gif";
-  }
-  virtual const char* menuString()
-  {
-    return "GIF";
-  }
-  virtual const char* fileExtension()
-  {
-    return ".gif";
-  }
-  virtual boolean supportsDelayedColors()
-  {
-    return FALSE;
-  }
-  virtual boolean requiresDelayedColors()
-  {
-    return TRUE;
-  }
+    //
+    // Constructor:
+    //
+    ImageFormatGIF(ImageFormatDialog *dialog);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassImageFormatGIF;
-  }
-  virtual boolean isA( Symbol classname );
+    static ImageFormat* Allocator (ImageFormatDialog* dialog) 
+	{ return  new ImageFormatGIF(dialog); }
+
+
+    //
+    // Destructor:
+    //
+    ~ImageFormatGIF();
+
+    virtual const char*		paramString() { return "gif"; }
+    virtual const char*		menuString() { return "GIF"; }
+    virtual const char*		fileExtension() { return ".gif"; }
+    virtual boolean		supportsDelayedColors() { return FALSE; }
+    virtual boolean		requiresDelayedColors() { return TRUE; }
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName() { return ClassImageFormatGIF; }
+    virtual boolean isA(Symbol classname);
 };
 
-#endif  // _ImageFormatGIF_h
+
+#endif // _ImageFormatGIF_h

@@ -9,19 +9,13 @@
 #include <dxconfig.h>
 #include <dx/dx.h>
 
-#if defined( DDX )
-int GetMPINodeId()
-{
-  return 0;
-}
-int SlaveBcastLoop()
-{
-  return 0;
-}
+#if defined(DDX)
+int GetMPINodeId() { return 0; }
+int SlaveBcastLoop() { return 0; }
 #endif
-void GetBaseConnection( FILE **fptr, char **str )
+void GetBaseConnection(FILE **fptr, char **str)
 {
-  setvbuf( stdin, NULL, _IONBF, 0 );
-  *fptr = stdin;
-  *str = "STDIN";
+    setvbuf (stdin, NULL, _IONBF, 0);
+    *fptr = stdin;
+    *str  = "STDIN";
 }

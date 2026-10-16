@@ -9,13 +9,17 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #include "ValueListInstance.h"
 #include "ValueListNode.h"
 
-ValueListInstance::ValueListInstance( ValueListNode *n ) : ValueInstance( n )
-{
-}
 
-ValueListInstance::~ValueListInstance()
-{
+ValueListInstance::ValueListInstance(ValueListNode *n) : ValueInstance(n)
+{ 
 }
+	
+ValueListInstance::~ValueListInstance() 
+{ 
+} 

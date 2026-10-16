@@ -9,15 +9,21 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _Ark_h
 #define _Ark_h
 
+
 #include "Base.h"
+
+
 
 //
 // Class name definition:
 //
-#define ClassArk "Ark"
+#define ClassArk	"Ark"
 
 //
 // referenced classes
@@ -27,66 +33,68 @@ class ArkStandIn;
 
 //
 // Ark class definition:
-//
+//				
 class Ark : public Base
 {
- private:
-  //
-  // Private member data:
-  //
-  Node *from;
-  int fromParameter;
-  Node *to;
-  int toParameter;
-  ArkStandIn *arcStandIn;
+  private:
+    //
+    // Private member data:
+    //
+    Node        *from;
+    int          fromParameter;
+    Node        *to;
+    int          toParameter;
+    ArkStandIn  *arcStandIn;
 
- protected:
-  //
-  // Protected member data:
-  //
+  protected:
+    //
+    // Protected member data:
+    //
 
- public:
-  //
-  // Constructor:
-  //
-  Ark( Node *fromNode, int fp, Node *toNode, int tp );
 
-  //
-  // Destructor:
-  //
-  ~Ark();
+  public:
+    //
+    // Constructor:
+    //
+    Ark(Node *fromNode, int fp, Node *toNode, int tp);
 
-  //
-  // Access routines.
-  //
+    //
+    // Destructor:
+    //
+    ~Ark();
 
-  Node *getSourceNode( int &param )
-  {
-    param = this->fromParameter;
-    return this->from;
-  }
+    //
+    // Access routines.
+    //
 
-  Node *getDestinationNode( int &param )
-  {
-    param = this->toParameter;
-    return this->to;
-  }
-  void setArkStandIn( ArkStandIn *asi )
-  {
-    this->arcStandIn = asi;
-  }
-  ArkStandIn *getArkStandIn()
-  {
-    return this->arcStandIn;
-  }
+    Node *getSourceNode(int& param)
+    {
+	param = this->fromParameter;
+	return  this->from;
+    }
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassArk;
-  }
+    Node *getDestinationNode(int& param)
+    {
+	param = this->toParameter;
+	return  this->to;
+    }
+    void setArkStandIn(ArkStandIn* asi)
+    {
+        this->arcStandIn = asi;
+    }
+    ArkStandIn* getArkStandIn()
+    {
+        return this->arcStandIn;
+    }
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassArk;
+    }
 };
 
-#endif  // _Ark_h
+
+#endif // _Ark_h

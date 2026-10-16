@@ -9,36 +9,39 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #include "SelectionNode.h"
 #include "SelectionInstance.h"
 #include "SelectionAttrDialog.h"
 
-boolean SelectionInstance::appendOptionPair( const char *value,
-                                             const char *name )
+
+boolean SelectionInstance::appendOptionPair(const char *value, const char *name)
 {
-  SelectionNode *n = (SelectionNode *)this->getNode();
-  return n->appendOptionPair( value, name );
+    SelectionNode *n = (SelectionNode*)this->getNode();
+    return n->appendOptionPair(value,name);
 }
-int SelectionInstance::getOptionCount()
+int  SelectionInstance::getOptionCount()
 {
-  SelectionNode *n = (SelectionNode *)this->getNode();
-  return n->getOptionCount();
+    SelectionNode *n = (SelectionNode*)this->getNode();
+    return n->getOptionCount();
 }
-const char *SelectionInstance::getValueOptionsAttribute()
+const char  *SelectionInstance::getValueOptionsAttribute()
 {
-  SelectionNode *n = (SelectionNode *)this->getNode();
-  return n->getValueOptionsAttribute();
+    SelectionNode *n = (SelectionNode*)this->getNode();
+    return n->getValueOptionsAttribute();
 }
-char *SelectionInstance::getOptionValueString( int optind )
+char *SelectionInstance::getOptionValueString(int optind)
 {
-  SelectionNode *n = (SelectionNode *)this->getNode();
-  return n->getOptionValueString( optind );
+    SelectionNode *n = (SelectionNode*)this->getNode();
+    return n->getOptionValueString(optind);
 }
 
-char *SelectionInstance::getOptionNameString( int optind, boolean keep_quotes )
+char *SelectionInstance::getOptionNameString(int optind, boolean keep_quotes)
 {
-  SelectionNode *n = (SelectionNode *)this->getNode();
-  return n->getOptionNameString( optind, keep_quotes );
+    SelectionNode *n = (SelectionNode*)this->getNode();
+    return n->getOptionNameString(optind, keep_quotes);
 }
 
 //
@@ -47,25 +50,27 @@ char *SelectionInstance::getOptionNameString( int optind, boolean keep_quotes )
 //
 boolean SelectionInstance::hasSetAttrDialog()
 {
-  return TRUE;
+    return TRUE;
 }
 
 //
 // Create the default  set attributes dialog box for this class of
 // Interactor.
 //
-SetAttrDialog *SelectionInstance::newSetAttrDialog( Widget parent )
+SetAttrDialog *SelectionInstance::newSetAttrDialog(Widget parent)
 {
-  Node *n = this->getNode();
-  char *name = (char *)n->getClassName();
-  ASSERT( name );
-  name = DuplicateString( name );
-  char *p = strstr( name, "Node" );
-  if ( p )
-    *p = '\0';
-  char title[128];
-  sprintf( title, "Set %s Attributes...", name );
-  SetAttrDialog *d = new SelectionAttrDialog( parent, title, this );
-  delete name;
-  return d;
+    Node *n = this->getNode();
+    char *name = (char*)n->getClassName();
+    ASSERT(name);
+    name = DuplicateString(name);
+    char *p = strstr(name,"Node");
+    if (p)
+	*p = '\0';
+    char title[128];
+    sprintf(title,"Set %s Attributes...",name);
+    SetAttrDialog *d = new SelectionAttrDialog(parent, title, this);
+    delete name;
+    return d;
 }
+
+

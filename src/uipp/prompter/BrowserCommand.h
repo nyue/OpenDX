@@ -9,51 +9,57 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
 #ifndef _BrowserCommand_h
 #define _BrowserCommand_h
+
 
 #include "NoUndoCommand.h"
 #include <Xm/Xm.h>
 
-class Browser;
+class  Browser;
 
 //
 // BrowserCommand class definition:
-//
+//				
 
-#define ClassBrowserCommand "BrowserCommand"
+#define ClassBrowserCommand  "BrowserCommand"
 
-class BrowserCommand : public NoUndoCommand
+class BrowserCommand : public NoUndoCommand 
 {
- private:
-  static String DefaultResources[];
-  Browser* browser;
-  int option;
+  private:
 
- protected:
-  virtual boolean doIt( CommandInterface* ci );
+    static  String	DefaultResources[];
+    Browser* 		browser;
+    int			option;
 
- public:
-  //
-  // Constructor:
-  //
-  BrowserCommand( const char*, CommandScope*, boolean active, Browser*,
-                  int option );
+  protected:
+    virtual boolean doIt(CommandInterface *ci);
 
-  //
-  // Destructor:
-  //
-  ~BrowserCommand()
-  {
-  }
+  public:
+    //
+    // Constructor:
+    //
+    BrowserCommand(const char*,
+		CommandScope*,
+		boolean active,
+                Browser*,
+		int option);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassBrowserCommand;
-  }
+    //
+    // Destructor:
+    //
+    ~BrowserCommand(){}
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassBrowserCommand;
+    }
 };
 
-#endif  // _BrowserCommand_h
+
+#endif // _BrowserCommand_h

@@ -8,134 +8,136 @@
 
 #include <dxconfig.h>
 
+
 #ifndef _DXANCHOR_WINDOW_H
 #define _DXANCHOR_WINDOW_H 1
 
 #include "DXWindow.h"
-#include <Xm/XmStrDefs.h>  // for XmSTRING_DEFAULT_CHARSET
+#include <Xm/XmStrDefs.h> // for XmSTRING_DEFAULT_CHARSET
 
 #define ClassDXAnchorWindow "DXAnchorWindow"
+
 
 class CommandInterface;
 class CascadeMenu;
 class Command;
 class CommandScope;
 
-extern "C" void DXAnchorWindow_FileMenuMapCB( Widget, XtPointer, XtPointer );
-extern "C" void DXAnchorWindow_LogoCB( Widget, XtPointer, XtPointer );
-extern "C" void DXAnchorWindow_WindowsMenuMapCB( Widget, XtPointer, XtPointer );
-extern "C" void DXAnchorWindow_TimeoutTO( XtPointer, XtIntervalId* );
+extern "C" void DXAnchorWindow_FileMenuMapCB(Widget, XtPointer, XtPointer);
+extern "C" void DXAnchorWindow_LogoCB(Widget, XtPointer, XtPointer);
+extern "C" void DXAnchorWindow_WindowsMenuMapCB(Widget, XtPointer, XtPointer);
+extern "C" void DXAnchorWindow_TimeoutTO (XtPointer , XtIntervalId*);
+
 
 class NoUndoAnchorCommand;
 
-class DXAnchorWindow : public DXWindow
-{
+class DXAnchorWindow: public DXWindow {
 
-  friend class NoUndoAnchorCommand;
+    friend class NoUndoAnchorCommand;
 
-  // P R I V A T E   P R I V A T E   P R I V A T E
-  // P R I V A T E   P R I V A T E   P R I V A T E
- private:
-  static boolean ClassInitialized;
+  // P R I V A T E   P R I V A T E   P R I V A T E   
+  // P R I V A T E   P R I V A T E   P R I V A T E   
+  private:
 
-  friend void DXAnchorWindow_FileMenuMapCB( Widget, XtPointer, XtPointer );
-  friend void DXAnchorWindow_LogoCB( Widget, XtPointer, XtPointer );
-  friend void DXAnchorWindow_WindowsMenuMapCB( Widget, XtPointer, XtPointer );
-  friend void DXAnchorWindow_TimeoutTO( XtPointer, XtIntervalId* );
+    static boolean ClassInitialized;
 
-  Widget form, label, logoButton, logoMessage;
+    friend void DXAnchorWindow_FileMenuMapCB(Widget, XtPointer, XtPointer);
+    friend void DXAnchorWindow_LogoCB(Widget, XtPointer, XtPointer);
+    friend void DXAnchorWindow_WindowsMenuMapCB(Widget, XtPointer, XtPointer);
+    friend void DXAnchorWindow_TimeoutTO (XtPointer , XtIntervalId*);
 
-  XtIntervalId timeoutId;
+    Widget form,label,logoButton,logoMessage;
 
-  static void LabelExtent( Widget, int*, int* );
+    XtIntervalId timeoutId;
 
-  // P R O T E C T E D    P R O T E C T E D    P R O T E C T E D
-  // P R O T E C T E D    P R O T E C T E D    P R O T E C T E D
- protected:
-  static String DefaultResources[];
+    static void LabelExtent (Widget, int*, int*);
 
-  virtual Widget createWorkArea( Widget parent );
-  virtual void createMenus( Widget parent );
-  virtual void createFileMenu( Widget parent );
-  virtual void createWindowsMenu( Widget parent );
-  virtual void createHelpMenu( Widget parent );
+  // P R O T E C T E D    P R O T E C T E D    P R O T E C T E D    
+  // P R O T E C T E D    P R O T E C T E D    P R O T E C T E D    
+  protected:
 
-  //
-  // Menus & pulldowns:
-  //
-  Widget fileMenu;
-  Widget fileMenuPulldown;
-  Widget windowsMenu;
-  Widget windowsMenuPulldown;
+    static String DefaultResources[];
 
-  //
-  // File menu options:
-  //
-  CommandInterface* openOption;
-  CommandInterface* loadMacroOption;
-  CommandInterface* loadMDFOption;
-  CommandInterface* saveOption;
-  CommandInterface* saveAsOption;
-  CommandInterface* closeOption;
-  CascadeMenu* settingsCascade;
-  CommandInterface* saveCfgOption;
-  CommandInterface* openCfgOption;
-  Command* closeCmd;
+    virtual Widget createWorkArea    (Widget parent);
+    virtual void   createMenus       (Widget parent);
+    virtual void   createFileMenu    (Widget parent);
+    virtual void   createWindowsMenu (Widget parent);
+    virtual void   createHelpMenu(Widget parent);
 
-  //
-  // Window menu options:
-  //
-  CommandInterface* openAllControlPanelsOption;
-  CascadeMenu* openControlPanelByNameMenu;
-  CommandInterface* openAllColormapEditorsOption;
-  CommandInterface* messageWindowOption;
-  CommandInterface* openVPEOption;
-  Command* openVPECmd;
 
-  //
-  // Help menu options:
-  //
-  CommandInterface* onVisualProgramOption;
+    //
+    // Menus & pulldowns:
+    //
+    Widget              fileMenu;
+    Widget              fileMenuPulldown;
+    Widget              windowsMenu;
+    Widget              windowsMenuPulldown;
+ 
+    //
+    // File menu options:
+    //
+    CommandInterface*   openOption;
+    CommandInterface*   loadMacroOption;
+    CommandInterface*   loadMDFOption;
+    CommandInterface*   saveOption;
+    CommandInterface*   saveAsOption;
+    CommandInterface*   closeOption;
+    CascadeMenu*	settingsCascade;
+    CommandInterface*   saveCfgOption;
+    CommandInterface*   openCfgOption;
+    Command*		closeCmd;
 
-  // P U B L I C   P U B L I C   P U B L I C   P U B L I C
-  // P U B L I C   P U B L I C   P U B L I C   P U B L I C
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+    //
+    // Window menu options:
+    //
+    CommandInterface*   openAllControlPanelsOption;
+    CascadeMenu         *openControlPanelByNameMenu;
+    CommandInterface*   openAllColormapEditorsOption;
+    CommandInterface*   messageWindowOption;
+    CommandInterface*   openVPEOption;
+    Command*		openVPECmd;
 
-  //
-  // build a file history button and menu
-  //
-  virtual void createFileHistoryMenu( Widget parent );
+    //
+    // Help menu options:
+    //
+    CommandInterface*   onVisualProgramOption;
 
- public:
-  boolean postVPE();
+  // P U B L I C   P U B L I C   P U B L I C   P U B L I C   
+  // P U B L I C   P U B L I C   P U B L I C   P U B L I C   
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
-  //
-  // This window will post a copyright notice inside itself as a substitute
-  // for the one supplied by {IBM}Application.
-  //
-  void postCopyrightNotice();
-  void deleteCopyright();
-  void setKioskMessage( const char* msg,
-                        const char* font = XmSTRING_DEFAULT_CHARSET );
+    //
+    // build a file history button and menu
+    //
+    virtual void createFileHistoryMenu (Widget parent);
 
-  //
-  // Adjust the name of the editor window based on the current network name.
-  //
-  void resetWindowTitle();
+  public:
 
-  DXAnchorWindow( const char* name, boolean isAnchor,
-                  boolean usesMenuBar = TRUE );
-  ~DXAnchorWindow();
+    boolean 		postVPE();
 
-  const char* getClassName()
-  {
-    return ClassDXAnchorWindow;
-  }
+    //
+    // This window will post a copyright notice inside itself as a substitute
+    // for the one supplied by {IBM}Application.
+    //
+    void		postCopyrightNotice();
+    void		deleteCopyright();
+    void		setKioskMessage (const char* msg, 
+			  const char *font = XmSTRING_DEFAULT_CHARSET);
+
+    //
+    // Adjust the name of the editor window based on the current network name.
+    //
+    void resetWindowTitle();
+
+    DXAnchorWindow (const char *name, boolean isAnchor, boolean usesMenuBar = TRUE);
+    ~DXAnchorWindow();
+
+    const char *getClassName() { return ClassDXAnchorWindow; }
 };
 
-#endif  // _DXANCHOR_WINDOW_H
+#endif // _DXANCHOR_WINDOW_H

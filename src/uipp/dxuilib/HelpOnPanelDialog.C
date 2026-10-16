@@ -9,6 +9,7 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
 #include "DXStrings.h"
 #include "Application.h"
 #include "HelpOnPanelDialog.h"
@@ -16,17 +17,21 @@
 
 boolean HelpOnPanelDialog::ClassInitialized = FALSE;
 
-String HelpOnPanelDialog::DefaultResources[] = {
-    "*dialogTitle:     		Help on Control Panel...", NULL};
-
-HelpOnPanelDialog::HelpOnPanelDialog( Widget parent, ControlPanel *cp )
-    : SetPanelCommentDialog( "helpOnPanel", parent, TRUE, cp )
+String HelpOnPanelDialog::DefaultResources[] =
 {
-  if ( NOT HelpOnPanelDialog::ClassInitialized )
-  {
-    HelpOnPanelDialog::ClassInitialized = TRUE;
-    this->installDefaultResources( theApplication->getRootWidget() );
-  }
+        "*dialogTitle:     		Help on Control Panel...",
+        NULL
+};
+
+HelpOnPanelDialog::HelpOnPanelDialog(Widget parent, ControlPanel *cp) : 
+				SetPanelCommentDialog("helpOnPanel",
+				parent, TRUE, cp)
+{
+    if (NOT HelpOnPanelDialog::ClassInitialized)
+    {
+        HelpOnPanelDialog::ClassInitialized = TRUE;
+	this->installDefaultResources(theApplication->getRootWidget());
+    }
 }
 
 HelpOnPanelDialog::~HelpOnPanelDialog()
@@ -34,23 +39,23 @@ HelpOnPanelDialog::~HelpOnPanelDialog()
 }
 char *HelpOnPanelDialog::getDialogTitle()
 {
-  const char *title = this->controlPanel->getWindowTitle();
-  char *dialogTitle = NULL;
+    const char *title = this->controlPanel->getWindowTitle();
+    char *dialogTitle = NULL;
 
-  if ( title )
-  {
-    int len = STRLEN( title ) + STRLEN( " Help On Control Panel..." ) + 16;
-    dialogTitle = new char[len];
-    sprintf( dialogTitle, "Help On %s...", title );
-  }
-  return dialogTitle;
+    if (title) {
+        int len = STRLEN(title) + STRLEN(" Help On Control Panel...") + 16;
+        dialogTitle = new char[len];
+        sprintf(dialogTitle,"Help On %s...",title);
+    }
+    return dialogTitle;
 }
+
 
 //
 // Install the default resources for this class.
 //
-void HelpOnPanelDialog::installDefaultResources( Widget baseWidget )
+void HelpOnPanelDialog::installDefaultResources(Widget  baseWidget)
 {
-  this->setDefaultResources( baseWidget, HelpOnPanelDialog::DefaultResources );
-  this->SetPanelCommentDialog::installDefaultResources( baseWidget );
+    this->setDefaultResources(baseWidget, HelpOnPanelDialog::DefaultResources);
+    this->SetPanelCommentDialog::installDefaultResources( baseWidget);
 }

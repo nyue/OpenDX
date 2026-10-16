@@ -9,6 +9,7 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
 #ifndef _VectorListDefinition_h
 #define _VectorListDefinition_h
 
@@ -16,56 +17,54 @@
 
 #include "ScalarListDefinition.h"
 
+
 //
 // Class name definition:
 //
-#define ClassVectorListDefinition "VectorListDefinition"
+#define ClassVectorListDefinition	"VectorListDefinition"
+
 
 //
 // VectorListDefinition class definition:
-//
-class VectorListDefinition : public ScalarListDefinition
+//				
+class VectorListDefinition : public ScalarListDefinition 
 {
- private:
- protected:
-  //
-  // Protected member data:
-  //
+  private:
+	
+  protected:
+    //
+    // Protected member data:
+    //
 
-  //
-  // Allocate a new Node of the corresponding type.
-  //
-  virtual Node *newNode( Network *net, int instance = -1 );
+    //
+    // Allocate a new Node of the corresponding type.
+    //
+    virtual Node *newNode(Network *net, int instance = -1); 
 
- public:
-  //
-  // Constructor:
-  //
-  VectorListDefinition()
-  {
-  }
+  public:
+    //
+    // Constructor:
+    //
+    VectorListDefinition() { }
 
-  //
-  // Destructor:
-  //
-  ~VectorListDefinition()
-  {
-  }
+    //
+    // Destructor:
+    //
+    ~VectorListDefinition() { }
+	
+    //
+    // Allocate a new VectorListDefinition.  
+    // This function is intended to be used as an allocator in
+    // theNDAllocatorDictionary.
+    //
+    static NodeDefinition *AllocateDefinition();
 
-  //
-  // Allocate a new VectorListDefinition.
-  // This function is intended to be used as an allocator in
-  // theNDAllocatorDictionary.
-  //
-  static NodeDefinition *AllocateDefinition();
-
-  //
-  // Returns a pointer to the class name.
-  //
-  virtual const char *getClassName()
-  {
-    return ClassVectorListDefinition;
-  }
+    //
+    // Returns a pointer to the class name.
+    //
+    virtual const char* getClassName() 
+		{ return ClassVectorListDefinition; }
 };
 
-#endif  // _VectorListDefinition_h
+
+#endif // _VectorListDefinition_h

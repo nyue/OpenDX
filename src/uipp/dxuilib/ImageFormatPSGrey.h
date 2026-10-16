@@ -8,65 +8,57 @@
 
 #include <dxconfig.h>
 
+
 #ifndef _ImageFormatPSGrey_h
 #define _ImageFormatPSGrey_h
+
 
 #include "PostScriptImageFormat.h"
 
 //
 // Class name definition:
 //
-#define ClassImageFormatPSGrey "ImageFormatPSGrey"
+#define ClassImageFormatPSGrey	"ImageFormatPSGrey"
 
 //
 // SaveImageDialog class definition:
-//
+//				
 class ImageFormatPSGrey : public PostScriptImageFormat
 {
- private:
-  static String DefaultResources[];
-  static boolean ClassInitialized;
+  private:
 
- protected:
-  virtual void initialize();
+    static String  DefaultResources[];
+    static boolean ClassInitialized;
 
- public:
-  //
-  // Constructor:
-  //
-  ImageFormatPSGrey( ImageFormatDialog* dialog );
+  protected:
 
-  static ImageFormat* Allocator( ImageFormatDialog* dialog )
-  {
-    return new ImageFormatPSGrey( dialog );
-  }
+    virtual void	initialize();
 
-  //
-  // Destructor:
-  //
-  ~ImageFormatPSGrey();
+  public:
 
-  virtual const char* paramString()
-  {
-    return "ps gray";
-  }
-  virtual const char* menuString()
-  {
-    return "Grey PostScript";
-  }
-  virtual const char* fileExtension()
-  {
-    return ".ps";
-  }
+    //
+    // Constructor:
+    //
+    ImageFormatPSGrey(ImageFormatDialog *dialog);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassImageFormatPSGrey;
-  }
-  virtual boolean isA( Symbol classname );
+    static ImageFormat* Allocator (ImageFormatDialog* dialog) 
+	{ return  new ImageFormatPSGrey(dialog); }
+
+    //
+    // Destructor:
+    //
+    ~ImageFormatPSGrey();
+
+    virtual const char*		paramString() { return "ps gray"; }
+    virtual const char*		menuString() { return "Grey PostScript"; }
+    virtual const char*		fileExtension() { return ".ps"; }
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName() { return ClassImageFormatPSGrey; }
+    virtual boolean isA(Symbol classname);
 };
 
-#endif  // _ImageFormatPSGrey_h
+
+#endif // _ImageFormatPSGrey_h

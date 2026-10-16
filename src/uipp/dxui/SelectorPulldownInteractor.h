@@ -9,11 +9,15 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _SelectorPulldownInteractor_h
 #define _SelectorPulldownInteractor_h
 
-#include <X11/Intrinsic.h>
 
+#include <X11/Intrinsic.h>
+ 
 #include "Interactor.h"
 
 class TextSelector;
@@ -21,99 +25,99 @@ class TextSelector;
 //
 // Class name definition:
 //
-#define ClassSelectorPulldownInteractor "SelectorPulldownInteractor"
+#define ClassSelectorPulldownInteractor	"SelectorPulldownInteractor"
 
-extern "C" void SelectorPulldownInteractor_SelectionCB( Widget, XtPointer,
-                                                        XtPointer );
+extern "C" void SelectorPulldownInteractor_SelectionCB(Widget, XtPointer, XtPointer);
+
 
 //
 // SelectorPulldownInteractor class definition:
-//
+//				
 class SelectorPulldownInteractor : public Interactor
 {
- private:
-  //
-  // Private member data:
-  //
-  static boolean ClassInitialized;
+  private:
+    //
+    // Private member data:
+    //
+    static boolean ClassInitialized;
 
-  static String DefaultResources[];
+    static String DefaultResources[];
 
-  TextSelector *text_selector;
+    TextSelector *text_selector;
 
- protected:
-  //
-  // Protected member data:
-  //
+  protected:
+    //
+    // Protected member data:
+    //
 
-  friend void SelectorPulldownInteractor_SelectionCB( Widget widget,
-                                                      XtPointer clientData,
-                                                      XtPointer callData );
+    friend void SelectorPulldownInteractor_SelectionCB
+	(Widget widget, XtPointer clientData, XtPointer callData);
 
-  //
-  // [Re]load the options into this->pulldown.
-  //
-  void reloadMenuOptions();
+    //
+    // [Re]load the options into this->pulldown.
+    //
+    void reloadMenuOptions();
 
-  //
-  // Layout ourself when resized
-  //
-  virtual void layoutInteractorHorizontally();
-  virtual void layoutInteractorVertically();
+    //
+    // Layout ourself when resized
+    //
+    virtual void layoutInteractorHorizontally();
+    virtual void layoutInteractorVertically();
 
- public:
-  //
-  // Allocate this class
-  //
-  static Interactor *AllocateInteractor( const char *name,
-                                         InteractorInstance *ii );
+  public:
+    //
+    // Allocate this class 
+    //
+    static Interactor *AllocateInteractor(const char *name,
+					InteractorInstance *ii);
 
-  //
-  // Constructor:
-  //
-  SelectorPulldownInteractor( const char *name, InteractorInstance *ii );
 
-  //
-  // Destructor:
-  //
-  ~SelectorPulldownInteractor()
-  {
-  }
+    //
+    // Constructor:
+    //
+    SelectorPulldownInteractor(const char *name, InteractorInstance *ii);
 
-  //
-  // Update the displayed values for this interactor.
-  //
-  void updateDisplayedInteractorValue( void );
+    //
+    // Destructor:
+    //
+    ~SelectorPulldownInteractor(){}
 
-  //
-  //
-  //
-  Widget createInteractivePart( Widget p );
-  void completeInteractivePart();
+    //
+    // Update the displayed values for this interactor.
+    //
+    void updateDisplayedInteractorValue(void);
 
-  //
-  // Make sure the attributes match the resources for the widgets.
-  //
-  void handleInteractivePartStateChange( InteractorInstance *src_ii,
-                                         boolean major_change );
+    //
+    // 
+    //
+    Widget createInteractivePart(Widget p);
+    void   completeInteractivePart();
 
-  //
-  // One time initialize for the class.
-  //
-  void initialize();
+    //
+    // Make sure the attributes match the resources for the widgets. 
+    //
+    void handleInteractivePartStateChange(InteractorInstance *src_ii,
+						boolean major_change);
 
-  //
-  // Flatten out the parent change the color, and turn off selectibility.
-  //
-  virtual void setAppearance( boolean developerStyle );
+    //
+    // One time initialize for the class.
+    //
+    void initialize();
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassSelectorPulldownInteractor;
-  }
+    //
+    // Flatten out the parent change the color, and turn off selectibility.
+    //
+    virtual void setAppearance(boolean developerStyle);
+
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassSelectorPulldownInteractor;
+    }
 };
 
-#endif  // _SelectorPulldownInteractor_h
+
+#endif // _SelectorPulldownInteractor_h

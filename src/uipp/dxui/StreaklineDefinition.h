@@ -9,6 +9,8 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
 #ifndef _StreaklineDefinition_h
 #define _StreaklineDefinition_h
 
@@ -16,56 +18,53 @@
 
 #include "NodeDefinition.h"
 
+
 //
 // Class name definition:
 //
-#define ClassStreaklineDefinition "StreaklineDefinition"
+#define ClassStreaklineDefinition	"StreaklineDefinition"
 
 //
 // StreaklineDefinition class definition:
-//
-class StreaklineDefinition : public NodeDefinition
+//				
+class StreaklineDefinition : public NodeDefinition 
 {
- private:
- protected:
-  //
-  // Protected member data:
-  //
+  private:
+	
+  protected:
+    //
+    // Protected member data:
+    //
 
-  //
-  // Allocate a new Node of the corresponding type.
-  //
-  virtual Node *newNode( Network *net, int instance = -1 );
+    //
+    // Allocate a new Node of the corresponding type.
+    //
+    virtual Node *newNode(Network *net, int instance = -1); 
 
- public:
-  //
-  // Constructor:
-  //
-  StreaklineDefinition()
-  {
-  }
 
-  //
-  // Destructor:
-  //
-  ~StreaklineDefinition()
-  {
-  }
+  public:
+    //
+    // Constructor:
+    //
+    StreaklineDefinition() { }
 
-  //
-  // Allocate a new StreaklineDefinition.
-  // This function is intended to be used as an allocator in
-  // theNDAllocatorDictionary.
-  //
-  static NodeDefinition *AllocateDefinition();
+    //
+    // Destructor:
+    //
+    ~StreaklineDefinition() { }
+	
+    //
+    // Allocate a new StreaklineDefinition.  
+    // This function is intended to be used as an allocator in
+    // theNDAllocatorDictionary.
+    //
+    static NodeDefinition *AllocateDefinition();
 
-  //
-  // Returns a pointer to the class name.
-  //
-  virtual const char *getClassName()
-  {
-    return ClassStreaklineDefinition;
-  }
+    //
+    // Returns a pointer to the class name.
+    //
+    virtual const char* getClassName() { return ClassStreaklineDefinition; }
 };
 
-#endif  // _StreaklineDefinition_h
+
+#endif // _StreaklineDefinition_h

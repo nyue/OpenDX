@@ -141,7 +141,7 @@ Object _dxfString_Copy(String, enum _dxd_copy);
     					/* must be changed to match */
 struct string {
     struct object object;		/* object preamble */
-    const char *string;			/* pointer to the string itself */
+    char *string;			/* pointer to the string itself */
     char shortstr[IMBEDDED];		/* short strings are stored here */
 };
 

@@ -9,15 +9,18 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
 #ifndef _SaveMacroCommand_h
 #define _SaveMacroCommand_h
+
 
 #include "NoUndoCommand.h"
 
 //
 // Class name definition:
 //
-#define ClassSaveMacroCommand "SaveMacroCommand"
+#define ClassSaveMacroCommand    "SaveMacroCommand"
 
 //
 // Referenced classes
@@ -26,48 +29,54 @@ class MacroDefinition;
 //
 // SaveMacroCommand class definition:
 //
-class SaveMacroCommand : public NoUndoCommand
+class SaveMacroCommand : public NoUndoCommand 
 {
- private:
-  //
-  // Private member data:
-  //
-  MacroDefinition *md;
+  private:
+    //
+    // Private member data:
+    //
+    MacroDefinition *md;
 
-  // Pointer to the next macro that is dirty.
-  //
-  Command *next;
+    // Pointer to the next macro that is dirty.
+    //
+    Command *next;
 
- protected:
-  //
-  // Protected member data:
-  //
-  virtual boolean doIt( CommandInterface * );
+  protected:
+    //
+    // Protected member data:
+    //
+    virtual  boolean doIt(CommandInterface*);
 
-  //
-  // Used by saving confirmation dialog.
-  //
-  static void SaveMacro( void * );
-  static void DiscardMacro( void * );
+    //
+    // Used by saving confirmation dialog.
+    //
+    static void SaveMacro(void *);
+    static void DiscardMacro(void *);
 
- public:
-  SaveMacroCommand( const char *name, CommandScope *scope, boolean active,
-                    MacroDefinition *md );
+  public:
 
-  ~SaveMacroCommand();
+    SaveMacroCommand(const char*   name,
+                     CommandScope* scope,
+                     boolean       active,
+                     MacroDefinition *md);
 
-  //
-  // Set the pointer to the next macro that is dirty.
-  //
-  void setNext( Command *next );
+    ~SaveMacroCommand();
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassSaveMacroCommand;
-  }
+    //
+    // Set the pointer to the next macro that is dirty. 
+    //
+    void setNext(Command *next);
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+        return ClassSaveMacroCommand;
+    }
+
 };
 
-#endif  // _SaveMacroCommand_h
+
+#endif // _SaveMacroCommand_h
+

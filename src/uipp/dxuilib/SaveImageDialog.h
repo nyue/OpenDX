@@ -8,17 +8,19 @@
 
 #include <dxconfig.h>
 
+
 #ifndef _SaveImageDialog_h
 #define _SaveImageDialog_h
+
 
 #include "ImageFormatDialog.h"
 
 //
 // Class name definition:
 //
-#define ClassSaveImageDialog "SaveImageDialog"
+#define ClassSaveImageDialog	"SaveImageDialog"
 
-extern "C" void SaveImageDialog_ModifyCB( Widget, XtPointer, XtPointer );
+extern "C" void SaveImageDialog_ModifyCB (Widget, XtPointer, XtPointer);
 
 class Dialog;
 class ImageNode;
@@ -31,88 +33,80 @@ class ImageFileDialog;
 
 //
 // SaveImageDialog class definition:
-//
+//				
 class SaveImageDialog : public ImageFormatDialog
 {
- private:
-  static boolean ClassInitialized;
-  static String DefaultResources[];
+  private:
 
-  Widget file_name;
-  char* file;
-  ImageFileDialog* fsb;
-  int sid_dirty;
+    static boolean ClassInitialized;
+    static String  DefaultResources[];
 
- protected:
-  ToggleButtonInterface* saveCurrentOption;
-  ToggleButtonInterface* saveContinuousOption;
-  ButtonInterface* fileSelectOption;
+    Widget			file_name;
+    char*			file;
+    ImageFileDialog*		fsb;
+    int				sid_dirty;
 
-  Command* saveCurrentCmd;
-  Command* saveContinuousCmd;
-  Command* fileSelectCmd;
+  protected:
 
-  virtual Widget createControls( Widget parent );
+    ToggleButtonInterface*	saveCurrentOption;
+    ToggleButtonInterface*	saveContinuousOption;
+    ButtonInterface*		fileSelectOption;
 
-  virtual boolean okCallback( Dialog* );
-  virtual void restoreCallback();
-  virtual int getRequiredHeight()
-  {
-    return 190;
-  }
+    Command*			saveCurrentCmd;
+    Command*			saveContinuousCmd;
+    Command*			fileSelectCmd;
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+    virtual Widget 		createControls(Widget parent );
 
-  enum
-  {
-    DirtyFilename = 64,
-    DirtyCurrent = 128,
-    DirtyContinuous = 256,
-    DirtyRecordEnabled = 512
-  };
+    virtual boolean 		okCallback(Dialog *);
+    virtual void		restoreCallback();
+    virtual int			getRequiredHeight() { return 190; }
 
-  friend void SaveImageDialog_ModifyCB( Widget, XtPointer, XtPointer );
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
- public:
-  virtual void setCommandActivation();
 
-  virtual const char* getOutputFile();
-  virtual boolean isPrinting()
-  {
-    return FALSE;
-  }
-  virtual boolean postFileSelectionDialog();
-  void setFilename( const char* file, boolean skip_callbacks = TRUE );
+    enum {
+	DirtyFilename   	= 64,
+	DirtyCurrent 		= 128,
+	DirtyContinuous 	= 256,
+	DirtyRecordEnabled	= 512
+    };
 
-  boolean dirtyCurrent();
-  boolean dirtyContinuous()
-  {
-    this->sid_dirty |= DirtyContinuous;
-    return TRUE;
-  }
+    friend void SaveImageDialog_ModifyCB (Widget, XtPointer, XtPointer);
 
-  //
-  // Constructor:
-  //
-  SaveImageDialog( Widget parent, ImageNode* node, CommandScope* commandScope );
+  public:
 
-  //
-  // Destructor:
-  //
-  ~SaveImageDialog();
+    virtual void 	setCommandActivation();
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassSaveImageDialog;
-  }
+    virtual const char*	getOutputFile();
+    virtual boolean	isPrinting() { return FALSE; }
+    virtual boolean             postFileSelectionDialog();
+    void		setFilename(const char *file, boolean skip_callbacks=TRUE);
+
+    boolean		dirtyCurrent();
+    boolean		dirtyContinuous() 
+	{ this->sid_dirty|= DirtyContinuous; return TRUE; }
+
+    //
+    // Constructor:
+    //
+    SaveImageDialog(Widget parent, ImageNode* node, CommandScope* commandScope);
+
+    //
+    // Destructor:
+    //
+    ~SaveImageDialog();
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName() { return ClassSaveImageDialog; }
 };
 
-#endif  // _SaveImageDialog_h
+
+#endif // _SaveImageDialog_h

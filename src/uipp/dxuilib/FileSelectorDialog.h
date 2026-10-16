@@ -9,80 +9,85 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
+
 #ifndef _FileSelectorDialog_h
 #define _FileSelectorDialog_h
 
+
 #include "ApplyFileDialog.h"
+
 
 //
 // Class name definition:
 //
-#define ClassFileSelectorDialog "FileSelectorDialog"
+#define ClassFileSelectorDialog	"FileSelectorDialog"
 
 //
 // XtCallbackProc (*CB), XtEventHandler (*EH) and XtActionProc (*AP)
 // DialogCallback (*DCB), XtInputCallbackProc (*ICP), XtWorkProc (*WP)
 // functions for this and derived classes
 //
-extern "C" void FileSelectorDialog_FilterChangeCB( Widget, XtPointer,
-                                                   XtPointer );
+extern "C" void FileSelectorDialog_FilterChangeCB(Widget, XtPointer, XtPointer);
 
 class FileSelectorInstance;
 
 //
 // FileSelectorDialog class definition:
-//
+//				
 class FileSelectorDialog : public ApplyFileDialog
 {
-  static boolean ClassInitialized;
-  static String DefaultResources[];
+    static boolean ClassInitialized;
+    static String  DefaultResources[];
 
- protected:
-  FileSelectorInstance *fsInstance;
+  protected:
 
-  //
-  // Capture and save a filter change with the instance.
-  //
-  friend void FileSelectorDialog_FilterChangeCB( Widget, XtPointer, XtPointer );
-  void filterChangeCallback();
+    FileSelectorInstance *fsInstance;
 
-  //
-  // Call super class and then set the dialog title and the dirMask resource.
-  //
-  virtual Widget createDialog( Widget parent );
+    //
+    // Capture and save a filter change with the instance.
+    //
+    friend void FileSelectorDialog_FilterChangeCB(Widget, 
+						XtPointer, XtPointer);
+    void filterChangeCallback();
 
-  //
-  // Set the output value of  the interactor to the given string.
-  //
-  virtual void okFileWork( const char *string );
+    //
+    // Call super class and then set the dialog title and the dirMask resource. 
+    //
+    virtual Widget createDialog(Widget parent);
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+    //
+    // Set the output value of  the interactor to the given string.
+    //
+    virtual void okFileWork(const char *string);
 
- public:
-  //
-  // Constructor:
-  //
-  FileSelectorDialog( Widget parent, FileSelectorInstance *fsi );
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
-  //
-  // Destructor:
-  //
-  ~FileSelectorDialog()
-  {
-  }
+  public:
+    //
+    // Constructor:
+    //
+    FileSelectorDialog(Widget        parent, FileSelectorInstance *fsi);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassFileSelectorDialog;
-  }
+    //
+    // Destructor:
+    //
+    ~FileSelectorDialog(){}
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassFileSelectorDialog;
+    }
 };
 
-#endif  // _FileSelectorDialog_h
+#endif // _FileSelectorDialog_h

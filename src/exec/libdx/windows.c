@@ -8,7 +8,7 @@
 
 #include <dxconfig.h>
 
-#if defined( DX_NATIVE_WINDOWS )
+#if defined(DX_NATIVE_WINDOWS)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,119 +17,126 @@
 typedef struct _windowEntry *WindowEntry;
 struct _windowEntry
 {
-  HWND hWnd;
-  HANDLE thread;
-  WindowEntry next;
+	HWND hWnd;
+	HANDLE thread;
+	WindowEntry next;
 };
 static WindowRegistry;
 
 static HANDLE windowRegistryLock;
 static HANDLE allGone;
 
-void DXInitializeWindowRegistry()
+void
+DXInitializeWindowRegistry()
 {
-  windowRegistryLock = CreateMutex( NULL, FALSE, NULL );
-  allGone = CreateEvent( NULL, FALSE, FALSE, NULL );
-  WindowRegistry = NULL;
+	windowRegistryLock = CreateMutex(NULL, FALSE, NULL);
+	allGone = CreateEvent(NULL, FALSE, FALSE, NULL);
+	WindowRegistry = NULL;
 }
 
-void DXFreeWindowRegistry()
+void
+DXFreeWindowRegistry()
 {
-  // CloseHandle(windowRegistryLock);
+	//CloseHandle(windowRegistryLock);
 }
 
-Error DXRegisterWindow( HWND hWnd, HANDLE thread )
+Error
+DXRegisterWindow(HWND hWnd, HANDLE thread)
 {
-  WindowEntry we = (WindowEntry)DXAllocate( sizeof( struct _windowEntry ) );
-  if ( !we )
-    return ERROR;
+	WindowEntry we = (WindowEntry)DXAllocate(sizeof(struct _windowEntry));
+	if (! we)
+		return ERROR;
+	
+	we->hWnd = hWnd;
+	we->thread = thread;
 
-  we->hWnd = hWnd;
-  we->thread = thread;
+	if (DXWaitForSignal(1, &windowRegistryLock) == WAIT_TIMEOUT)
+		return ERROR;
 
-  if ( DXWaitForSignal( 1, &windowRegistryLock ) == WAIT_TIMEOUT )
-    return ERROR;
+	we->next = WindowRegistry;
+	WindowRegistry = we;
 
-  we->next = WindowRegistry;
-  WindowRegistry = we;
+	ReleaseMutex(windowRegistryLock);
 
-  ReleaseMutex( windowRegistryLock );
-
-  return OK;
+	return OK;
 }
 
-Error DXUnregisterWindow( HWND hWnd )
+Error
+DXUnregisterWindow(HWND hWnd)
 {
-  WindowEntry we, hWndList = NULL;
+	WindowEntry we, hWndList = NULL;
+	
+	if (DXWaitForSignal(1, &windowRegistryLock) == WAIT_TIMEOUT)
+		return ERROR;
 
-  if ( DXWaitForSignal( 1, &windowRegistryLock ) == WAIT_TIMEOUT )
-    return ERROR;
+	for (we = WindowRegistry; we; we = we->next)
+	{
+		if (we->hWnd == hWnd)
+			break;
 
-  for ( we = WindowRegistry; we; we = we->next )
-  {
-    if ( we->hWnd == hWnd )
-      break;
+		hWndList = we;
+	}
 
-    hWndList = we;
-  }
+	if (we)
+	{
+		if (hWndList)
+			hWndList->next = we->next;
+		else
+			WindowRegistry = we->next;
 
-  if ( we )
-  {
-    if ( hWndList )
-      hWndList->next = we->next;
-    else
-      WindowRegistry = we->next;
+		DXFree((Pointer)we);
+	}
 
-    DXFree( (Pointer)we );
-  }
+	if (WindowRegistry == NULL)
+		SetEvent(allGone);
 
-  if ( WindowRegistry == NULL )
-    SetEvent( allGone );
+	ReleaseMutex(windowRegistryLock);
 
-  ReleaseMutex( windowRegistryLock );
-
-  if ( we )
-    return OK;
-  else
-    return ERROR;
+	if (we)
+		return OK;
+	else
+		return ERROR;
 }
 
-Error DXKillRegisteredWindows()
-{
-  WindowEntry we, nxt;
-  int knt = 0, i;
-  HWND *hWndList;
-  HANDLE *threadList;
+Error
+DXKillRegisteredWindows()
+{	
+	WindowEntry we, nxt;
+	int knt = 0, i;
+	HWND *hWndList;
+	HANDLE *threadList;
 
-  if ( WindowRegistry == NULL )
-    return OK;
+	if (WindowRegistry == NULL)
+		return OK;
+	
+	if (DXWaitForSignal(1, &windowRegistryLock) == WAIT_TIMEOUT)
+		return ERROR;
 
-  if ( DXWaitForSignal( 1, &windowRegistryLock ) == WAIT_TIMEOUT )
-    return ERROR;
+	for (we = WindowRegistry; we; we = we->next)
+		knt++;
 
-  for ( we = WindowRegistry; we; we = we->next )
-    knt++;
+	hWndList = (HWND *)DXAllocate(knt*sizeof(HWND));
+	threadList = (HWND *)DXAllocate(knt*sizeof(HANDLE));
 
-  hWndList = (HWND *)DXAllocate( knt * sizeof( HWND ) );
-  threadList = (HWND *)DXAllocate( knt * sizeof( HANDLE ) );
+	for (we = WindowRegistry; we; we = nxt)
+	{
+		DestroyWindow(we->hWnd);
+		nxt = we->next;
+		DXFree((Pointer)we);
+	}
 
-  for ( we = WindowRegistry; we; we = nxt )
-  {
-    DestroyWindow( we->hWnd );
-    nxt = we->next;
-    DXFree( (Pointer)we );
-  }
+	ReleaseMutex(windowRegistryLock);
 
-  ReleaseMutex( windowRegistryLock );
+	DestroyWindow(we->hWnd);
 
-  DestroyWindow( we->hWnd );
+	if (DXWaitForSignal(knt, &threadList) == WAIT_TIMEOUT)
+		return ERROR;
 
-  if ( DXWaitForSignal( knt, &threadList ) == WAIT_TIMEOUT )
-    return ERROR;
+	DXFree((Pointer)hWndList);
 
-  DXFree( (Pointer)hWndList );
-
-  return OK;
+	return OK;
 }
 
-#endif
+
+#endif	
+

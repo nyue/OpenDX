@@ -9,50 +9,58 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
+
 #include "DXStrings.h"
 #include "SetBGColorDialog.h"
 #include "ImageWindow.h"
 #include "Application.h"
 
 boolean SetBGColorDialog::ClassInitialized = FALSE;
-String SetBGColorDialog::DefaultResources[] = {
-    "*dialogTitle:                      Change Background Color...",
-    "*nameLabel.labelString:            Background Color:", NULL};
-SetBGColorDialog::SetBGColorDialog( ImageWindow *image )
-    : SetNameDialog( "setBGColorDialog", image->getRootWidget() )
+String  SetBGColorDialog::DefaultResources[] =
 {
-  this->imageWindow = image;
+    "*dialogTitle:                      Change Background Color...",
+    "*nameLabel.labelString:            Background Color:",
+    NULL
+};
+SetBGColorDialog::SetBGColorDialog(ImageWindow *image) :
+    SetNameDialog("setBGColorDialog", image->getRootWidget())
+{
+    this->imageWindow = image;
 
-  if ( NOT SetBGColorDialog::ClassInitialized )
-  {
-    SetBGColorDialog::ClassInitialized = TRUE;
-    this->installDefaultResources( theApplication->getRootWidget() );
-  }
+    if (NOT SetBGColorDialog::ClassInitialized)
+    {
+        SetBGColorDialog::ClassInitialized = TRUE;
+	this->installDefaultResources(theApplication->getRootWidget());
+    }
 }
 
 SetBGColorDialog::~SetBGColorDialog()
 {
 }
 
+
 //
 // Install the default resources for this class.
 //
-void SetBGColorDialog::installDefaultResources( Widget baseWidget )
+void SetBGColorDialog::installDefaultResources(Widget  baseWidget)
 {
-  this->setDefaultResources( baseWidget, SetBGColorDialog::DefaultResources );
-  this->SetNameDialog::installDefaultResources( baseWidget );
+    this->setDefaultResources(baseWidget, SetBGColorDialog::DefaultResources);
+    this->SetNameDialog::installDefaultResources( baseWidget);
 }
-boolean SetBGColorDialog::saveText( const char *s )
+boolean SetBGColorDialog::saveText(const char *s)
 {
-  if ( s && !IsBlankString( s ) )
-    this->imageWindow->setBackgroundColor( s );
-  else
-    this->imageWindow->setBackgroundColor( NULL );
+    if (s && !IsBlankString(s))
+	this->imageWindow->setBackgroundColor(s);
+    else
+	this->imageWindow->setBackgroundColor(NULL);
 
-  return TRUE;
+    return TRUE;
 }
 
 const char *SetBGColorDialog::getText()
 {
-  return this->imageWindow->getBackgroundColor();
+    return this->imageWindow->getBackgroundColor();
 }

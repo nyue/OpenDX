@@ -9,155 +9,145 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _VPERoot_h
 #define _VPERoot_h
 
 #include "EditorWorkSpace.h"
 #include "WorkSpaceRoot.h"
 
-extern "C" Boolean VPERoot_MoveWindowWP( XtPointer );
-extern "C" Boolean VPERoot_ShowWindowWP( XtPointer );
+extern "C" Boolean VPERoot_MoveWindowWP (XtPointer);
+extern "C" Boolean VPERoot_ShowWindowWP (XtPointer);
 
 //
 // Class name definition:
 //
-#define ClassVPERoot "VPERoot"
+#define ClassVPERoot	"VPERoot"
 
 class PageSelector;
 class UndoGrid;
 
 //
 // EditorWorkSpace class definition:
-//
+//				
 class VPERoot : public EditorWorkSpace, public WorkSpaceRoot
 {
- private:
-  PageSelector* selector;
-  XtWorkProcId show_wpid;
-  XtWorkProcId move_wpid;
-  EditorWorkSpace* to_be_shown;
+  private:
 
- protected:
-  virtual WorkSpace* newPage( int width, int height );
+    PageSelector* selector;
+    XtWorkProcId  show_wpid;
+    XtWorkProcId  move_wpid;
+    EditorWorkSpace* to_be_shown;
 
-  //
-  // D E F I N E    R O O T    P A G E    B E H A V I O R
-  // D E F I N E    R O O T    P A G E    B E H A V I O R
-  // (pure virtual from WorkSpaceRoot)
-  //
-  virtual void getObjectXYSize( int* w, int* h )
-  {
-    this->EditorWorkSpace::getXYSize( w, h );
-  }
 
-  virtual int getPlacementCount()
-  {
-    return this->EditorWorkSpace::getPlacementCount();
-  }
+  protected:
 
-  virtual void setPlacementCount( int count )
-  {
-    this->EditorWorkSpace::setPlacementCount( count );
-  }
+    virtual WorkSpace *newPage (int width, int height);
 
-  virtual boolean getLineDrawingEnabled()
-  {
-    return this->EditorWorkSpace::getLineDrawing();
-  }
+    //
+    // D E F I N E    R O O T    P A G E    B E H A V I O R
+    // D E F I N E    R O O T    P A G E    B E H A V I O R
+    // (pure virtual from WorkSpaceRoot)
+    //
+    virtual void getObjectXYSize (int* w, int* h) {
+	this->EditorWorkSpace::getXYSize(w,h);
+    }
 
-  virtual boolean getOverlapEnabled()
-  {
-    return this->EditorWorkSpace::getOverlap();
-  }
+    virtual int getPlacementCount() { 
+	return this->EditorWorkSpace::getPlacementCount();
+    }
 
-  virtual Widget getWorkSpaceWidget()
-  {
-    return this->EditorWorkSpace::getRootWidget();
-  }
+    virtual void setPlacementCount(int count) {
+	this->EditorWorkSpace::setPlacementCount(count);
+    }
 
-  virtual void setDimensions( int width, int height )
-  {
-    this->EditorWorkSpace::setWidthHeight( width, height );
-  }
+    virtual boolean getLineDrawingEnabled() {
+	return this->EditorWorkSpace::getLineDrawing();
+    }
 
-  virtual WorkSpaceInfo* getWorkSpaceInfo()
-  {
-    return this->EditorWorkSpace::getInfo();
-  }
+    virtual boolean getOverlapEnabled() {
+	return this->EditorWorkSpace::getOverlap();
+    }
 
-  friend Boolean VPERoot_MoveWindowWP( XtPointer );
-  friend Boolean VPERoot_ShowWindowWP( XtPointer );
-  friend class UndoGrid;
+    virtual Widget getWorkSpaceWidget() {
+	return this->EditorWorkSpace::getRootWidget();
+    }
 
- public:
-  //
-  // Constructor:
-  //
-  VPERoot( const char* name, Widget parent, WorkSpaceInfo* info,
-           EditorWindow* editor, PageSelector* selector )
-      : EditorWorkSpace( name, parent, info, editor ), WorkSpaceRoot()
-  {
-    this->selector = selector;
-    this->move_wpid = NUL( XtWorkProcId );
-    this->show_wpid = NUL( XtWorkProcId );
-    this->to_be_shown = NUL( EditorWorkSpace* );
-  }
+    virtual void setDimensions(int width, int height) {
+	this->EditorWorkSpace::setWidthHeight (width, height);
+    }
 
-  //
-  // Destructor:
-  //
-  ~VPERoot();
+    virtual WorkSpaceInfo* getWorkSpaceInfo() {
+	return this->EditorWorkSpace::getInfo();
+    }
 
-  //
-  // D E F I N E    R O O T    P A G E    B E H A V I O R
-  // D E F I N E    R O O T    P A G E    B E H A V I O R
-  //
-  virtual void setCursor( int cursorType )
-  {
-    this->EditorWorkSpace::setCursor( cursorType );
-    this->WorkSpaceRoot::setPageCursor( cursorType );
-  }
+    friend Boolean VPERoot_MoveWindowWP (XtPointer);
+    friend Boolean VPERoot_ShowWindowWP (XtPointer);
+    friend class UndoGrid;
 
-  virtual void resetCursor()
-  {
-    this->EditorWorkSpace::resetCursor();
-    this->WorkSpaceRoot::resetPageCursor();
-  }
+  public:
 
-  virtual void resize()
-  {
-    this->WorkSpaceRoot::resizeWorkSpace();
-  }
+    //
+    // Constructor:
+    //
+    VPERoot(const char *name, Widget parent, 
+	WorkSpaceInfo *info, EditorWindow *editor, PageSelector* selector) : 
+	EditorWorkSpace(name, parent, info, editor), WorkSpaceRoot() {
+	this->selector = selector;
+	this->move_wpid = NUL(XtWorkProcId);
+	this->show_wpid = NUL(XtWorkProcId);
+	this->to_be_shown = NUL(EditorWorkSpace*);
+    }
+ 
+    //
+    // Destructor:
+    //
+    ~VPERoot();
 
-  virtual void showWorkSpace( int );
-  virtual void showWorkSpace( WorkSpace* ws )
-  {
-    this->WorkSpaceRoot::showWorkSpace( ws );
-  }
+    //
+    // D E F I N E    R O O T    P A G E    B E H A V I O R
+    // D E F I N E    R O O T    P A G E    B E H A V I O R
+    //
+    virtual void setCursor(int cursorType) {
+	this->EditorWorkSpace::setCursor(cursorType);
+	this->WorkSpaceRoot::setPageCursor(cursorType);
+    }
 
-  virtual void installInfo( WorkSpaceInfo* info );
+    virtual void resetCursor() {
+	this->EditorWorkSpace::resetCursor();
+	this->WorkSpaceRoot::resetPageCursor();
+    }
 
-  virtual void beginManyPlacements()
-  {
-    this->EditorWorkSpace::beginManyPlacements();
-    this->WorkSpaceRoot::beginManyPagePlacements();
-  }
+    virtual void resize() {
+	this->WorkSpaceRoot::resizeWorkSpace();
+    }
 
-  virtual void endManyPlacements()
-  {
-    this->EditorWorkSpace::endManyPlacements();
-    this->WorkSpaceRoot::endManyPagePlacements();
-  }
+    virtual void showWorkSpace (int);
+    virtual void showWorkSpace (WorkSpace* ws) { 
+	this->WorkSpaceRoot::showWorkSpace(ws); 
+    }
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassVPERoot;
-  }
-  virtual boolean isA( Symbol classname );
-  boolean isA( const char* classname );
+    virtual void installInfo (WorkSpaceInfo* info);
+
+    virtual void beginManyPlacements () {
+	this->EditorWorkSpace::beginManyPlacements();
+	this->WorkSpaceRoot::beginManyPagePlacements();
+    }
+
+    virtual void endManyPlacements () {
+	this->EditorWorkSpace::endManyPlacements();
+	this->WorkSpaceRoot::endManyPagePlacements();
+    }
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName() { return ClassVPERoot; }
+    virtual boolean isA (Symbol classname);
+    boolean isA (const char* classname);
 };
 
-#endif  // _VPERoot_h
+
+#endif // _VPERoot_h

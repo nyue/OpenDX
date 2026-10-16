@@ -9,58 +9,65 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
 #ifndef _OpenCommand_h
 #define _OpenCommand_h
+
 
 #include "OptionalPreActionCommand.h"
 
 #include <Xm/Xm.h>
 
-class Network;
-class DXApplication;
+class	Network;
+class   DXApplication;
 
 //
 // Class name definition:
 //
-#define ClassOpenCommand "OpenCommand"
+#define ClassOpenCommand	"OpenCommand"
+
 
 //
 // OpenCommand class definition:
-//
-class OpenCommand : public OptionalPreActionCommand
+//				
+class OpenCommand : public OptionalPreActionCommand 
 {
- private:
-  DXApplication* application;
+  private:
 
- protected:
-  //
-  // Implements the command:
+    DXApplication *application;
 
-  virtual boolean needsConfirmation();
-  virtual void doPreAction();
-  virtual boolean doIt( CommandInterface* ci );
+  protected:
+    //
+    // Implements the command:
 
- public:
-  //
-  // Constructor:
-  //
-  OpenCommand( const char* name, CommandScope* scope, boolean active,
-               DXApplication* app, Widget dialogParent = NULL );
+    virtual boolean needsConfirmation();
+    virtual void    doPreAction();
+    virtual boolean doIt(CommandInterface *ci);
 
-  //
-  // Destructor:
-  //
-  ~OpenCommand()
-  {
-  }
+  public:
+    //
+    // Constructor:
+    //
+    OpenCommand(const char*   name,
+                        CommandScope* scope,
+                        boolean       active,
+			DXApplication *app,
+			Widget dialogParent = NULL);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassOpenCommand;
-  }
+    //
+    // Destructor:
+    //
+    ~OpenCommand(){}
+
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassOpenCommand;
+    }
 };
 
-#endif  // _OpenCommand_h
+
+#endif // _OpenCommand_h

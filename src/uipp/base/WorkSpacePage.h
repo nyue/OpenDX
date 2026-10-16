@@ -9,12 +9,16 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _WorkSpacePage_h
 #define _WorkSpacePage_h
 
 #include "Base.h"
 #include "WorkSpaceRoot.h"
 #include "SymbolManager.h"
+
 
 //
 // Class name definition:
@@ -25,43 +29,38 @@ class WorkSpaceRoot;
 
 //
 // WorkSpace class definition:
-//
+//				
 class WorkSpacePage : public Base
 {
- private:
-  WorkSpaceRoot* root_workspace;
+  private:
+    WorkSpaceRoot* root_workspace;
 
- protected:
-  WorkSpacePage( WorkSpaceRoot* root )
-  {
-    this->root_workspace = root;
-  }
+  protected:
 
-  WorkSpaceRoot* getWorkSpaceRoot()
-  {
-    return this->root_workspace;
-  }
+    WorkSpacePage(WorkSpaceRoot* root) {
+	this->root_workspace = root;
+    }
 
- public:
-  ~WorkSpacePage()
-  {
-  }
+    WorkSpaceRoot* getWorkSpaceRoot() { return this->root_workspace; }
 
-  const char* getClassName()
-  {
-    return ClassWorkSpacePage;
-  }
+  public:
+    ~WorkSpacePage() { }
+  
+    const char* getClassName() { return ClassWorkSpacePage; }
 
-  virtual boolean isA( Symbol classname )
-  {
-    Symbol s = theSymbolManager->registerSymbol( ClassWorkSpacePage );
-    return ( s == classname );
-  }
-  boolean isA( const char* classname )
-  {
-    Symbol s = theSymbolManager->registerSymbol( classname );
-    return this->isA( s );
-  }
+    virtual boolean isA (Symbol classname) {
+	Symbol s = theSymbolManager->registerSymbol(ClassWorkSpacePage);
+	return (s == classname);
+    }
+    boolean isA (const char* classname) {
+	Symbol s = theSymbolManager->registerSymbol(classname);
+	return this->isA(s);
+    }
 };
 
-#endif  // _WorkSpacePage_h
+
+#endif // _WorkSpacePage_h
+
+
+
+

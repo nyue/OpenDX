@@ -9,20 +9,26 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
 #include "DisplayDefinition.h"
 #include "DisplayNode.h"
 
 NodeDefinition *DisplayDefinition::AllocateDefinition()
 {
-  return new DisplayDefinition;
+    return new DisplayDefinition;
 }
 
-DisplayDefinition::DisplayDefinition() : DrivenDefinition()
+
+DisplayDefinition::DisplayDefinition() : 
+    DrivenDefinition()
 {
 }
 
-Node *DisplayDefinition::newNode( Network *net, int instance )
+
+Node *DisplayDefinition::newNode(Network *net, int instance)
 {
-  DisplayNode *d = new DisplayNode( this, net, instance );
-  return d;
+    DisplayNode *d = new DisplayNode(this, net, instance);
+    return d;
 }
+

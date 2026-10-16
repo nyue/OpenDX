@@ -9,8 +9,12 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _NoUndoAnchorCommand_h
 #define _NoUndoAnchorCommand_h
+
 
 #include "NoUndoCommand.h"
 
@@ -19,54 +23,55 @@ typedef long AnchorCommandType;
 //
 // Class name definition:
 //
-#define ClassNoUndoAnchorCommand "NoUndoAnchorCommand"
+#define ClassNoUndoAnchorCommand	"NoUndoAnchorCommand"
 
 class DXAnchorWindow;
 
 //
 // NoUndoAnchorCommand class definition:
-//
+//				
 class NoUndoAnchorCommand : public NoUndoCommand
 {
+    
+  protected:
+    //
+    // Protected member data:
+    //
+    DXAnchorWindow *anchorWindow;
+    AnchorCommandType commandType;
+ 
+    virtual boolean doIt(CommandInterface *ci);
 
- protected:
-  //
-  // Protected member data:
-  //
-  DXAnchorWindow *anchorWindow;
-  AnchorCommandType commandType;
+  public:
+    //
+    // Constructor:
+    //
+    NoUndoAnchorCommand(const char*   name,
+                   CommandScope  *scope,
+                   boolean       active,
+		   DXAnchorWindow  *fw,
+		   AnchorCommandType comType);
 
-  virtual boolean doIt( CommandInterface *ci );
+    //
+    // Destructor:
+    //
+    ~NoUndoAnchorCommand(){}
 
- public:
-  //
-  // Constructor:
-  //
-  NoUndoAnchorCommand( const char *name, CommandScope *scope, boolean active,
-                       DXAnchorWindow *fw, AnchorCommandType comType );
-
-  //
-  // Destructor:
-  //
-  ~NoUndoAnchorCommand()
-  {
-  }
-
-  //
-  // These are the various operations that the NoUndoAnchorCommand can
-  // implement on behalf of a DXAnchorWidnow.
-  //
-  enum
-  {
-    OpenVPE = 4  // Open an editor on theDXApplication->network
-  };
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassNoUndoAnchorCommand;
-  }
+    // 
+    // These are the various operations that the NoUndoAnchorCommand can 
+    // implement on behalf of a DXAnchorWidnow.
+    // 
+    enum {
+	OpenVPE	        = 4	// Open an editor on theDXApplication->network
+    };
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassNoUndoAnchorCommand;
+    }
 };
 
-#endif  // _NoUndoAnchorCommand_h
+
+#endif // _NoUndoAnchorCommand_h

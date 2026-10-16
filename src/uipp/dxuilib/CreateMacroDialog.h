@@ -9,8 +9,12 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _CreateMacroDialog_h
 #define _CreateMacroDialog_h
+
 
 #include "Dialog.h"
 #include "SetMacroNameDialog.h"
@@ -19,78 +23,84 @@
 //
 // Class name definition:
 //
-#define ClassCreateMacroDialog "CreateMacroDialog"
+#define ClassCreateMacroDialog	"CreateMacroDialog"
 
 class EditorWindow;
 
-extern "C" void CreateMacroDialog_fsdButtonCB( Widget w, XtPointer clientData,
-                                               XtPointer callData );
+extern "C" void CreateMacroDialog_fsdButtonCB(Widget w,
+					   XtPointer clientData,
+					   XtPointer callData);
 
 //
 // CreateMacroDialog class definition:
-//
-class CreateMacroDialog : public SetMacroNameDialog
+//				
+class CreateMacroDialog : public SetMacroNameDialog 
 {
- private:
-  //
-  // Private member data:
-  //
-  static boolean ClassInitialized;
-  static void ConfirmationCancel( void *data );
-  static void ConfirmationOk( void *data );
-  EditorWindow *editor;
+  private:
+    //
+    // Private member data:
+    //
+    static boolean ClassInitialized;
+    static void ConfirmationCancel(void *data);
+    static void ConfirmationOk(void *data);
+    EditorWindow *editor;
 
- protected:
-  //
-  // Protected member data:
-  //
-  static String DefaultResources[];
+  protected:
+    //
+    // Protected member data:
+    //
+    static String DefaultResources[];
+    
+    Widget filename;
+    TextFile *textFile;
 
-  Widget filename;
-  TextFile *textFile;
+    virtual boolean okCallback(Dialog *d);
+    
+    virtual boolean createMacro();
 
-  virtual boolean okCallback( Dialog *d );
+    virtual Widget createDialog(Widget parent);
 
-  virtual boolean createMacro();
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
-  virtual Widget createDialog( Widget parent );
+  public:
+    //
+    // Constructor:
+    //
+    CreateMacroDialog(Widget parent, EditorWindow *e);
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+    //
+    // Destructor:
+    //
+    ~CreateMacroDialog();
+	
+    //
+    // Set method to be called be FileSelector
+    //
+    virtual void setFileName(const char *filename);
 
- public:
-  //
-  // Constructor:
-  //
-  CreateMacroDialog( Widget parent, EditorWindow *e );
+    // 
+    // Manage the Dialog
+    //
 
-  //
-  // Destructor:
-  //
-  ~CreateMacroDialog();
+    virtual void manage();
 
-  //
-  // Set method to be called be FileSelector
-  //
-  virtual void setFileName( const char *filename );
-
-  //
-  // Manage the Dialog
-  //
-
-  virtual void manage();
-
-  //
-  // Returns a pointer to the class name.
-  //
-  virtual const char *getClassName()
-  {
-    return ClassCreateMacroDialog;
-  }
+    //
+    // Returns a pointer to the class name.
+    //
+    virtual const char* getClassName()
+    {
+	return ClassCreateMacroDialog;
+    }
 };
 
-#endif  // _CreateMacroDialog_h
+
+#endif // _CreateMacroDialog_h
+
+
+
+

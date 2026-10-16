@@ -8,6 +8,7 @@
 
 #include <dxconfig.h>
 
+
 #ifndef _NON_IMP_CHOICE_H
 #define _NON_IMP_CHOICE_H
 
@@ -18,36 +19,37 @@
 class ButtonInterface;
 class NonimportableChoice;
 
-class NonimportableChoice : public TypeChoice
-{
- private:
- protected:
-  static String DefaultResources[];
+class NonimportableChoice : public TypeChoice {
+    private:
 
-  virtual void setAttachments( ButtonInterface**, int, Widget );
+    protected:
 
-  NonimportableChoice( const char* name, boolean browsable, boolean testable,
-                       boolean visualizable, boolean prompterable,
-                       GARChooserWindow* gcw, Symbol sym )
-      : TypeChoice( name, browsable, testable, visualizable, prompterable, gcw,
-                    sym )
-  {
-  }
+	static String	DefaultResources[];
 
- public:
-  ~NonimportableChoice()
-  {
-  }
+	virtual void	setAttachments(ButtonInterface**, int, Widget);
 
-  virtual int getMinWidth()
-  {
-    return ( VERTICAL_LAYOUT ? 440 : 675 );
-  }
+	NonimportableChoice (
+	    const char*		name,
+	    boolean		browsable,
+	    boolean		testable,
+	    boolean		visualizable,
+	    boolean		prompterable,
+	    GARChooserWindow*	gcw,
+	    Symbol		sym
+	) : TypeChoice (name, browsable, testable, visualizable, prompterable, gcw, sym)
+	{}
 
-  const char* getClassName()
-  {
-    return ClassNonimportableChoice;
-  }
+    public:
+
+	~NonimportableChoice(){}
+
+	virtual int		getMinWidth() 
+	    { return (VERTICAL_LAYOUT?440:675) ;}
+
+	const char *	getClassName() {
+	    return ClassNonimportableChoice;
+	}
+
 };
 
 #endif  // _NON_IMP_CHOICE_H

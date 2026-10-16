@@ -9,8 +9,13 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
+
 #ifndef _ApplyFileDialog_h
 #define _ApplyFileDialog_h
+
 
 #include "FileDialog.h"
 
@@ -19,60 +24,60 @@
 //
 // Class name definition:
 //
-#define ClassApplyFileDialog "ApplyFileDialog"
+#define ClassApplyFileDialog	"ApplyFileDialog"
+
 
 //
 // ApplyFileDialog class definition:
-//
+//				
 class ApplyFileDialog : public FileDialog
 {
-  static boolean ClassInitialized;
+    static boolean ClassInitialized;
 
- protected:
-  static String DefaultResources[];
+  protected:
 
-  //
-  // Call super class and then set the dialog title and the dirMask resource.
-  //
-  virtual Widget createDialog( Widget parent );
+    static String  DefaultResources[];
 
-  //
-  // Used to call this->okFileWork().
-  //
-  virtual void helpCallback( Dialog* d );
+    //
+    // Call super class and then set the dialog title and the dirMask resource. 
+    //
+    virtual Widget createDialog(Widget parent);
 
-  //
-  // Constructor: for derived classes
-  //
-  ApplyFileDialog( const char* name, Widget parent );
+    //
+    // Used to call this->okFileWork().
+    //
+    virtual void helpCallback(Dialog *d);
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+    //
+    // Constructor: for derived classes
+    //
+    ApplyFileDialog(const char*   name, Widget        parent);
 
- public:
-  //
-  // Constructor:
-  //
-  ApplyFileDialog( Widget parent );
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
-  //
-  // Destructor:
-  //
-  ~ApplyFileDialog()
-  {
-  }
+  public:
+    //
+    // Constructor:
+    //
+    ApplyFileDialog(Widget        parent);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassApplyFileDialog;
-  }
+    //
+    // Destructor:
+    //
+    ~ApplyFileDialog(){}
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassApplyFileDialog;
+    }
 };
 
-#endif  // _ApplyFileDialog_h
+#endif // _ApplyFileDialog_h

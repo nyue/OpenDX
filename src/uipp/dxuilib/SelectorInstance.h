@@ -9,8 +9,13 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _SelectorInstance_h
 #define _SelectorInstance_h
+
+
 
 #include "DXStrings.h"
 #include "SelectorNode.h"
@@ -18,43 +23,39 @@
 
 class SelectorInteractor;
 
+
 //
 // Class name definition:
 //
-#define ClassSelectorInstance "SelectorInstance"
+#define ClassSelectorInstance	"SelectorInstance"
+
 
 //
 // Describes an instance of an interactor in a control Panel.
 //
-class SelectorInstance : public SelectionInstance
-{
+class SelectorInstance : public SelectionInstance {
 
- private:
- protected:
-  virtual const char* javaName()
-  {
-    return "pdown";
-  }
+  private:
 
- public:
-  SelectorInstance( InteractorNode* node ) : SelectionInstance( node )
-  {
-  }
 
-  ~SelectorInstance()
-  {
-  }
+  protected:
 
-  int getSelectedOptionIndex();
+    virtual const char* javaName() { return "pdown"; }
 
-  void setSelectedOptionIndex( int index, boolean update_outputs = TRUE );
+  public:
+    SelectorInstance(InteractorNode *node) : SelectionInstance(node) {}
+	
+    ~SelectorInstance()  {}
 
-  virtual boolean printAsJava( FILE* );
+    int 	getSelectedOptionIndex();
 
-  const char* getClassName()
-  {
-    return ClassSelectorInstance;
-  }
+    void setSelectedOptionIndex(int index, boolean update_outputs = TRUE);
+
+    virtual boolean printAsJava(FILE* );
+
+    const char *getClassName() 
+		{ return ClassSelectorInstance; }
 };
 
-#endif  // _SelectorInstance_h
+#endif // _SelectorInstance_h
+

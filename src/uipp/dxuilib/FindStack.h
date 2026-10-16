@@ -9,45 +9,46 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
 #ifndef _FindStack_h
 #define _FindStack_h
 
+
 #include "Stack.h"
+
 
 //
 // Class name definition:
 //
-#define ClassFindStack "FindStack"
+#define ClassFindStack	"FindStack"
 
 //
 // FindStack class definition:
-//
-class FindStack : protected Stack
+//				
+class FindStack : protected Stack 
 {
 
- public:
-  FindStack() : Stack() {};
+  public:
 
-  ~FindStack()
-  {
-    this->clear();
-  };
+    FindStack() : Stack() { };
 
-  void push( char* name, int instance, char* label );
+    ~FindStack() { this->clear(); };
 
-  boolean pop( char* name, int* instance, char* label );
+    void push(char* name, int instance, char *label);
 
-  void clear();
+    boolean pop(char* name, int* instance, char *label);
+    
+    void clear();
 
-  int getSize()
-  {
-    return this->Stack::getSize();
-  }
+    int getSize() { return this->Stack::getSize(); }
 
-  const char* getClassName()
-  {
-    return ClassFindStack;
-  }
-};
+    const char* getClassName()
+    {
+        return ClassFindStack;
+    }
+}; 
 
-#endif  // _FindStack_h
+
+
+#endif // _FindStack_h

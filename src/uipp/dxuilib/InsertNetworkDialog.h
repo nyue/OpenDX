@@ -9,60 +9,67 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
 #ifndef _InsertNetworkDialog_h
 #define _InsertNetworkDialog_h
+
 
 #include "FileDialog.h"
 #include "OpenNetworkDialog.h"
 #include "Application.h"
 
+
 //
 // Class name definition:
 //
-#define ClassInsertNetworkDialog "InsertNetworkDialog"
+#define ClassInsertNetworkDialog	"InsertNetworkDialog"
+
 
 //
 // InsertNetworkDialog class definition:
-//
-class InsertNetworkDialog : public OpenNetworkDialog
+//				
+class InsertNetworkDialog: public OpenNetworkDialog 
 {
-  static boolean ClassInitialized;
+    static boolean ClassInitialized;
 
- protected:
-  static String DefaultResources[];
+  protected:
 
-  virtual void okFileWork( const char* string );
+    static String  DefaultResources[];
 
-  //
-  // For sub-classes of this dialog
-  //
-  InsertNetworkDialog( const char* name, Widget parent );
+    virtual void okFileWork(const char *string);
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+    //
+    // For sub-classes of this dialog
+    //
+    InsertNetworkDialog(const char*   name, Widget        parent);
 
- public:
-  //
-  // Constructor:
-  //
-  InsertNetworkDialog( Widget parent );
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
-  //
-  // Destructor:
-  //
-  ~InsertNetworkDialog();
+  public:
+    //
+    // Constructor:
+    //
+    InsertNetworkDialog(Widget        parent);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassInsertNetworkDialog;
-  }
+
+    //
+    // Destructor:
+    //
+    ~InsertNetworkDialog();
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassInsertNetworkDialog;
+    }
 };
 
-#endif  // _InsertNetworkDialog_h
+
+#endif // _InsertNetworkDialog_h

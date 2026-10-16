@@ -8,6 +8,7 @@
 
 #include <dxconfig.h>
 
+
 #ifndef _IMPORTABLE_CHOICE_H
 #define _IMPORTABLE_CHOICE_H
 
@@ -19,40 +20,41 @@
 class ToggleButtonInterface;
 class GARChooserWindow;
 
-class ImportableChoice : public TypeChoice
-{
- private:
-  static boolean ClassInitialized;
+class ImportableChoice : public TypeChoice {
+    private:
+	static boolean	ClassInitialized;
 
- protected:
-  static String DefaultResources[];
+    protected:
 
-  virtual int expandedHeight()
-  {
-    return ( VERTICAL_LAYOUT ? 80 : 30 );
-  }
+	static String	DefaultResources[];
 
-  ImportableChoice( const char* name, boolean browsable, boolean testable,
-                    boolean visualizable, boolean prompterable,
-                    GARChooserWindow* gcw, Symbol sym );
+	virtual int	expandedHeight() 
+	    { return (VERTICAL_LAYOUT?80:30); }
 
- public:
-  ~ImportableChoice() {};
+	ImportableChoice (
+	    const char*         name,
+	    boolean             browsable,
+	    boolean             testable,
+	    boolean             visualizable,
+	    boolean             prompterable,
+	    GARChooserWindow*   gcw,
+	    Symbol              sym
+	);
 
-  virtual const char* getActiveHelpMsg();
-  virtual int getMinWidth()
-  {
-    return ( VERTICAL_LAYOUT ? 410 : 575 );
-  }
-  virtual boolean hasSettings()
-  {
-    return TRUE;
-  }
+    public:
 
-  const char* getClassName()
-  {
-    return ClassImportableChoice;
-  }
+	~ImportableChoice(){};
+
+	virtual const char*	getActiveHelpMsg();
+	virtual int		getMinWidth() 
+	    { return (VERTICAL_LAYOUT?410:575); }
+	virtual boolean		hasSettings() { return TRUE; }
+
+	const char *	getClassName() {
+	    return ClassImportableChoice;
+	}
+
 };
 
 #endif  // _IMPORTABLE_CHOICE_H
+

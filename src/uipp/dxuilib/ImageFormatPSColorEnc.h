@@ -8,65 +8,57 @@
 
 #include <dxconfig.h>
 
+
 #ifndef _ImageFormatPSColorEnc_h
 #define _ImageFormatPSColorEnc_h
+
 
 #include "PostScriptImageFormat.h"
 
 //
 // Class name definition:
 //
-#define ClassImageFormatPSColorEnc "ImageFormatPSColorEnc"
+#define ClassImageFormatPSColorEnc	"ImageFormatPSColorEnc"
 
 //
 // SaveImageDialog class definition:
-//
+//				
 class ImageFormatPSColorEnc : public PostScriptImageFormat
 {
- private:
-  static String DefaultResources[];
-  static boolean ClassInitialized;
+  private:
 
- protected:
-  virtual void initialize();
+    static String  DefaultResources[];
+    static boolean ClassInitialized;
 
- public:
-  //
-  // Constructor:
-  //
-  ImageFormatPSColorEnc( ImageFormatDialog* dialog );
+  protected:
 
-  static ImageFormat* Allocator( ImageFormatDialog* dialog )
-  {
-    return new ImageFormatPSColorEnc( dialog );
-  }
+    virtual void	initialize();
 
-  //
-  // Destructor:
-  //
-  ~ImageFormatPSColorEnc();
+  public:
 
-  virtual const char* paramString()
-  {
-    return "eps color";
-  }
-  virtual const char* menuString()
-  {
-    return "Color PostScript (enc)";
-  }
-  virtual const char* fileExtension()
-  {
-    return ".epsf";
-  }
+    //
+    // Constructor:
+    //
+    ImageFormatPSColorEnc(ImageFormatDialog *dialog);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassImageFormatPSColorEnc;
-  }
-  virtual boolean isA( Symbol classname );
+    static ImageFormat* Allocator (ImageFormatDialog* dialog) 
+	{ return  new ImageFormatPSColorEnc(dialog); }
+
+    //
+    // Destructor:
+    //
+    ~ImageFormatPSColorEnc();
+
+    virtual const char*		paramString() { return "eps color"; }
+    virtual const char*		menuString() { return "Color PostScript (enc)"; }
+    virtual const char*		fileExtension() { return ".epsf"; }
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName() { return ClassImageFormatPSColorEnc; }
+    virtual boolean isA(Symbol classname);
 };
 
-#endif  // _ImageFormatPSColorEnc_h
+
+#endif // _ImageFormatPSColorEnc_h

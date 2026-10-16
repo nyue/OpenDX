@@ -9,127 +9,130 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _PanelAccessManager_h
 #define _PanelAccessManager_h
+
 
 #include <stdio.h>
 
 #include "Base.h"
 #include "List.h"
 
+
 //
 // Class name definition:
 //
-#define ClassPanelAccessManager "PanelAccessManager"
+#define ClassPanelAccessManager	"PanelAccessManager"
 
 class Network;
 class ControlPanel;
 
+
 //
 // PanelAccessManager class definition:
-//
+//				
 class PanelAccessManager : public Base
 {
- private:
-  //
-  // Private member data:
-  //
+  private:
+    //
+    // Private member data:
+    //
 
-  //
-  // This is a list of panels that can NOT be opened.
-  // We make it private, because it does not get notification when
-  // panels are deleted.  Instead we implement the access methods
-  // which make sure the panels being operated on are still in the
-  // network.
-  //
-  List inaccessiblePanels;
-  List inaccessibleGroups;
+    //
+    // This is a list of panels that can NOT be opened. 
+    // We make it private, because it does not get notification when
+    // panels are deleted.  Instead we implement the access methods
+    // which make sure the panels being operated on are still in the
+    // network.
+    //
+    List inaccessiblePanels;
+    List inaccessibleGroups;
 
- protected:
-  //
-  // Protected member data:
-  //
-  Network *network;
-  ControlPanel *cp;
-  boolean isActive;
+  protected:
+    //
+    // Protected member data:
+    //
+    Network *network;
+    ControlPanel *cp;
+    boolean 	isActive;
 
-  //
-  // Enable/disable the manager.
-  //
-  void activate();
-  void deactivate();
 
- public:
-  //
-  // Constructor:
-  //
-  PanelAccessManager( Network *n, ControlPanel *cp = NULL );
+    //
+    // Enable/disable the manager.
+    //
+    void activate();
+    void deactivate(); 
 
-  //
-  // Destructor:
-  //
-  ~PanelAccessManager();
+  public:
+    //
+    // Constructor:
+    //
+    PanelAccessManager(Network *n, ControlPanel *cp = NULL);
 
-  Network *getNetwork()
-  {
-    return this->network;
-  };
-  ControlPanel *getControlPanel()
-  {
-    return this->cp;
-  };
+    //
+    // Destructor:
+    //
+    ~PanelAccessManager();
 
-  //
-  // Parse/Print a control panel's 'inaccessible' comment.
-  //
-  boolean cfgParseInaccessibleComment( const char *comment,
-                                       const char *filename, int lineno );
-  boolean cfgPrintInaccessibleComment( FILE *f );
+    Network *getNetwork() { return this->network; };
+    ControlPanel *getControlPanel() { return this->cp; };
 
-  //
-  // Return TRUE if cfgPrintInaccessibleComment needs to be called.
-  //
-  boolean hasCfgComment();
+    //
+    // Parse/Print a control panel's 'inaccessible' comment.
+    //
+    boolean cfgParseInaccessibleComment(const char *comment,
+                                const char *filename, int lineno);
+    boolean cfgPrintInaccessibleComment(FILE *f);
 
-  //
-  // Add a panel (specified by instance number) to the list of inaccessible
-  // panels.
-  //
-  void addInaccessiblePanel( int instance );
-  void addInaccessibleGroup( const char *name );
+    //
+    // Return TRUE if cfgPrintInaccessibleComment needs to be called.
+    //
+    boolean hasCfgComment();
 
-  //
-  // Allow access to all panels.
-  //
-  void allowAllPanelAccess();
-  void allowAllGroupAccess();
+ 
+    //
+    // Add a panel (specified by instance number) to the list of inaccessible
+    // panels.
+    //
+    void        addInaccessiblePanel(int instance);
+    void        addInaccessibleGroup(const char *name);
 
-  //
-  // Free memory allow all panels/groups acess and deactivate().
-  //
-  void clear();
+    //
+    // Allow access to all panels.
+    //
+    void        allowAllPanelAccess();
+    void        allowAllGroupAccess();
 
-  //
-  // Get the index'th (1 based) inaccessible panel.
-  //
-  ControlPanel *getInaccessiblePanel( int index );
-  const char *getInaccessibleGroup( int index );
+    //
+    // Free memory allow all panels/groups acess and deactivate().
+    //
+    void 	clear();
 
-  //
-  // Determine if the given panel (specified by instance number) is accessible
-  //
-  boolean isAccessiblePanel( int instanceNumber );
-  boolean isAccessibleGroup( const char *name );
+    //
+    // Get the index'th (1 based) inaccessible panel.
+    //
+    ControlPanel *getInaccessiblePanel(int index);
+    const char   *getInaccessibleGroup(int index);
 
-  boolean isActivated();
+    //
+    // Determine if the given panel (specified by instance number) is accessible
+    //
+    boolean     isAccessiblePanel(int instanceNumber);
+    boolean     isAccessibleGroup(const char* name);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassPanelAccessManager;
-  }
+    boolean isActivated();
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassPanelAccessManager;
+    }
 };
 
-#endif  // _PanelAccessManager_h
+
+#endif // _PanelAccessManager_h

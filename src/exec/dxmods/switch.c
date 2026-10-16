@@ -8,6 +8,8 @@
 
 #include <dxconfig.h>
 
+
+
 /***
 MODULE:
     Switch
@@ -31,11 +33,12 @@ END:
 #include <dx/dx.h>
 #define NARGS 22
 
-Error m_Switch( Object *in, Object *out )
+Error
+m_Switch (Object *in, Object *out)
 {
-  /* Switch module now handled entirely by the executive.  */
-  DXSetError( ERROR_INTERNAL, "#8015", "Switch" );
-  return ( ERROR );
+/* Switch module now handled entirely by the executive.  */
+    DXSetError(ERROR_INTERNAL, "#8015", "Switch");
+    return(ERROR);
 
 #if 0
     int i;
@@ -62,3 +65,4 @@ Error m_Switch( Object *in, Object *out )
     }
 #endif
 }
+

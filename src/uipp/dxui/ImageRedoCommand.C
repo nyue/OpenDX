@@ -9,18 +9,23 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #include "ImageRedoCommand.h"
 #include "ImageWindow.h"
 
-ImageRedoCommand::ImageRedoCommand( const char *name, CommandScope *scope,
-                                    boolean active, ImageWindow *w )
-    : NoUndoCommand( name, scope, active )
+ImageRedoCommand::ImageRedoCommand(const char   *name,
+						 CommandScope *scope,
+						 boolean       active,
+						 ImageWindow  *w):
+    NoUndoCommand(name, scope, active)
 {
-  this->imageWindow = w;
+    this->imageWindow = w;
 }
 
-boolean ImageRedoCommand::doIt( CommandInterface *ci )
+boolean ImageRedoCommand::doIt(CommandInterface *ci)
 {
-  this->imageWindow->redoCamera();
-  return TRUE;
+    this->imageWindow->redoCamera();
+    return TRUE;
 }

@@ -9,18 +9,23 @@
 #include <dxconfig.h>
 #include <defines.h>
 
+
+
+
+
 #include "RepeatingToggle.h"
 #include "Command.h"
 
-RepeatingToggle::RepeatingToggle( Widget parent, char* name, Command* command,
-                                  boolean state, const char* bubbleHelp )
-    : ToggleButtonInterface( parent, name, command, state, bubbleHelp )
+
+RepeatingToggle::RepeatingToggle(Widget parent, char* name, 
+    Command* command, boolean  state, const char *bubbleHelp):
+	ToggleButtonInterface(parent, name, command, state, bubbleHelp)
 {
 }
 
 void RepeatingToggle::activate()
 {
-  this->ToggleButtonInterface::activate();
-  if ( this->getState() )
-    this->command->execute();
+    this->ToggleButtonInterface::activate();
+    if (this->getState())
+	this->command->execute();
 }

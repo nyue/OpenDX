@@ -9,6 +9,9 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _DXPacketIF_h
 #define _DXPacketIF_h
 
@@ -19,66 +22,75 @@
 //
 // Class name definition:
 //
-#define ClassDXPacketIF "DXPacketIF"
+#define ClassDXPacketIF	"DXPacketIF"
 
 //
 // DXPacketIF class definition:
-//
+//				
 class DXPacketIF : public PacketIF
 {
- private:
- protected:
-  int id;
+  private:
 
-  //
-  // Routines to handle dxexec messages.
-  //
-  static void DXProcessMessage( void *clientData, int id, void *line );
-  static void DXProcessInformation( void *clientData, int id, void *line );
-  static void DXProcessError( void *clientData, int id, void *line );
-  static void DXProcessErrorWARNING( void *clientData, int id, void *line );
-  static void DXProcessErrorERROR( void *clientData, int id, void *p );
-  static void DXProcessCompletion( void *clientData, int id, void *line );
-  static void DXProcessInterrupt( void *clientData, int id, void *line );
-  static void DXProcessBeginExecNode( void *clientData, int id, void *line );
-  static void DXProcessEndExecNode( void *clientData, int id, void *line );
-  static void DXProcessLinkCommand( void *clientData, int id, void *p );
-  static void DXHandleServerError( void *clientData, char *message );
+  protected:
 
-  virtual void installLinkHandler();
+    int id;
 
- public:
-  //
-  // Constructor:
-  //
-  DXPacketIF( const char *server, int port, int local );
+    //
+    // Routines to handle dxexec messages.
+    //
+    static void DXProcessMessage(void *clientData, int id, void *line);
+    static void DXProcessInformation(void *clientData, int id, void *line);
+    static void DXProcessError(void *clientData, int id, void *line);
+    static void DXProcessErrorWARNING(void *clientData, int id, void *line);
+    static void DXProcessErrorERROR(void *clientData, int id, void *p);
+    static void DXProcessCompletion(void *clientData, int id, void *line);
+    static void DXProcessInterrupt(void *clientData, int id, void *line);
+    static void DXProcessBeginExecNode(void *clientData, int id, void *line);
+    static void DXProcessEndExecNode(void *clientData, int id, void *line);
+    static void DXProcessLinkCommand(void *clientData, int id, void *p);
+    static void DXHandleServerError(void *clientData, char *message);
 
-  //
-  // Initializer
-  //
-  virtual void initializePacketIO();
+    virtual void installLinkHandler();
 
-  int send( int type, const char *data = NULL,
-            PacketHandlerCallback callback = NULL, void *clientData = NULL );
-  //
-  // Routine to format a message and send it
-  //
-  int sendFormat( const int type, const char *fmt, ... );
+  public:
+    //
+    // Constructor:
+    //
+    DXPacketIF(const char *server, int port, int local);
 
-  int sendMacroStart( PacketHandlerCallback callback = NULL,
-                      void *clientData = NULL );
-  void sendMacroEnd();
 
-  void setWaiter( int type, int number, PacketHandlerCallback callback,
-                  void *clientData );
+    //
+    // Initializer
+    //
+    virtual void initializePacketIO();
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassDXPacketIF;
-  }
+    int send(int                   type,
+             const char*           data = NULL,
+             PacketHandlerCallback callback = NULL,
+             void*                 clientData = NULL);
+     //
+     // Routine to format a message and send it
+     //
+    int sendFormat(const int type, const char *fmt, ...);
+
+
+    int sendMacroStart(PacketHandlerCallback callback = NULL,
+                       void*                 clientData = NULL);
+    void sendMacroEnd();
+
+    void setWaiter(int type,
+                   int number,
+                   PacketHandlerCallback callback,
+                   void *clientData);
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassDXPacketIF;
+    }
 };
 
-#endif  // _DXPacketIF_h
+
+#endif // _DXPacketIF_h

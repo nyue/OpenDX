@@ -9,24 +9,33 @@
 #include <dxconfig.h>
 #include <defines.h>
 
+
+
+
 #include "MainWindow.h"
 #include "CloseWindowCommand.h"
 
-CloseWindowCommand::CloseWindowCommand( const char* name, CommandScope* scope,
-                                        boolean active, MainWindow* window )
-    : NoUndoCommand( name, scope, active )
-{
-  ASSERT( window );
 
-  //
-  // Save the associated window.
-  //
-  this->window = window;
+CloseWindowCommand::CloseWindowCommand(const char*   name,
+				       CommandScope* scope,
+				       boolean       active,
+				       MainWindow*   window):
+	NoUndoCommand(name, scope, active)
+{
+    ASSERT(window);
+
+    //
+    // Save the associated window.
+    //
+    this->window = window;
 }
 
-boolean CloseWindowCommand::doIt( CommandInterface* ci )
-{
-  this->window->closeWindow();
 
-  return TRUE;
+boolean CloseWindowCommand::doIt(CommandInterface *ci)
+{
+    this->window->closeWindow();
+
+    return TRUE;
 }
+
+

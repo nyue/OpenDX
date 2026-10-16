@@ -9,6 +9,8 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
 #include <Xm/Xm.h>
 
 #include "Application.h"
@@ -16,26 +18,29 @@
 
 boolean OpenNetCommentDialog::ClassInitialized = FALSE;
 
-String OpenNetCommentDialog::DefaultResources[] = {
-    "*dialogTitle:		Application Comment...",
-    "*nameLabel.labelString:	Application Comment:",
-    //
-    // These two must match what is in SetNetworkCommentDialog
-    //
-    "*editorText.columns:           45",
-    "*editorText.rows:              16",
-    NULL};
-
-OpenNetCommentDialog::OpenNetCommentDialog( Widget parent )
-    : TextEditDialog( "openNetComment", parent, TRUE )
+String OpenNetCommentDialog::DefaultResources[] =
 {
-  this->dialogModality = XmDIALOG_APPLICATION_MODAL;
+       "*dialogTitle:		Application Comment..." ,
+       "*nameLabel.labelString:	Application Comment:" ,
+        //
+        // These two must match what is in SetNetworkCommentDialog
+        //
+        "*editorText.columns:           45",  
+        "*editorText.rows:              16",
 
-  if ( NOT OpenNetCommentDialog::ClassInitialized )
-  {
-    OpenNetCommentDialog::ClassInitialized = TRUE;
-    this->installDefaultResources( theApplication->getRootWidget() );
-  }
+	NULL
+};
+
+OpenNetCommentDialog::OpenNetCommentDialog(Widget parent)
+			: TextEditDialog("openNetComment", parent, TRUE)
+{
+    this->dialogModality = XmDIALOG_APPLICATION_MODAL;
+
+    if (NOT OpenNetCommentDialog::ClassInitialized)
+    {
+        OpenNetCommentDialog::ClassInitialized = TRUE;
+	this->installDefaultResources(theApplication->getRootWidget());
+    }
 }
 
 OpenNetCommentDialog::~OpenNetCommentDialog()
@@ -45,9 +50,9 @@ OpenNetCommentDialog::~OpenNetCommentDialog()
 //
 // Install the default resources for this class.
 //
-void OpenNetCommentDialog::installDefaultResources( Widget baseWidget )
+void OpenNetCommentDialog::installDefaultResources(Widget  baseWidget)
 {
-  this->setDefaultResources( baseWidget,
-                             OpenNetCommentDialog::DefaultResources );
-  this->TextEditDialog::installDefaultResources( baseWidget );
+    this->setDefaultResources(baseWidget,
+				OpenNetCommentDialog::DefaultResources);
+    this->TextEditDialog::installDefaultResources( baseWidget);
 }

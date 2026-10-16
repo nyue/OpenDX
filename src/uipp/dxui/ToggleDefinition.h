@@ -9,6 +9,7 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
 #ifndef _ToggleDefinition_h
 #define _ToggleDefinition_h
 
@@ -16,69 +17,63 @@
 
 #include "InteractorDefinition.h"
 
+
 //
 // Class name definition:
 //
-#define ClassToggleDefinition "ToggleDefinition"
+#define ClassToggleDefinition	"ToggleDefinition"
 
 //
-// Forward definitions
+// Forward definitions 
 //
 class ParameterDefinition;
 class Interactor;
 
 //
 // ToggleDefinition class definition:
-//
-class ToggleDefinition : public InteractorDefinition
+//				
+class ToggleDefinition : public InteractorDefinition 
 {
- private:
- protected:
-  //
-  // Protected member data:
-  //
+  private:
+	
+  protected:
+    //
+    // Protected member data:
+    //
 
-  //
-  // Allocate a new Node of the corresponding type.
-  //
-  virtual Node *newNode( Network *net, int instance = -1 );
+    //
+    // Allocate a new Node of the corresponding type.
+    //
+    virtual Node *newNode(Network *net, int instance = -1); 
 
- public:
-  //
-  // Constructor:
-  //
-  ToggleDefinition()
-  {
-  }
+  public:
+    //
+    // Constructor:
+    //
+    ToggleDefinition() { }
 
-  //
-  // Destructor:
-  //
-  ~ToggleDefinition()
-  {
-  }
+    //
+    // Destructor:
+    //
+    ~ToggleDefinition() { }
+	
+    //
+    // Allocate a new ToggleDefinition.  
+    // This function is intended to be used as an allocator in
+    // theNDAllocatorDictionary.
+    //
+    static NodeDefinition *AllocateDefinition();
 
-  //
-  // Allocate a new ToggleDefinition.
-  // This function is intended to be used as an allocator in
-  // theNDAllocatorDictionary.
-  //
-  static NodeDefinition *AllocateDefinition();
-
-#if SYSTEM_MACROS  // 3/13/95 not yet
-  virtual const char *getExecModuleNameString()
-  {
-    return "ToggleMacro";
-  }
+#if SYSTEM_MACROS // 3/13/95 not yet
+    virtual const char *getExecModuleNameString() { return "ToggleMacro"; }
 #endif
 
-  //
-  // Returns a pointer to the class name.
-  //
-  virtual const char *getClassName()
-  {
-    return ClassToggleDefinition;
-  }
+    //
+    // Returns a pointer to the class name.
+    //
+    virtual const char* getClassName() 
+		{ return ClassToggleDefinition; }
 };
 
-#endif  // _ToggleDefinition_h
+
+#endif // _ToggleDefinition_h

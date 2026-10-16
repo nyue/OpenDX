@@ -9,6 +9,10 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
+
 #include "DXStrings.h"
 #include "Application.h"
 #include "TextFileFileDialog.h"
@@ -18,38 +22,51 @@
 
 boolean TextFileFileDialog::ClassInitialized = FALSE;
 
-String TextFileFileDialog::DefaultResources[] = {
-    "*dialogTitle:     Save Macro As File...", "*dirMask:         *.net", NULL};
-
-void TextFileFileDialog::okFileWork( const char *filename )
+String TextFileFileDialog::DefaultResources[] =
 {
-  this->textFile->fileSelectCallback( filename );
+        "*dialogTitle:     Save Macro As File...",
+        "*dirMask:         *.net",
+        NULL
+};
+
+
+void TextFileFileDialog::okFileWork(const char *filename)
+{
+    this->textFile->fileSelectCallback(filename);	
 }
 
 //
-// Constructor for derived classes
+// Constructor for derived classes 
 //
-TextFileFileDialog::TextFileFileDialog( const char *name, TextFile *tf )
-    : FileDialog( name, tf->getRootWidget() )
+TextFileFileDialog::TextFileFileDialog(const char *name, TextFile *tf ) :
+			   FileDialog(name, tf->getRootWidget())
 {
-  this->textFile = tf;
+    this->textFile = tf;
 }
 //
 // Constructor for instances of THIS class
 //
-TextFileFileDialog::TextFileFileDialog( TextFile *tf )
-    : FileDialog( "textFileFileDialog", tf->getRootWidget() )
+TextFileFileDialog::TextFileFileDialog( TextFile *tf ) :
+			   FileDialog("textFileFileDialog", 
+			    tf->getRootWidget())
 {
-  this->textFile = tf;
-  if ( NOT TextFileFileDialog::ClassInitialized )
-  {
-    TextFileFileDialog::ClassInitialized = TRUE;
-    this->installDefaultResources( theApplication->getRootWidget() );
-  }
+    this->textFile = tf;
+    if (NOT TextFileFileDialog::ClassInitialized)
+    {
+        TextFileFileDialog::ClassInitialized = TRUE;
+	this->installDefaultResources(theApplication->getRootWidget());
+    }
 }
 
-void TextFileFileDialog::installDefaultResources( Widget baseWidget )
+void TextFileFileDialog::installDefaultResources(Widget  baseWidget)
 {
-  this->setDefaultResources( baseWidget, TextFileFileDialog::DefaultResources );
-  this->FileDialog::installDefaultResources( baseWidget );
+    this->setDefaultResources(baseWidget, TextFileFileDialog::DefaultResources);
+    this->FileDialog::installDefaultResources( baseWidget);
 }
+
+
+
+
+
+
+

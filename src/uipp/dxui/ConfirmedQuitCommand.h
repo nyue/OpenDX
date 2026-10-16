@@ -9,57 +9,65 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
 #ifndef _ConfirmedQuitCommand_h
 #define _ConfirmedQuitCommand_h
+
 
 #include "OptionalPreActionCommand.h"
 
 #include <Xm/Xm.h>
 
-class DXApplication;
-class Command;
+class   DXApplication;
+class   Command;
 
 //
 // Class name definition:
 //
-#define ClassConfirmedQuitCommand "ConfirmedQuitCommand"
+#define ClassConfirmedQuitCommand	"ConfirmedQuitCommand"
+
 
 //
 // ConfirmedQuitCommand class definition:
-//
-class ConfirmedQuitCommand : public OptionalPreActionCommand
+//				
+class ConfirmedQuitCommand : public OptionalPreActionCommand 
 {
- private:
-  Command *command;
-  DXApplication *application;
+  private:
 
- protected:
-  //
-  // Implements the command:
+    Command     *command;
+    DXApplication *application;
 
-  virtual boolean needsConfirmation();
-  virtual void doPreAction();
-  virtual boolean doIt( CommandInterface *ci );
+  protected:
+    //
+    // Implements the command:
 
- public:
-  //
-  // Constructor:
-  //
-  ConfirmedQuitCommand( const char *name, CommandScope *scope, boolean active,
-                        DXApplication *app );
+    virtual boolean needsConfirmation();
+    virtual void    doPreAction();
+    virtual boolean doIt(CommandInterface *ci);
 
-  //
-  // Destructor:
-  //
-  ~ConfirmedQuitCommand();
+  public:
+    //
+    // Constructor:
+    //
+    ConfirmedQuitCommand(const char*   name,
+                        CommandScope* scope,
+                        boolean       active,
+			DXApplication *app);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassConfirmedQuitCommand;
-  }
+    //
+    // Destructor:
+    //
+    ~ConfirmedQuitCommand();
+
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassConfirmedQuitCommand;
+    }
 };
 
-#endif  // _ConfirmedQuitCommand_h
+
+#endif // _ConfirmedQuitCommand_h

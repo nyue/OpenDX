@@ -9,55 +9,63 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
 #ifndef _ColormapFileCommand_h
 #define _ColormapFileCommand_h
+
 
 #include "NoUndoCommand.h"
 
 #include <Xm/Xm.h>
 
+
 //
 // Class name definition:
 //
-#define ClassColormapFileCommand "ColormapFileCommand"
+#define ClassColormapFileCommand	"ColormapFileCommand"
 
 class ColormapEditor;
 
 //
 // ColormapFileCommand class definition:
-//
+//				
 class ColormapFileCommand : public NoUndoCommand
 {
 
- private:
-  ColormapEditor* editor;
-  boolean opening;
+  private:
+    ColormapEditor    *editor;
+    boolean		opening;
 
- protected:
-  //
-  // Implements the command:
+  protected:
+    //
+    // Implements the command:
 
-  virtual boolean doIt( CommandInterface* ci );
+    virtual boolean doIt(CommandInterface *ci);
 
- public:
-  //
-  // Constructor:
-  //
-  ColormapFileCommand( const char* name, CommandScope* scope, boolean active,
-                       ColormapEditor* editor, boolean opening );
+  public:
+    //
+    // Constructor:
+    //
+    ColormapFileCommand(const char*     name,
+                        CommandScope*   scope,
+                        boolean         active,
+                        ColormapEditor* editor,
+			boolean		opening);
 
-  //
-  // Destructor:
-  //
-  ~ColormapFileCommand();
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassColormapFileCommand;
-  }
+    //
+    // Destructor:
+    //
+    ~ColormapFileCommand();
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassColormapFileCommand;
+    }
 };
 
-#endif  // _ColormapFileCommand_h
+
+#endif // _ColormapFileCommand_h

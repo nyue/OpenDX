@@ -9,17 +9,19 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
 #ifndef _GroupedObject_h
 #define _GroupedObject_h
 
-#include <stdio.h>
+#include <stdio.h> 
 
 #include "enums.h"
 
 //
 // Class name definition:
 //
-#define ClassGroupedObject "GroupedObject"
+#define ClassGroupedObject	"GroupedObject"
 
 //
 // Referenced classes:
@@ -29,53 +31,49 @@ class GroupRecord;
 
 //
 // GroupedObject class definition:
-//
+//				
 class GroupedObject
 {
 
- private:
-  //
-  // Private member data:
-  //
+  private:
+    //
+    // Private member data:
+    //
 
- protected:
-  //
-  // Protected member data:
-  //
 
-  Dictionary *groups;
+  protected:
+    //
+    // Protected member data:
+    //
 
-  virtual boolean printGroupComment( FILE * );
-  virtual boolean parseGroupComment( const char *comment, const char *filename,
-                                     int lineno );
+    Dictionary		*groups;
 
- public:
-  //
-  // Constructor:
-  //
-  GroupedObject()
-  {
-    this->groups = NUL( Dictionary * );
-  }
+    virtual	boolean printGroupComment (FILE *);
+    virtual	boolean parseGroupComment 
+	(const char* comment, const char* filename, int lineno);
 
-  //
-  // Destructor:
-  //
-  virtual ~GroupedObject();
+  public:
+    //
+    // Constructor:
+    //
+    GroupedObject() { this->groups = NUL(Dictionary*); }
 
-  virtual void setGroupName( GroupRecord *, Symbol groupID );
-  const char *getGroupName( Symbol groupID );
-  void addToGroup( const char *group, Symbol groupID );
+    //
+    // Destructor:
+    //
+    virtual ~GroupedObject(); 
 
-  virtual Network *getNetwork() = 0;
+    virtual	void	setGroupName(GroupRecord *, Symbol groupID);
+    const char *	getGroupName(Symbol groupID);
+    void		addToGroup(const char *group, Symbol groupID);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassGroupedObject;
-  }
+    virtual	Network *getNetwork() = 0;
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName() { return ClassGroupedObject; }
 };
 
-#endif  // _GroupedObject_h
+
+#endif // _GroupedObject_h

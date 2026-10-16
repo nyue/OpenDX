@@ -9,65 +9,74 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
+
 #ifndef _OpenNetworkDialog_h
 #define _OpenNetworkDialog_h
+
 
 #include "FileDialog.h"
 #include "Application.h"
 
+
 //
 // Class name definition:
 //
-#define ClassOpenNetworkDialog "OpenNetworkDialog"
+#define ClassOpenNetworkDialog	"OpenNetworkDialog"
 
 class Dialog;
 class TextEditDialog;
 
 //
 // OpenNetworkDialog class definition:
-//
+//				
 class OpenNetworkDialog : public FileDialog
 {
-  static boolean ClassInitialized;
+    static boolean ClassInitialized;
 
- protected:
-  static String DefaultResources[];
+  protected:
 
-  TextEditDialog* netCommentDialog;
+    static String  DefaultResources[];
 
-  virtual void okFileWork( const char* string );
-  virtual void helpCallback( Dialog* dialog );
+    TextEditDialog   *netCommentDialog;
+	
+    virtual void okFileWork(const char *string);
+    virtual void helpCallback(Dialog* dialog);
 
-  //
-  // For sub-classes of this dialog
-  //
-  OpenNetworkDialog( const char* name, Widget parent );
+    //
+    // For sub-classes of this dialog
+    //
+    OpenNetworkDialog(const char*   name, Widget        parent);
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
- public:
-  //
-  // Constructor:
-  //
-  OpenNetworkDialog( Widget parent );
+  public:
+    //
+    // Constructor:
+    //
+    OpenNetworkDialog(Widget        parent);
 
-  //
-  // Destructor:
-  //
-  ~OpenNetworkDialog();
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassOpenNetworkDialog;
-  }
+    //
+    // Destructor:
+    //
+    ~OpenNetworkDialog();
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassOpenNetworkDialog;
+    }
 };
 
-#endif  // _OpenNetworkDialog_h
+
+#endif // _OpenNetworkDialog_h

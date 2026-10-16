@@ -9,19 +9,23 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #include "ViewControlWhichCameraCommand.h"
 #include "ViewControlDialog.h"
 
-ViewControlWhichCameraCommand::ViewControlWhichCameraCommand(
-    const char *name, CommandScope *scope, boolean active,
-    ViewControlDialog *d )
-    : NoUndoCommand( name, scope, active )
+ViewControlWhichCameraCommand::ViewControlWhichCameraCommand(const char   *name,
+						 CommandScope *scope,
+						 boolean       active,
+						 ViewControlDialog  *d):
+    NoUndoCommand(name, scope, active)
 {
-  this->viewControlDialog = d;
+    this->viewControlDialog = d;
 }
 
-boolean ViewControlWhichCameraCommand::doIt( CommandInterface *ci )
+boolean ViewControlWhichCameraCommand::doIt(CommandInterface *ci)
 {
-  this->viewControlDialog->setWhichCameraVector();
-  return TRUE;
+    this->viewControlDialog->setWhichCameraVector();
+    return TRUE;
 }

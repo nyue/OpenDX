@@ -8,7 +8,7 @@
 
 /* TeX starts here. Do not remove this comment. */
 
-#if defined( __cplusplus ) || defined( c_plusplus )
+#if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #define delete __delete__
 #endif
@@ -30,7 +30,8 @@ when the object is deleted, which may for example free the private
 storage if it was allocated.
 */
 
-Private DXNewPrivate( Pointer data, Error ( *delete )( Pointer ) );
+Private
+DXNewPrivate(Pointer data, Error (*delete)(Pointer));
 /**
 \index{DXNewPrivate}
 This routine creates an object that contains a pointer to your private
@@ -41,7 +42,8 @@ the private object, or returns null and sets the error code to indicate
 an error.
 **/
 
-Pointer DXGetPrivateData( Private p );
+Pointer
+DXGetPrivateData(Private p);
 /**
 \index{DXGetPrivateData}
 Returns the private data pointer specified when {\tt p} was created.
@@ -49,7 +51,7 @@ Returns the private data pointer specified when {\tt p} was created.
 
 #endif /* _DXI_PRIVATE_H_ */
 
-#if defined( __cplusplus ) || defined( c_plusplus )
+#if defined(__cplusplus) || defined(c_plusplus)
 #undef delete
 }
 #endif

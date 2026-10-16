@@ -8,74 +8,60 @@
 
 #include <dxconfig.h>
 
+
 #ifndef _ImageFormatYUV_h
 #define _ImageFormatYUV_h
+
 
 #include "PixelImageFormat.h"
 
 //
 // Class name definition:
 //
-#define ClassImageFormatYUV "ImageFormatYUV"
+#define ClassImageFormatYUV	"ImageFormatYUV"
 
 //
 // SaveImageDialog class definition:
-//
+//				
 class ImageFormatYUV : public PixelImageFormat
 {
- private:
-  static String DefaultResources[];
-  static boolean ClassInitialized;
+  private:
 
- protected:
-  virtual void initialize();
+    static String  DefaultResources[];
+    static boolean ClassInitialized;
 
- public:
-  //
-  // Constructor:
-  //
-  ImageFormatYUV( ImageFormatDialog* dialog );
+  protected:
 
-  static ImageFormat* Allocator( ImageFormatDialog* dialog )
-  {
-    return new ImageFormatYUV( dialog );
-  }
+    virtual void	initialize();
 
-  //
-  // Destructor:
-  //
-  ~ImageFormatYUV();
+  public:
 
-  virtual const char* paramString()
-  {
-    return "yuv";
-  }
-  virtual const char* menuString()
-  {
-    return "YUV";
-  }
-  virtual const char* fileExtension()
-  {
-    return ".yuv";
-  }
-  virtual boolean supportsAppend()
-  {
-    return TRUE;
-  }
-  virtual void eraseOutputFile( const char* fname );
-  virtual boolean supportsDelayedColors()
-  {
-    return FALSE;
-  }
+    //
+    // Constructor:
+    //
+    ImageFormatYUV(ImageFormatDialog *dialog);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassImageFormatYUV;
-  }
-  virtual boolean isA( Symbol classname );
+    static ImageFormat* Allocator (ImageFormatDialog* dialog) 
+	{ return  new ImageFormatYUV(dialog); }
+
+    //
+    // Destructor:
+    //
+    ~ImageFormatYUV();
+
+    virtual const char*		paramString() { return "yuv"; }
+    virtual const char*		menuString() { return "YUV"; }
+    virtual const char*		fileExtension() { return ".yuv"; }
+    virtual boolean 		supportsAppend() { return TRUE; }
+    virtual void		eraseOutputFile(const char *fname);
+    virtual boolean		supportsDelayedColors() { return FALSE; }
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName() { return ClassImageFormatYUV; }
+    virtual boolean isA(Symbol classname);
 };
 
-#endif  // _ImageFormatYUV_h
+
+#endif // _ImageFormatYUV_h

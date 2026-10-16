@@ -6,7 +6,8 @@
 /*    "IBM PUBLIC LICENSE - Open Visualization Data Explorer"          */
 /***********************************************************************/
 
-#if defined( __cplusplus ) || defined( c_plusplus )
+
+#if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
@@ -21,7 +22,7 @@ This section describes advanced routines for explicitly manipulating
 field components.
 */
 
-Object DXRename( Object o, char *oldname, char *newname );
+Object DXRename(Object o, char *oldname, char *newname);
 /**
 \index{DXRename}
 For each component in object {\tt o} named {\tt oldname}, this routine
@@ -32,7 +33,8 @@ Returns {\tt o} on success, or returns null and sets the error code to
 indicate an error.
 **/
 
-Object DXSwap( Object o, char *name1, char *name2 );
+
+Object DXSwap(Object o, char *name1, char *name2);
 /**
 \index{DXSwap}
 For each field in object {\tt o} which contains both the named
@@ -42,7 +44,8 @@ Returns {\tt o} on success, or returns null and sets the error code to
 indicate an error.
 **/
 
-Object DXExtract( Object o, char *name );
+
+Object DXExtract(Object o, char *name);
 /**
 \index{DXExtract}
 Extracts the named component from {\tt o}, which may be a field or a
@@ -54,7 +57,8 @@ name} are found in any of the fields of {\tt o}.  Returns {\tt o} on
 success, or returns null and sets the error code to indicate an error.
 **/
 
-Object DXInsert( Object o, Object add, char *name );
+
+Object DXInsert(Object o, Object add, char *name);
 /**
 \index{DXInsert}
 For each field in object {\tt o}, this routine adds object {\tt add}
@@ -65,7 +69,8 @@ o} and {\tt add} must match.  Returns {\tt o} on success, or returns
 null and sets the error code to indicate an error.
 **/
 
-Object DXReplace( Object o, Object add, char *src, char *dst );
+
+Object DXReplace(Object o, Object add, char *src, char *dst);
 /**
 \index{DXReplace}
 This routine takes any components named {\tt src} that are contained
@@ -77,7 +82,8 @@ the fields of {\tt add}.  Returns {\tt o} on success, or returns null
 and sets the error code to indicate an error.
 **/
 
-Object DXRemove( Object o, char *name );
+
+Object DXRemove(Object o, char *name);
 /**
 \index{DXRemove}
 Deletes components of the specified {\tt name} for each field in
@@ -86,7 +92,8 @@ name} are found in any of the fields of {\tt o}.  Returns {\tt o} on
 success, or returns null and sets the error code to indicate an error.
 **/
 
-Object DXExists( Object o, char *name );
+
+Object DXExists(Object o, char *name);
 /**
 \index{DXExists}
 If any field in object {\tt o} contains a component of name {\tt name},
@@ -96,6 +103,6 @@ set the error code.
 
 #endif /* _DXI_COMPONENT_H_ */
 
-#if defined( __cplusplus ) || defined( c_plusplus )
+#if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif

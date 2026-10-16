@@ -9,8 +9,10 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
 #ifndef _TextFileFileDialog_h
 #define _TextFileFileDialog_h
+
 
 #include <Xm/Xm.h>
 
@@ -20,7 +22,7 @@
 //
 // Class name definition:
 //
-#define ClassTextFileFileDialog "TextFileFileDialog"
+#define ClassTextFileFileDialog	"TextFileFileDialog"
 
 class Dialog;
 class Network;
@@ -30,50 +32,51 @@ class TextFile;
 
 //
 // TextFileFileDialog class definition:
-//
+//				
 class TextFileFileDialog : public FileDialog
 {
-  static boolean ClassInitialized;
-  static String DefaultResources[];
+    static boolean ClassInitialized;
+    static String  DefaultResources[];
 
- protected:
-  Network *network;
-  TextFile *textFile;
 
-  virtual void okFileWork( const char *filename );
+  protected:
+    Network *network;
+    TextFile *textFile;
 
-  //
-  // Constructor for derived classes only:
-  //
-  TextFileFileDialog( const char *name, TextFile *tf );
+    virtual void okFileWork(const char *filename);
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+    //
+    // Constructor for derived classes only:
+    //
+    TextFileFileDialog(const char *name, TextFile *tf);
 
- public:
-  //
-  // Constructor for instances of THIS class only:
-  //
-  TextFileFileDialog( TextFile *tf );
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
-  //
-  // Destructor:
-  //
-  ~TextFileFileDialog()
-  {
-  }
+  public:
+    //
+    // Constructor for instances of THIS class only:
+    //
+    TextFileFileDialog(TextFile *tf);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassTextFileFileDialog;
-  }
+
+    //
+    // Destructor:
+    //
+    ~TextFileFileDialog(){}
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassTextFileFileDialog;
+    }
 };
 
-#endif  // _TextFileFileDialog_h
+
+#endif // _TextFileFileDialog_h

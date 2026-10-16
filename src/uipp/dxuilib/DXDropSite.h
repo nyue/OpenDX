@@ -9,6 +9,9 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _DXDropSite_h
 #define _DXDropSite_h
 
@@ -19,54 +22,59 @@
 #include "Network.h"
 #include "DropSite.h"
 
+
 //
 // Class name definition:
 //
-#define ClassDXDropSite "DXDropSite"
+#define ClassDXDropSite	"DXDropSite"
+
 
 //
 // DropSite class definition:
-//
-class DXDropSite : public DropSite
+//				
+class DXDropSite : public DropSite 
 {
- private:
-  //
-  // a strang thing for a dnd operation... conditionally refuse to engange
-  // in the ipc mechanism if the other end is in a separate process.  This is
-  // needed by control panel dnd because you can't drop an interactor
-  // into a different copy of dx.
-  //
-  boolean intraExecutable;
+  private:
 
- protected:
-  //
-  // DXDropSite class reads in temporary .net and .cfg files, creates the
-  // temporary network and panels, and hands off to a required subclass'
-  // method to merge the temp net and/or the temp panels.
-  //
-  virtual boolean mergeNetElements( Network *tmpnet, List *tmppanels, int x,
-                                    int y ) = 0;
+    //
+    // a strang thing for a dnd operation... conditionally refuse to engange 
+    // in the ipc mechanism if the other end is in a separate process.  This is
+    // needed by control panel dnd because you can't drop an interactor
+    // into a different copy of dx.
+    //
+    boolean intraExecutable;
 
-  boolean transfer( char *, XtPointer, unsigned long, int, int );
+  protected:
 
- public:
-  //
-  // Constructor:
-  //
-  DXDropSite( boolean intraExecutable = FALSE );
+    //
+    // DXDropSite class reads in temporary .net and .cfg files, creates the
+    // temporary network and panels, and hands off to a required subclass'
+    // method to merge the temp net and/or the temp panels.
+    //
+    virtual boolean mergeNetElements (Network *tmpnet, List *tmppanels, int x, int y) = 0;
 
-  //
-  // Destructor:
-  //
-  ~DXDropSite();
+    boolean transfer(char *, XtPointer, unsigned long, int, int);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassDXDropSite;
-  }
+  public:
+
+    //
+    // Constructor:
+    //
+    DXDropSite(boolean intraExecutable = FALSE);
+ 
+    //
+    // Destructor:
+    //
+    ~DXDropSite(); 
+  
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassDXDropSite;
+    }
 };
 
-#endif  // _DXDropSite_h
+
+#endif // _DXDropSite_h

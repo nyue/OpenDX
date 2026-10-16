@@ -9,76 +9,82 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
 #ifndef _TransmitterNode_h
 #define _TransmitterNode_h
 
+
 #include "UniqueNameNode.h"
+
 
 //
 // Class name definition:
 //
-#define ClassTransmitterNode "TransmitterNode"
+#define ClassTransmitterNode	"TransmitterNode"
 
 //
 // Referenced Classes
 
 //
 // TransmitterNode class definition:
-//
+//				
 class TransmitterNode : public UniqueNameNode
 {
- private:
-  //
-  // Private member data:
-  //
+  private:
+    //
+    // Private member data:
+    //
 
- protected:
-  //
-  // Protected member data:
-  //
-  virtual char *netNodeString( const char *prefix );
+  protected:
+    //
+    // Protected member data:
+    //
+    virtual char *netNodeString(const char *prefix);
 
- public:
-  //
-  // Constructor:
-  //
-  TransmitterNode( NodeDefinition *nd, Network *net, int instnc );
 
-  //
-  // Destructor:
-  //
-  ~TransmitterNode();
+  public:
+    //
+    // Constructor:
+    //
+    TransmitterNode(NodeDefinition *nd, Network *net, int instnc);
 
-  virtual boolean initialize();
+    //
+    // Destructor:
+    //
+    ~TransmitterNode();
 
-  boolean setLabelString( const char *label );
+    virtual boolean initialize();
 
-  //
-  // Determine if this node is a node of the given class
-  //
-  virtual boolean isA( Symbol classname );
+    boolean setLabelString(const char *label);
 
-  //
-  // Switch the node from one net to another.  Resolve any name
-  // space collisions.
-  //
-  void switchNetwork( Network *from, Network *to, boolean silently = FALSE );
+    //
+    // Determine if this node is a node of the given class
+    //
+    virtual boolean isA(Symbol classname);
 
-  //
-  // Check for name conflicts.  Usually you disallow 2 nodes with the same
-  // labelString, but it certain cases it's desirable.  Capture that logic
-  // locally.
-  //
-  virtual boolean namesConflict( const char *his_label, const char *my_label,
-                                 const char *his_classname );
+    //
+    // Switch the node from one net to another.  Resolve any name 
+    // space collisions.
+    //
+    void switchNetwork(Network *from, Network *to, boolean silently=FALSE);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  virtual const char *getClassName()
-  {
-    return ClassTransmitterNode;
-  }
+    //
+    // Check for name conflicts.  Usually you disallow 2 nodes with the same
+    // labelString, but it certain cases it's desirable.  Capture that logic
+    // locally.
+    //
+    virtual boolean namesConflict (const char* his_label, const char* my_label,
+	const char* his_classname);
+
+
+    //
+    // Returns a pointer to the class name.
+    //
+    virtual const char* getClassName()
+    {
+	return ClassTransmitterNode;
+    }
 };
 
-#endif  // _TransmitterNode_h
+
+#endif // _TransmitterNode_h

@@ -8,6 +8,9 @@
 
 #include <dxconfig.h>
 
+
+
+
 #ifndef _CommentStyleUser_h
 #define _CommentStyleUser_h
 
@@ -15,41 +18,36 @@
 
 #define ClassCommentStyleUser "CommentStyleUser"
 
-class CommentStyleUser : public CommentStyle
-{
- private:
-  static LabelDecorator* ParsingDecorator;
+class CommentStyleUser: public CommentStyle {
+  private:
 
- protected:
-  virtual const char* getPrintableText();
-  virtual void setPrintableText( const char* );
+    static LabelDecorator* ParsingDecorator;
 
- public:
-  CommentStyleUser() {};
-  ~CommentStyleUser() {};
+  protected:
 
-  virtual boolean parseComment( LabelDecorator* ldec, const char* comment,
-                                const char* file, int l )
-  {
-    CommentStyleUser::ParsingDecorator = ldec;
-    return this->CommentStyle::parseComment( comment, file, l );
-  }
+    virtual const char* getPrintableText();
+    virtual void        setPrintableText(const char*);
 
-  virtual boolean printComment( LabelDecorator* ldec, FILE* f )
-  {
-    CommentStyleUser::ParsingDecorator = ldec;
-    return this->CommentStyle::printComment( f );
-  }
+  public:
 
-  virtual const char* getKeyword()
-  {
-    return "user";
-  }
+    CommentStyleUser(){};
+    ~CommentStyleUser(){};
 
-  const char* getClassName()
-  {
-    return ClassCommentStyleUser;
-  }
+    virtual boolean parseComment 
+	(LabelDecorator* ldec, const char* comment, const char* file, int l) {
+	CommentStyleUser::ParsingDecorator = ldec;
+	return this->CommentStyle::parseComment(comment, file, l);
+    }
+
+    virtual boolean printComment (LabelDecorator* ldec, FILE* f) {
+	CommentStyleUser::ParsingDecorator = ldec;
+	return this->CommentStyle::printComment(f);
+    }
+
+    virtual const char* getKeyword() { return "user"; }
+
+    const char* getClassName() { return ClassCommentStyleUser; }
 };
 
 #endif  // _CommentStyleUser_h
+

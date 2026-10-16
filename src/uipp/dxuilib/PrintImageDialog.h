@@ -8,15 +8,18 @@
 
 #include <dxconfig.h>
 
+
 #ifndef _PrintImageDialog_h
 #define _PrintImageDialog_h
+
 
 #include "ImageFormatDialog.h"
 
 //
 // Class name definition:
 //
-#define ClassPrintImageDialog "PrintImageDialog"
+#define ClassPrintImageDialog	"PrintImageDialog"
+
 
 class Dialog;
 class ImageNode;
@@ -26,65 +29,58 @@ class List;
 
 //
 // PrintImageDialog class definition:
-//
+//				
 class PrintImageDialog : public ImageFormatDialog
 {
- private:
-  static boolean ClassInitialized;
-  static String DefaultResources[];
+  private:
 
-  Widget command;
-  char* command_str;
+    static boolean ClassInitialized;
+    static String  DefaultResources[];
 
- protected:
-  virtual Widget createControls( Widget parent );
+    Widget		command;
+    char*		command_str;
 
-  virtual boolean okCallback( Dialog* );
-  virtual void restoreCallback();
+  protected:
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+    virtual Widget createControls(Widget parent );
 
-  virtual int getRequiredHeight()
-  {
-    return 160;
-  }
+    virtual boolean okCallback(Dialog *);
+    virtual void    restoreCallback();
 
-  enum
-  {
-    DirtyCommand = 64
-  };
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
- public:
-  virtual void setCommandActivation();
-  virtual const char* getOutputFile();
-  virtual boolean isPrinting()
-  {
-    return TRUE;
-  }
+    virtual int  getRequiredHeight() { return 160; }
 
-  //
-  // Constructor:
-  //
-  PrintImageDialog( Widget parent, ImageNode* node,
-                    CommandScope* commandScope );
+    enum {
+	DirtyCommand   = 64
+    };
 
-  //
-  // Destructor:
-  //
-  ~PrintImageDialog();
+  public:
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassPrintImageDialog;
-  }
+    virtual void 		setCommandActivation();
+    virtual const char *	getOutputFile();
+    virtual boolean		isPrinting() { return TRUE; }
+
+    //
+    // Constructor:
+    //
+    PrintImageDialog(Widget parent, ImageNode* node, CommandScope* commandScope);
+
+    //
+    // Destructor:
+    //
+    ~PrintImageDialog();
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName() { return ClassPrintImageDialog; }
 };
 
-#endif  // _PrintImageDialog_h
+
+#endif // _PrintImageDialog_h

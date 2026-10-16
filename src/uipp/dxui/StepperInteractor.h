@@ -9,143 +9,152 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _StepperInteractor_h
 #define _StepperInteractor_h
 
-#include <X11/Intrinsic.h>
 
+#include <X11/Intrinsic.h>
+ 
 #include "ScalarInteractor.h"
 #include "List.h"
+
 
 //
 // Class name definition:
 //
-#define ClassStepperInteractor "StepperInteractor"
+#define ClassStepperInteractor	"StepperInteractor"
 
 //
 // XtCallbackProc (*CB), XtEventHandler (*EH) and XtActionProc (*AP)
 // DialogCallback (*DCB), XtInputCallbackProc (*ICP), XtWorkProc (*WP)
 // functions for this and derived classes
 //
-extern "C" void StepperInteractor_StepperCB( Widget, XtPointer, XtPointer );
+extern "C" void StepperInteractor_StepperCB(Widget, XtPointer, XtPointer);
+
 
 class InteractorInstance;
 
+
 //
 // StepperInteractor class definition:
-//
+//				
 class StepperInteractor : public ScalarInteractor
 {
-  friend class ScalarListInstance;  // For buildValueFromComponents()
+     friend class ScalarListInstance;	// For buildValueFromComponents()
 
- private:
-  //
-  // Private member data:
-  //
+  private:
+    //
+    // Private member data:
+    //
 
-  //
-  // One widget for each component (scalar or n-vector).
-  //
-  List componentWidgets;
-  Widget componentForm;  // Holds the steppers for a vector interactor
+    //
+    // One widget for each component (scalar or n-vector).
+    //
+    List	componentWidgets;
+    Widget	componentForm;	// Holds the steppers for a vector interactor
 
-  static boolean StepperInteractorClassInitialized;
 
-  // Call the virtual callback for value changes.
-  //
-  friend void StepperInteractor_StepperCB( Widget widget, XtPointer clientData,
-                                           XtPointer callData );
+    static boolean StepperInteractorClassInitialized;
 
- protected:
-  //
-  // Protected member data:
-  //
+    // Call the virtual callback for value changes. 
+    //
+    friend void StepperInteractor_StepperCB(Widget                  widget,
+               			XtPointer                clientData,
+               			XtPointer                callData);
 
-  static String DefaultResources[];
 
-  //
-  //
-  // Get the nth widget.
-  //
-  Widget getComponentWidget( int i )
-  {
-    ASSERT( i > 0 );
-    return ( Widget ) this->componentWidgets.getElement( i );
-  }
-  boolean appendComponentWidget( Widget w )
-  {
-    return this->componentWidgets.appendElement( (const void *)w );
-  }
+  protected:
+    //
+    // Protected member data:
+    //
 
-  //
-  // Accepts value changes and reflects them into other interactors, cdbs
-  // and off course the interactor node output.
-  //
-  virtual void stepperCallback( Widget widget, int component,
-                                XtPointer clientData );
+    static String DefaultResources[];
 
-  //
-  // Create and complete the steppers
-  //
-  virtual Widget createInteractivePart( Widget p );
-  virtual void completeInteractivePart();
+    //
+    //
+    // Get the nth widget. 
+    //
+    Widget getComponentWidget(int i) 
+		{ ASSERT(i>0); 
+		  return (Widget)this->componentWidgets.getElement(i); 
+		}
+    boolean appendComponentWidget(Widget w) 
+		{ return this->componentWidgets.appendElement((const void*) w);
+	 	}
 
-  //
-  // Update the displayed values for the stepper(s).
-  // Does the work on behalf of updateDisplayedInteractorValue().
-  //
-  void updateStepperValue();
+    //
+    // Accepts value changes and reflects them into other interactors, cdbs
+    // and off course the interactor node output.
+    //
+    virtual void stepperCallback(Widget widget, int component, 
+						XtPointer clientData);
 
- public:
-  //
-  // Allocate an interactor the given instance.
-  //
-  static Interactor *AllocateInteractor( const char *name,
-                                         InteractorInstance *ii );
+    //
+    // Create and complete the steppers 
+    //
+    virtual Widget createInteractivePart(Widget p);
+    virtual void   completeInteractivePart();
 
-  //
-  // Constructor:
-  //
-  StepperInteractor( const char *name, InteractorInstance *ii );
+    //
+    // Update the displayed values for the stepper(s).
+    // Does the work on behalf of updateDisplayedInteractorValue().
+    //
+    void updateStepperValue();
 
-  //
-  // Destructor:
-  //
-  ~StepperInteractor()
-  {
-  }
+  public:
+    //
+    // Allocate an interactor the given instance.
+    //
+    static Interactor *AllocateInteractor(const char *name,
+					InteractorInstance *ii);
 
-  //
-  // Update the displayed values for this interactor.
-  //
-  virtual void updateDisplayedInteractorValue( void );
+    //
+    // Constructor:
+    //
+    StepperInteractor(const char *name, InteractorInstance *ii) ;
 
-  //
-  // Make sure the resources (including the value) match the attributes
-  // for the widgets.
-  //
-  virtual void handleInteractivePartStateChange( InteractorInstance *src_ii,
-                                                 boolean major_change );
+    //
+    // Destructor:
+    //
+    ~StepperInteractor(){}
 
-  //
-  // Need special handling for laying out because it must
-  // set XmNalignment in the stepper(s)
-  //
-  virtual void layoutInteractorHorizontally();
-  virtual void layoutInteractorVertically();
+    //
+    // Update the displayed values for this interactor.
+    //
+    virtual void updateDisplayedInteractorValue(void);
 
-  //
-  // One time initialize for the class.
-  //
-  void initialize();
+    //
+    // Make sure the resources (including the value) match the attributes 
+    // for the widgets. 
+    //
+    virtual void handleInteractivePartStateChange(
+					InteractorInstance *src_ii,
+					boolean major_change);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassStepperInteractor;
-  }
+    //
+    // Need special handling for laying out because it must
+    // set XmNalignment in the stepper(s)
+    //
+    virtual void layoutInteractorHorizontally();
+    virtual void layoutInteractorVertically();
+
+
+    //
+    // One time initialize for the class.
+    //
+    void initialize();
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassStepperInteractor;
+    }
 };
 
-#endif  // _StepperInteractor_h
+
+#endif // _StepperInteractor_h

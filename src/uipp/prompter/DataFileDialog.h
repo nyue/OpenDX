@@ -8,6 +8,7 @@
 
 #include <dxconfig.h>
 
+
 #ifndef _DATA_FILE_DIALOG_H
 #define _DATA_FILE_DIALOG_H
 
@@ -17,27 +18,26 @@
 
 class GARChooserWindow;
 
-class DataFileDialog : public FileDialog
+class DataFileDialog: public FileDialog 
 {
- private:
-  GARChooserWindow *gcw;
+  private:
+    GARChooserWindow* gcw;
 
- protected:
-  static String DefaultResources[];
-  static boolean ClassInitialized;
+  protected:
 
-  virtual void okFileWork( const char *string );
+    static String DefaultResources[];
+    static boolean ClassInitialized;
 
-  virtual void installDefaultResources( Widget );
+    virtual void okFileWork(const char *string);
 
- public:
-  DataFileDialog( Widget parent, GARChooserWindow *gcw );
-  ~DataFileDialog();
+    virtual void installDefaultResources (Widget );
 
-  const char *getClassName()
-  {
-    return ClassDataFileDialog;
-  }
+  public:
+
+    DataFileDialog (Widget parent, GARChooserWindow *gcw);
+    ~DataFileDialog();
+
+    const char *getClassName() { return ClassDataFileDialog; }
 };
 
-#endif  //_DATA_FILE_DIALOG_H
+#endif //_DATA_FILE_DIALOG_H

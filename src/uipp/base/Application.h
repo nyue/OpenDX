@@ -9,8 +9,10 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
 #ifndef _Application_h
 #define _Application_h
+
 
 #include <Xm/Xm.h>
 #include "UIComponent.h"
@@ -19,307 +21,288 @@
 //
 // Class name definition:
 //
-#define ClassApplication "Application"
+#define ClassApplication	"Application"
 
 //
 // XtCallbackProc (*CB), XtEventHandler (*EH) and XtActionProc (*AP)
 // DialogCallback (*DCB) functions for this and derived classes
 //
-extern "C" void Application_XtWarningHandler( char * );
-extern "C" int Application_XErrorHandler( Display *display,
-                                          XErrorEvent *event );
+extern "C" void Application_XtWarningHandler(char*);
+extern "C" int  Application_XErrorHandler(Display *display, XErrorEvent *event);
 
 //
 // Application class definition:
-//
+//				
 class Application : public UIComponent, public Server
 {
- private:
-  //
-  // Private class data:
-  //
-  static boolean ApplicationClassInitialized;
-  friend void Application_XtWarningHandler( char *message );
-  friend int Application_XErrorHandler( Display *display, XErrorEvent *event );
+  private:
+    //
+    // Private class data:
+    //
+    static boolean ApplicationClassInitialized;
+    friend void Application_XtWarningHandler(char *message);
+    friend int  Application_XErrorHandler(Display *display, XErrorEvent *event);
 
-  int busyCursors;  // Keeps track of setBusyCursor calls.
 
-  //
-  // The main program needs to access protected member functions.
-  //
-  friend int main( unsigned int argc, char **argv );
+    int 	busyCursors; 	// Keeps track of setBusyCursor calls.
+    
+    //
+    // The main program needs to access protected member functions.
+    //
+    friend int main(unsigned int argc,
+		     char**       argv);
 
-  //
-  // Bubble help information
-  //
-  boolean show_bubbles;
-  Widget help_viewer;
 
- protected:
-  //
-  // Protected member data:
-  //
-  Display *display;                 // X Display pointer
-  XtAppContext applicationContext;  // Xt application context
-  char *applicationClass;           // application class name
+    //
+    // Bubble help information
+    //
+    boolean  show_bubbles;
+    Widget   help_viewer;
 
-  //
-  // Initialize the window system.
-  //
-  virtual boolean initializeWindowSystem( unsigned int *argcp, char **argv );
+  protected:
+    //
+    // Protected member data:
+    //
+    Display*     display;		// X Display pointer
+    XtAppContext applicationContext;	// Xt application context
+    char*        applicationClass;	// application class name
 
-  virtual void parseCommand( unsigned int *argcp, char **argv,
-                             XrmOptionDescList optlist, int optlistsize );
 
-  //
-  // Handles application events.
-  //   This routine should be called by main() only.
-  //
-  virtual void handleEvent( XEvent *xev );
+    //
+    // Initialize the window system.
+    //
+    virtual boolean initializeWindowSystem(unsigned int *argcp, char **argv);
 
-  //
-  // Load application specific action routines
-  //
-  virtual void addActions()
-  {
-  }
+    virtual void parseCommand(unsigned int* argcp, char** argv,
+			       XrmOptionDescList optlist, int optlistsize);
 
-  //
-  // Post the copyright notice that is returned by this->getCopyrightNotice().
-  // If it returns NULL, then don't post any notice.
-  //
-  virtual void postCopyrightNotice();
+    //
+    // Handles application events.
+    //   This routine should be called by main() only.
+    //
+    virtual void handleEvent(XEvent *xev);
 
-  //
-  // Handle Xt Warnings (called by Application_XtWarningHandler, static, above)
-  // Handle X Errors (called by XErrorHandler, static, above)
-  //
-  virtual void handleXtWarning( char *message );
-  virtual int handleXError( Display *display, XErrorEvent *event );
+    //
+    // Load application specific action routines
+    //
+    virtual void addActions() {}
 
-  //
-  // Constructor for the subclasses:
-  //
-  Application( char *className );
+    //
+    // Post the copyright notice that is returned by this->getCopyrightNotice().
+    // If it returns NULL, then don't post any notice.
+    //
+    virtual void postCopyrightNotice();
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+    //
+    // Handle Xt Warnings (called by Application_XtWarningHandler, static, above)
+    // Handle X Errors (called by XErrorHandler, static, above)
+    //
+    virtual void handleXtWarning(char *message);
+    virtual int  handleXError(Display *display, XErrorEvent *event);
 
-  //
-  // test the file to ensure that's is a regular file, and writable.
-  //
-  boolean isUsableDefaultsFile( const char *res_file, boolean create = FALSE );
+    //
+    // Constructor for the subclasses:
+    //
+    Application(char* className);
 
- public:
-  //
-  // Busy indicator cursor to be used globally:
-  //
-  static Cursor BusyCursor;
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
-  // Currently used only for debugging.
-  static void DumpApplicationResources( const char *filename );
+    //
+    // test the file to ensure that's is a regular file, and writable.
+    //
+    boolean isUsableDefaultsFile(const char* res_file, boolean create=FALSE);
 
-  //
-  // Notification messages:
-  //
-  static Symbol MsgCreate;
-  static Symbol MsgManage;
-  static Symbol MsgUnmanage;
-  static Symbol MsgSetBusyCursor;
-  static Symbol MsgResetCursor;
-  static Symbol MsgManageByLeafClassName;
-  static Symbol MsgUnmanageByLeafClassName;
-  static Symbol MsgManageByTitle;
-  static Symbol MsgUnmanageByTitle;
+  public:
+    //
+    // Busy indicator cursor to be used globally:
+    //
+    static Cursor BusyCursor;
 
-  //
-  // Initializes the Xt Intrinsics (creating the first widget),
-  // by calling initializeWindowSytstem() if not already called.
-  // Initializes any Application specfic state.  This routine should
-  // be called by main() or subclasses only.
-  //
-  virtual boolean initialize( unsigned int *argcp, char **argv );
+    // Currently used only for debugging. 
+    static void DumpApplicationResources(const char *filename);
 
-  //
-  // Allow others to access our event processing mechanism
-  //
-  void passEventToHandler( XEvent *xev )
-  {
-    this->handleEvent( xev );
-  }
+    //
+    // Notification messages:
+    //
+    static Symbol MsgCreate;
+    static Symbol MsgManage;
+    static Symbol MsgUnmanage;
+    static Symbol MsgSetBusyCursor;
+    static Symbol MsgResetCursor;
+    static Symbol MsgManageByLeafClassName;
+    static Symbol MsgUnmanageByLeafClassName;
+    static Symbol MsgManageByTitle;
+    static Symbol MsgUnmanageByTitle;
 
-  //
-  // Virtual methods that are called by Command::ExecuteCommandCallback()
-  // before and after Command::execute().
-  // Send a message to all clients that we are beginngin/ending execution
-  // of a command.
-  //
-  virtual void startCommandInterfaceExecution();
-  virtual void endCommandInterfaceExecution();
+    //
+    // Initializes the Xt Intrinsics (creating the first widget),
+    // by calling initializeWindowSytstem() if not already called.
+    // Initializes any Application specfic state.  This routine should 
+    // be called by main() or subclasses only.
+    //
+    virtual boolean initialize(unsigned int* argcp, char** argv);
 
-  //
-  // Destructor:
-  //
-  ~Application();
+    //
+    // Allow others to access our event processing mechanism
+    //
+    void passEventToHandler(XEvent *xev) { this->handleEvent(xev); }
 
-  //
-  // Manages all the application windows.
-  //
-  void manage();
+    //
+    // Virtual methods that are called by Command::ExecuteCommandCallback()
+    // before and after Command::execute().
+    // Send a message to all clients that we are beginngin/ending execution
+    // of a command.
+    //
+    virtual void startCommandInterfaceExecution(); 
+    virtual void endCommandInterfaceExecution();
 
-  //
-  // Unmanages all the application windows.
-  //
-  void unmanage();
+    //
+    // Destructor:
+    //
+    ~Application();
 
-  //
-  // Iconfies all the application windows.
-  //
-  void iconify();
+    //
+    // Manages all the application windows.
+    //
+    void manage();
 
-  //
-  // Sets/resets busy cursor for the application.
-  // Calls to this routine can be 'stacked' so that the first call
-  // sets the cursor and the last call resets the cursor.
-  // setBusyCursor(TRUE);         // Sets busy cursor
-  // setBusyCursor(TRUE);         // does not effect cursor
-  // setBusyCursor(TRUE);         // does not effect cursor
-  // setBusyCursor(FALSE);        // does not effect cursor
-  // setBusyCursor(TRUE);         // does not effect cursor
-  // setBusyCursor(FALSE);        // does not effect cursor
-  // setBusyCursor(FALSE);        // does not effect cursor
-  // setBusyCursor(FALSE);        // resets cursor
-  //
-  void setBusyCursor( boolean setting );
+    //
+    // Unmanages all the application windows.
+    //
+    void unmanage();
 
-  //
-  // Shutdown application (without deleting it out from under itself.
-  //
-  virtual void shutdownApplication() = 0;
+    //
+    // Iconfies all the application windows.
+    //
+    void iconify();
 
-  //
-  // Returns the Display pointer.
-  //
-  Display *getDisplay()
-  {
-    return this->display;
-  }
+    //
+    // Sets/resets busy cursor for the application.
+    // Calls to this routine can be 'stacked' so that the first call
+    // sets the cursor and the last call resets the cursor.
+    // setBusyCursor(TRUE);         // Sets busy cursor
+    // setBusyCursor(TRUE);         // does not effect cursor
+    // setBusyCursor(TRUE);         // does not effect cursor
+    // setBusyCursor(FALSE);        // does not effect cursor
+    // setBusyCursor(TRUE);         // does not effect cursor
+    // setBusyCursor(FALSE);        // does not effect cursor
+    // setBusyCursor(FALSE);        // does not effect cursor
+    // setBusyCursor(FALSE);        // resets cursor
+    //
+    void setBusyCursor(boolean setting);
 
-  //
-  // Returns the application context pointer.
-  //
-  XtAppContext getApplicationContext()
-  {
-    return this->applicationContext;
-  }
+    //
+    // Shutdown application (without deleting it out from under itself.
+    //
+    virtual void shutdownApplication() = 0;
+    
+    //
+    // Returns the Display pointer.
+    //
+    Display* getDisplay()
+    {
+	return this->display;
+    }
 
-  //
-  // Returns the application class name.
-  //
-  const char *getApplicationClass()
-  {
-    return this->applicationClass;
-  }
+    //
+    // Returns the application context pointer.
+    //
+    XtAppContext getApplicationContext()
+    {
+	return this->applicationContext;
+    }
 
-  //
-  // Return the name of the application (i.e. 'Data Explorer',
-  // 'Data Prompter', 'Medical Visualizer'...).
-  //
-  virtual const char *getInformalName();
+    //
+    // Returns the application class name.
+    //
+    const char* getApplicationClass()
+    {
+	return this->applicationClass;
+    }
 
-  //
-  // Return the formal name of the application (i.e.
-  // 'Open Visualization Data Explorer', 'Open Visualization Data Prompter'...)
-  //
-  virtual const char *getFormalName();
+    //
+    // Return the name of the application (i.e. 'Data Explorer', 
+    // 'Data Prompter', 'Medical Visualizer'...).
+    //
+    virtual const char *getInformalName();
 
-  //
-  // Get the applications copyright notice, for example...
-  // "Copyright International Business Machines Corporation 1991-1993
-  // All rights reserved"
-  //
-  virtual const char *getCopyrightNotice();
+    //
+    // Return the formal name of the application (i.e. 
+    // 'Open Visualization Data Explorer', 'Open Visualization Data Prompter'...)
+    //
+    virtual const char *getFormalName();
 
-  //
-  // Displays any help required.
-  //
-  virtual void helpOn( const char *topic );
-  virtual const char *getHelpDirectory();
-  virtual const char *getHelpDirFileName();
-  virtual const char *getHTMLDirectory();
-  virtual const char *getHTMLDirFileName();
+    //
+    // Get the applications copyright notice, for example...
+    // "Copyright International Business Machines Corporation 1991-1993 
+    // All rights reserved"
+    //
+    virtual const char *getCopyrightNotice();
 
-  //
-  // Start a tutorial on behalf of the application.
-  // Return TRUE if successful.  At this level in the class hierachy
-  // we don't know how to start a tutorial so we always return FALSE.
-  //
-  virtual boolean startTutorial();
+    //
+    // Displays any help required.
+    //
+    virtual void helpOn(const char *topic);
+    virtual const char *getHelpDirectory();
+    virtual const char *getHelpDirFileName();
+    virtual const char *getHTMLDirectory();
+    virtual const char *getHTMLDirFileName();
 
-  //
-  // Return a pixmap with the logo in it.
-  //
-  virtual Pixmap getLogoPixmap( boolean )
-  {
-    return XtUnspecifiedPixmap;
-  };
-  virtual void cleanupLogo() {};
+    //
+    // Start a tutorial on behalf of the application.
+    // Return TRUE if successful.  At this level in the class hierachy
+    // we don't know how to start a tutorial so we always return FALSE.
+    //
+    virtual boolean startTutorial();
 
-  //
-  // Return a pixmap with the icon in it.
-  //
-  virtual Pixmap getIconPixmap()
-  {
-    return XtUnspecifiedPixmap;
-  };
+    //
+    // Return a pixmap with the logo in it.
+    //
+    virtual Pixmap getLogoPixmap(boolean ){return XtUnspecifiedPixmap;};
+    virtual void cleanupLogo(){};
 
-  //
-  // A virtual method that allows other applications to handle ASSERT
-  // failures among other things.
-  //
-  virtual void abortApplication();
+    //
+    // Return a pixmap with the icon in it.
+    //
+    virtual Pixmap getIconPixmap(){return XtUnspecifiedPixmap;};
 
-  //
-  // Control the display of bubble help
-  //
-  virtual boolean bubbleHelpEnabled()
-  {
-    return this->show_bubbles;
-  }
-  virtual void enableBubbleHelp( boolean state = TRUE )
-  {
-    this->show_bubbles = state;
-  }
-  virtual void setHelpViewer( Widget viewer )
-  {
-    this->help_viewer = viewer;
-  }
-  virtual Widget getHelpViewer()
-  {
-    return this->help_viewer;
-  }
+    //
+    // A virtual method that allows other applications to handle ASSERT
+    // failures among other things.
+    //
+    virtual void abortApplication();
 
-  virtual void handleEvents();
+    //
+    // Control the display of bubble help
+    //
+    virtual boolean bubbleHelpEnabled() { return this->show_bubbles; }
+    virtual void    enableBubbleHelp (boolean state = TRUE) 
+	{ this->show_bubbles = state; }
+    virtual void    setHelpViewer (Widget viewer) { this->help_viewer = viewer; }
+    virtual Widget  getHelpViewer () { return this->help_viewer; }
 
-  virtual boolean getApplicationDefaultsFileName( char *res_file,
-                                                  boolean create = FALSE );
+    virtual void handleEvents();
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassApplication;
-  }
+    virtual boolean getApplicationDefaultsFileName(char* res_file, boolean create=FALSE);
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassApplication;
+    }
 };
 
 //
 // Pointer to the single (hopefully) global instance:
 //
-extern Application *theApplication;
+extern Application* theApplication;
 
-#endif  // _Application_h
+
+#endif // _Application_h

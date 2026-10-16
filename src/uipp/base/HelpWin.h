@@ -17,110 +17,105 @@
 //
 // Class name definition:
 //
-#define ClassHelpWin "HelpWin"
+#define ClassHelpWin	"HelpWin"
 
 //
 // XtCallbackProc (*CB), XtEventHandler (*EH) and XtActionProc (*AP)
 // DialogCallback (*DCB) functions for this and derived classes
 //
-extern "C" void HelpWin_SelectCB( Widget, XtPointer, XtPointer );
+extern "C" void HelpWin_SelectCB(Widget, XtPointer, XtPointer);
 
 class Command;
 class CommandInterface;
 
-extern "C" {
-const char *GetHelpDirectory();
-}
-extern "C" {
-const char *GetHelpDirFileName();
-}
-extern "C" {
-const char *GetHTMLDirectory();
-}
-extern "C" {
-const char *GetHTMLDirFileName();
-}
+extern "C" { const char *GetHelpDirectory(); }
+extern "C" { const char *GetHelpDirFileName(); }
+extern "C" { const char *GetHTMLDirectory(); }
+extern "C" { const char *GetHTMLDirFileName(); }
+
 
 //
 // HelpWin class definition:
-//
+//				
 class HelpWin : public MainWindow
 {
   friend const char *GetHelpDirectory();
   friend const char *GetHelpDirFileName();
   friend const char *GetHTMLDirectory();
   friend const char *GetHTMLDirFileName();
+  private:
+    //
+    // Private member data:
+    //
+    static boolean UseWebBrowser;
+    static boolean ClassInitialized;
+    friend void HelpWin_SelectCB(Widget, XtPointer, XtPointer);
 
- private:
-  //
-  // Private member data:
-  //
-  static boolean UseWebBrowser;
-  static boolean ClassInitialized;
-  friend void HelpWin_SelectCB( Widget, XtPointer, XtPointer );
+    //
+    // Encapsulate initialization for multiple constructors
+    //
+    void init();
 
-  //
-  // Encapsulate initialization for multiple constructors
-  //
-  void init();
+  protected:
+    //
+    // Protected member data:
+    //
+    static String DefaultResources[];
 
- protected:
-  //
-  // Protected member data:
-  //
-  static String DefaultResources[];
+    Command *closeCmd;
+    CommandInterface *closeOption;
 
-  Command *closeCmd;
-  CommandInterface *closeOption;
+    Widget historyPopup;
+    Widget fileMenu;
+    Widget fileMenuPulldown;
+    Widget multiText;
 
-  Widget historyPopup;
-  Widget fileMenu;
-  Widget fileMenuPulldown;
-  Widget multiText;
+    Dictionary topicToFileMap;
 
-  Dictionary topicToFileMap;
+    //
+    // functions to set up menus and the window itself.
+    //
+    virtual Widget createWorkArea(Widget parent);
 
-  //
-  // functions to set up menus and the window itself.
-  //
-  virtual Widget createWorkArea( Widget parent );
+    //
+    // Constructor for derived classes:
+    //
+    HelpWin(const char *name, boolean hasMenuBar);
 
-  //
-  // Constructor for derived classes:
-  //
-  HelpWin( const char *name, boolean hasMenuBar );
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+  public:
+    //
+    // Constructor for instances of this class:
+    //
+    HelpWin();
 
- public:
-  //
-  // Constructor for instances of this class:
-  //
-  HelpWin();
+    //
+    // Destructor:
+    //
+    ~HelpWin();
 
-  //
-  // Destructor:
-  //
-  ~HelpWin();
+    virtual void initialize();
 
-  virtual void initialize();
+    virtual void helpOn(const char *topic);
 
-  virtual void helpOn( const char *topic );
+    void loadTopicFile(const char *topic, const char *file);
 
-  void loadTopicFile( const char *topic, const char *file );
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassHelpWin;
+    }
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassHelpWin;
-  }
 };
 
-#endif  // _HelpWin_h
+
+
+#endif // _HelpWin_h

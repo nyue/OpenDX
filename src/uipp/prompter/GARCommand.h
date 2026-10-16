@@ -9,51 +9,57 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
 #ifndef _GARCommand_h
 #define _GARCommand_h
+
 
 #include "../base/NoUndoCommand.h"
 #include <Xm/Xm.h>
 
-class GARMainWindow;
+class  GARMainWindow;
 
 //
 // GARCommand class definition:
-//
+//				
 
-#define ClassGARCommand "GARCommand"
+#define ClassGARCommand  "GARCommand"
 
-class GARCommand : public NoUndoCommand
+class GARCommand : public NoUndoCommand 
 {
- private:
-  static String DefaultResources[];
-  GARMainWindow* gmw;
-  int option;
+  private:
 
- protected:
-  virtual boolean doIt( CommandInterface* ci );
+    static  String	DefaultResources[];
+    GARMainWindow* 	gmw;
+    int			option;
 
- public:
-  //
-  // Constructor:
-  //
-  GARCommand( const char*, CommandScope*, boolean active, GARMainWindow*,
-              int option );
+  protected:
+    virtual boolean doIt(CommandInterface *ci);
 
-  //
-  // Destructor:
-  //
-  ~GARCommand()
-  {
-  }
+  public:
+    //
+    // Constructor:
+    //
+    GARCommand(const char*,
+		CommandScope*,
+		boolean active,
+                GARMainWindow*,
+		int option);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassGARCommand;
-  }
+    //
+    // Destructor:
+    //
+    ~GARCommand(){}
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassGARCommand;
+    }
 };
 
-#endif  // _GARCommand_h
+
+#endif // _GARCommand_h

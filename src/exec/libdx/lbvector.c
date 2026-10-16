@@ -8,6 +8,8 @@
 
 #include <dxconfig.h>
 
+
+
 /*
  * Implementation of operations on type Vector
  * XXX - these work for Vector and Point too - should that be separated out?

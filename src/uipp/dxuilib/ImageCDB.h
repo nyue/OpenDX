@@ -9,75 +9,82 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _ImageCDB_h
 #define _ImageCDB_h
 
+
 #include "ConfigurationDialog.h"
+
 
 //
 // Class name definition:
 //
-#define ClassImageCDB "ImageCDB"
+#define ClassImageCDB	"ImageCDB"
 
 //
 // Referenced classes
 class Node;
 
-extern "C" void ImageCDB_ActivateOutputCacheCB( Widget, XtPointer, XtPointer );
+extern "C" void ImageCDB_ActivateOutputCacheCB(Widget , XtPointer , XtPointer);
 
 //
 // ImageCDB class definition:
-//
+//				
 class ImageCDB : public ConfigurationDialog
 {
- private:
-  //
-  // Private member data:
-  //
-  static boolean ClassInitialized;
-  static String DefaultResources[];
+  private:
+    //
+    // Private member data:
+    //
+    static boolean ClassInitialized;
+    static String  DefaultResources[];
 
-  friend void ImageCDB_ActivateOutputCacheCB( Widget, XtPointer, XtPointer );
+    friend void ImageCDB_ActivateOutputCacheCB(Widget , XtPointer , XtPointer);
 
- protected:
-  virtual Widget createOutputs( Widget parent, Widget top );
+  protected:
 
-  Widget imageCacheOM;
-  Widget imageCacheLabel;
-  Widget internalFullButton;
-  Widget internalLastButton;
-  Widget internalOffButton;
+    virtual Widget createOutputs(Widget parent, Widget top);
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
+    Widget imageCacheOM;
+    Widget imageCacheLabel;
+    Widget internalFullButton;
+    Widget internalLastButton;
+    Widget internalOffButton;
 
- public:
-  static ConfigurationDialog *AllocateConfigurationDialog( Widget parent,
-                                                           Node *node );
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
-  virtual void changeOutput( int );
+  public:
+    static ConfigurationDialog *AllocateConfigurationDialog(Widget parent,
+							   Node *node);
 
-  //
-  // Constructor:
-  //
-  ImageCDB( Widget parent, Node *node );
+    virtual void changeOutput (int );
 
-  //
-  // Destructor:
-  //
-  ~ImageCDB();
+    //
+    // Constructor:
+    //
+    ImageCDB(Widget parent, Node *node);
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char *getClassName()
-  {
-    return ClassImageCDB;
-  }
+    //
+    // Destructor:
+    //
+    ~ImageCDB();
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassImageCDB;
+    }
 };
 
-#endif  // _ImageCDB_h
+
+#endif // _ImageCDB_h

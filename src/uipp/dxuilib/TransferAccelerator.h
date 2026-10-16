@@ -9,8 +9,9 @@
 #ifndef _transferAccelerator_h
 #define _transferAccelerator_h
 
+
 #ifdef __cplusplus
-extern "C" {
+extern "C" {                     
 #endif
 
 /* Function to force accelerator from one widget onto another.
@@ -18,10 +19,11 @@ extern "C" {
    activate its parents functions.
  */
 
-Boolean TransferAccelerator( Widget shell, Widget source, String action );
+Boolean TransferAccelerator(Widget shell, Widget source, String action);
 
-#ifdef __cplusplus
-} /* Close scope of 'extern "C"' declaration which encloses file. */
-#endif
+#ifdef __cplusplus  
+}  /* Close scope of 'extern "C"' declaration which encloses file. */ 
+#endif  
+
 
 #endif

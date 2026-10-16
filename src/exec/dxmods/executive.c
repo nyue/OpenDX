@@ -8,6 +8,8 @@
 
 #include <dxconfig.h>
 
+
+
 /***
 MODULE:
  Executive
@@ -26,9 +28,9 @@ END:
 #include <string.h>
 #include <dx/dx.h>
 
-extern Error _dxf_ExExecCommand( Object *in ); /* from dpexec/command.c */
+extern Error _dxf_ExExecCommand(Object *in); /* from dpexec/command.c */
 
-Error m_Executive( Object *in, Object *out )
+Error m_Executive(Object *in, Object *out)
 {
-  return ( _dxf_ExExecCommand( in ) );
+    return (_dxf_ExExecCommand (in));
 }

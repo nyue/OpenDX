@@ -9,6 +9,9 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #include "DXApplication.h"
 #include "StartServerDialog.h"
 #include "StartOptionsDialog.h"
@@ -22,203 +25,272 @@
 #include <Xm/PushB.h>
 
 Boolean StartServerDialog::ClassInitialized = FALSE;
-String StartServerDialog::DefaultResources[] = {
+String StartServerDialog::DefaultResources[] = 
+{
     ".dialogTitle:			Start Server...",
     "*hostLabel.labelString:		Hostname:",
-    //    "*hostText.width:			200",
+//    "*hostText.width:			200",
     "*connectButton.labelString:	Connect",
     "*cancelButton.labelString:		Cancel",
     "*optionsButton.labelString:	Options...",
-    //    "*XmPushButton.width:		75",
-    //    "*XmPushButton.height:		25",
-    NULL};
+//    "*XmPushButton.width:		75",
+//    "*XmPushButton.height:		25",
+    NULL
+};
 
-boolean StartServerDialog::okCallback( Dialog *clientData )  // AJ
+
+
+boolean StartServerDialog::okCallback(Dialog *clientData)   // AJ 
 {
-  StartServerDialog *d = (StartServerDialog *)clientData;
+    StartServerDialog  *d = (StartServerDialog*)clientData;
 
-  char *s = XmTextGetString( d->text );
 
-  int autoStart;
-  const char *server;
-  const char *executive;
-  const char *workingDirectory;
-  const char *executiveFlags;
-  int port;
-  int memorySize;
+    char *s = XmTextGetString(d->text);
 
-  this->unmanage();
+    int autoStart;
+    const char *server;
+    const char *executive;
+    const char *workingDirectory;
+    const char *executiveFlags;
+    int port;
+    int memorySize;
 
-  theDXApplication->setBusyCursor( TRUE );
+    this->unmanage();
 
-  theDXApplication->getServerParameters( &autoStart, &server, &executive,
-                                         &workingDirectory, &executiveFlags,
-                                         &port, &memorySize );
+    theDXApplication->setBusyCursor(TRUE);
 
-  theDXApplication->setServerParameters( autoStart, s, executive,
-                                         workingDirectory, executiveFlags, port,
-                                         memorySize );
+    theDXApplication->getServerParameters(
+	&autoStart,
+	&server,
+	&executive,
+	&workingDirectory,
+	&executiveFlags,
+	&port,
+	&memorySize);
 
-  DXChild *c = theDXApplication->startServer();
-  theDXApplication->completeConnection( c );
+    theDXApplication->setServerParameters(
+	autoStart,
+	s,
+	executive,
+	workingDirectory,
+	executiveFlags,
+	port,
+	memorySize);
 
-  theDXApplication->setBusyCursor( FALSE );
+    DXChild *c = theDXApplication->startServer();
+    theDXApplication->completeConnection(c);
 
-  if ( s )
-    XtFree( s );  //   AJ
+    theDXApplication->setBusyCursor(FALSE);
 
-  return FALSE;  // Unmanaged above
+    if(s)   XtFree(s);     //   AJ
+
+    return FALSE;	// Unmanaged above
 }
-void StartServerDialog::cancelCallback( Dialog * )
+void StartServerDialog::cancelCallback(Dialog *)
 {
-}
-
-extern "C" void StartServerDialog_TextCB( Widget, XtPointer clientData,
-                                          XtPointer )
-{
-  StartServerDialog *d = (StartServerDialog *)clientData;
-
-  d->okCallback( d );
-}
-
-extern "C" void StartServerDialog_OptionsCB( Widget, XtPointer clientData,
-                                             XtPointer )
-{
-  StartServerDialog *d = (StartServerDialog *)clientData;
-
-  d->optionsCallback( d );
 }
 
-void StartServerDialog::optionsCallback( StartServerDialog *clientData )
+extern "C" void StartServerDialog_TextCB(Widget,
+					XtPointer clientData,
+					XtPointer)
 {
-  StartServerDialog *d = (StartServerDialog *)clientData;
+    StartServerDialog *d = (StartServerDialog*)clientData;
 
-  if ( this->optionsDialog == NULL )
-    this->optionsDialog = new StartOptionsDialog( this->getRootWidget() );
-  d->optionsDialog->post();
+    d->okCallback(d);
 }
 
-extern "C" void StartServerDialog_FocusEH( Widget, XtPointer clientData,
-                                           XEvent *event, Boolean * )
+extern "C" void StartServerDialog_OptionsCB(Widget,
+					XtPointer clientData,
+					XtPointer)
 {
-  StartServerDialog *d = (StartServerDialog *)clientData;
+    StartServerDialog *d = (StartServerDialog*)clientData;
 
-  XSetInputFocus( XtDisplay( d->text ), XtWindow( d->text ),
-                  RevertToPointerRoot, CurrentTime );
+    d->optionsCallback(d);
 }
 
-Widget StartServerDialog::createDialog( Widget parent )
+void StartServerDialog::optionsCallback(StartServerDialog *clientData)
 {
-  Arg arg[5];
-  int n = 0;
+    StartServerDialog  *d = (StartServerDialog*) clientData;
 
-  XtSetArg( arg[n], XmNautoUnmanage, False );
-  n++;
+    if (this->optionsDialog == NULL)
+	this->optionsDialog = new StartOptionsDialog(this->getRootWidget());
+    d->optionsDialog->post();
+}
 
-  Widget w = this->CreateMainForm( parent, this->name, arg, n );
+extern "C" void StartServerDialog_FocusEH(Widget,
+					XtPointer clientData,
+					XEvent* event,
+					Boolean *)
+{
+    StartServerDialog *d = (StartServerDialog*)clientData;
 
-  Widget label = XtVaCreateManagedWidget(
-      "hostLabel", xmLabelWidgetClass, w, XmNtopAttachment, XmATTACH_FORM,
-      XmNtopOffset, 10, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, 5,
-      NULL );
+    XSetInputFocus(XtDisplay(d->text),
+		   XtWindow(d->text),
+		   RevertToPointerRoot,
+		   CurrentTime);
+}
 
-  this->text = XtVaCreateManagedWidget(
-      "hostText", xmTextWidgetClass, w, XmNtopAttachment, XmATTACH_FORM,
-      XmNtopOffset, 10, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget,
-      label, XmNleftOffset, 10, XmNrightAttachment, XmATTACH_FORM,
-      XmNrightOffset, 5, XmNeditMode, XmSINGLE_LINE_EDIT, NULL );
+Widget StartServerDialog::createDialog(Widget parent)
+{
+    Arg  arg[5];
+    int  n = 0;
 
-  Widget separator = XtVaCreateManagedWidget(
-      "connectSeparator", xmSeparatorWidgetClass, w, XmNleftAttachment,
-      XmATTACH_FORM, XmNleftOffset, 2, XmNrightAttachment, XmATTACH_FORM,
-      XmNrightOffset, 2, XmNtopOffset, 9, XmNtopAttachment, XmATTACH_WIDGET,
-      XmNtopWidget, this->text, NULL );
+    XtSetArg(arg[n], XmNautoUnmanage, False);  n++;
 
-  this->ok = XtVaCreateManagedWidget(
-      "connectButton", xmPushButtonWidgetClass, w, XmNleftAttachment,
-      XmATTACH_FORM, XmNleftOffset, 9, XmNtopAttachment, XmATTACH_WIDGET,
-      XmNtopWidget, separator, XmNtopOffset, 9, XmNbottomAttachment,
-      XmATTACH_FORM, XmNbottomOffset, 9, XmNuserData, ( XtPointer ) this,
+    Widget w = this->CreateMainForm(parent, this->name, arg, n);
+
+    Widget label = XtVaCreateManagedWidget("hostLabel",
+	xmLabelWidgetClass,
+	w,
+	XmNtopAttachment,	XmATTACH_FORM,
+	XmNtopOffset,		10,
+	XmNleftAttachment,	XmATTACH_FORM,
+	XmNleftOffset,		5,
+	NULL);
+
+    this->text = XtVaCreateManagedWidget("hostText",
+	xmTextWidgetClass,
+	w,
+	XmNtopAttachment,	XmATTACH_FORM,
+	XmNtopOffset,		10,
+	XmNleftAttachment, 	XmATTACH_WIDGET,
+	XmNleftWidget,		label,
+	XmNleftOffset,		10,
+	XmNrightAttachment,	XmATTACH_FORM,
+	XmNrightOffset,		5,
+	XmNeditMode,		XmSINGLE_LINE_EDIT,
+	NULL);
+
+    Widget separator = XtVaCreateManagedWidget("connectSeparator", 
+	xmSeparatorWidgetClass,
+	w,
+	XmNleftAttachment,   XmATTACH_FORM,
+	XmNleftOffset,       2,
+	XmNrightAttachment,  XmATTACH_FORM,
+	XmNrightOffset,      2,
+	XmNtopOffset,        9,
+	XmNtopAttachment,    XmATTACH_WIDGET,
+	XmNtopWidget,        this->text,
+	NULL);
+
+
+    this->ok = XtVaCreateManagedWidget("connectButton",
+	xmPushButtonWidgetClass,
+	w,
+	XmNleftAttachment,   XmATTACH_FORM,
+	XmNleftOffset,       9,
+	XmNtopAttachment,    XmATTACH_WIDGET,
+	XmNtopWidget,        separator,
+	XmNtopOffset,        9,
+	XmNbottomAttachment, XmATTACH_FORM,
+	XmNbottomOffset,     9,
+	XmNuserData,	     (XtPointer)this,
 #ifdef sun4
 //	XmNheight,	     40,
 //	XmNwidth,	     90,
 #endif
-      XmNshowAsDefault, 2, NULL );
+	XmNshowAsDefault,    2,
+	NULL);
 
-  this->options = XtVaCreateManagedWidget(
-      "optionsButton", xmPushButtonWidgetClass, w, XmNleftAttachment,
-      XmATTACH_POSITION, XmNleftPosition, 50, XmNleftOffset, -30,
-      XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, separator, XmNtopOffset,
-      17, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 9 + 8,
-      XmNuserData, ( XtPointer ) this, NULL );
+    this->options = XtVaCreateManagedWidget("optionsButton",
+	xmPushButtonWidgetClass,
+	w,
+	XmNleftAttachment,   XmATTACH_POSITION,
+	XmNleftPosition,     50,
+	XmNleftOffset,       -30,
+	XmNtopAttachment,    XmATTACH_WIDGET,
+	XmNtopWidget,        separator,
+	XmNtopOffset,        17,
+	XmNbottomAttachment, XmATTACH_FORM,
+	XmNbottomOffset,     9 + 8,
+	XmNuserData,	     (XtPointer)this,
+	NULL);
 
-  this->cancel = XtVaCreateManagedWidget(
-      "cancelButton", xmPushButtonWidgetClass, w, XmNrightAttachment,
-      XmATTACH_FORM, XmNrightOffset, 9, XmNtopAttachment, XmATTACH_WIDGET,
-      XmNtopWidget, separator, XmNtopOffset, 17, XmNbottomAttachment,
-      XmATTACH_FORM, XmNbottomOffset, 9 + 8, XmNuserData, ( XtPointer ) this,
-      NULL );
+    this->cancel = XtVaCreateManagedWidget("cancelButton",
+	xmPushButtonWidgetClass,
+	w,
+        XmNrightAttachment,  XmATTACH_FORM,
+        XmNrightOffset,      9,
+	XmNtopAttachment,    XmATTACH_WIDGET,
+	XmNtopWidget,        separator,
+	XmNtopOffset,        17,
+	XmNbottomAttachment, XmATTACH_FORM,
+	XmNbottomOffset,     9 + 8,
+	XmNuserData,	     (XtPointer)this,
+	NULL);
 
-  XtAddCallback( this->text, XmNactivateCallback,
-                 (XtCallbackProc)StartServerDialog_TextCB, ( XtPointer ) this );
+    XtAddCallback(this->text,
+		  XmNactivateCallback,
+		  (XtCallbackProc)StartServerDialog_TextCB,
+		  (XtPointer)this);
 
-  XtAddCallback( this->options, XmNactivateCallback,
-                 (XtCallbackProc)StartServerDialog_OptionsCB,
-                 ( XtPointer ) this );
+    XtAddCallback(this->options,
+		  XmNactivateCallback,
+		  (XtCallbackProc)StartServerDialog_OptionsCB,
+		  (XtPointer)this);
 
-  XtAddEventHandler(
-      w, EnterWindowMask, False,
-      ( XtEventHandler )(XtEventHandler)StartServerDialog_FocusEH,
-      ( XtPointer ) this );
+    XtAddEventHandler(w,
+		  EnterWindowMask, 
+		  False,
+		  (XtEventHandler)(XtEventHandler)StartServerDialog_FocusEH,
+		  (XtPointer)this);
 
-  return w;
+    return w;
 }
 
-StartServerDialog::StartServerDialog( char *name, Widget parent )
-    : Dialog( name, parent )
-{
-  this->optionsDialog = NULL;
-}
-StartServerDialog::StartServerDialog( Widget parent )
-    : Dialog( "startServerDialog", parent )
-{
-  this->optionsDialog = NULL;
 
-  if ( NOT StartServerDialog::ClassInitialized )
-  {
-    StartServerDialog::ClassInitialized = TRUE;
-    this->installDefaultResources( theApplication->getRootWidget() );
-  }
+StartServerDialog::StartServerDialog(char *name, Widget parent) : 
+    Dialog(name, parent)
+{
+    this->optionsDialog = NULL;
+
+}
+StartServerDialog::StartServerDialog(Widget parent) : 
+    Dialog("startServerDialog", parent)
+{
+    this->optionsDialog = NULL;
+
+    if (NOT StartServerDialog::ClassInitialized)
+    {
+        StartServerDialog::ClassInitialized = TRUE;
+	this->installDefaultResources(theApplication->getRootWidget());
+    }
 }
 
 StartServerDialog::~StartServerDialog()
 {
-  if ( this->optionsDialog )
-    delete this->optionsDialog;
+    if (this->optionsDialog)
+	delete this->optionsDialog;
 }
 
 //
 // Install the default resources for this class.
 //
-void StartServerDialog::installDefaultResources( Widget baseWidget )
+void StartServerDialog::installDefaultResources(Widget  baseWidget)
 {
-  this->setDefaultResources( baseWidget, StartServerDialog::DefaultResources );
-  this->Dialog::installDefaultResources( baseWidget );
+    this->setDefaultResources(baseWidget, StartServerDialog::DefaultResources);
+    this->Dialog::installDefaultResources( baseWidget);
 }
 
 void StartServerDialog::manage()
 {
-  this->Dialog::manage();
+    this->Dialog::manage();
 
-  const char *server;
-  theDXApplication->getServerParameters( NULL, &server, NULL, NULL, NULL, NULL,
-                                         NULL );
-  XmTextSetString( this->text, (char *)server );
+    const char *server;
+    theDXApplication->getServerParameters(
+	NULL,
+	&server,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL);
+    XmTextSetString(this->text, (char *)server);
 }
 
 void StartServerDialog::unmanage()
 {
-  if ( this->optionsDialog )
-    this->optionsDialog->unmanage();
-  this->Dialog::unmanage();
+    if (this->optionsDialog)
+	this->optionsDialog->unmanage();
+    this->Dialog::unmanage();
 }

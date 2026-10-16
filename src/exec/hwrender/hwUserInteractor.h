@@ -8,13 +8,14 @@
 
 #include <dxconfig.h>
 
+
 /*
  *  User interactor private data structure
  */
 
-typedef struct
-{
+typedef struct {
   void *userData;
   int button;
   int mode;
 } tdmUserInteractorData;
+

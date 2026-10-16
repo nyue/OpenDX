@@ -9,69 +9,72 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
 #ifndef _StartupCommand_h
 #define _StartupCommand_h
+
+
 
 #include <Xm/Xm.h>
 
 #include "../base/NoUndoCommand.h"
 
-class StartupWindow;
+class  StartupWindow;
 typedef int StartupCommandType;
 
 //
 // StartupCommand class definition:
-//
+//				
 
-#define ClassStartupCommand "StartupCommand"
+#define ClassStartupCommand  "StartupCommand"
 
-class StartupCommand : public NoUndoCommand
+class StartupCommand : public NoUndoCommand 
 {
- private:
-  static String DefaultResources[];
-  StartupWindow* startup_window;
-  int option;
-  StartupCommandType commandType;
+  private:
 
- protected:
-  virtual boolean doIt( CommandInterface* ci );
+    static  String	DefaultResources[];
+    StartupWindow* 	startup_window;
+    int			option;
+    StartupCommandType  commandType;
 
- public:
-  //
-  // Constructor:
-  //
-  StartupCommand( const char*, CommandScope*, boolean active, StartupWindow*,
-                  int option );
+  protected:
+    virtual boolean doIt(CommandInterface *ci);
 
-  // These are the various operations that the StartupCommand can
-  // implement on behalf of a StartupApplication.
-  //
-  enum
-  {
-    StartImage = 3,
-    StartPrompter = 4,
-    StartEditor = 5,
-    EmptyVPE = 6,
-    StartTutorial = 7,
-    StartDemo = 8,
-    Quit = 9,
-    Help = 10
-  };
+  public:
+    //
+    // Constructor:
+    //
+    StartupCommand(const char*,
+		CommandScope*,
+		boolean active,
+                StartupWindow*,
+		int option);
 
-  //
-  // Destructor:
-  //
-  ~StartupCommand()
-  {
-  }
+    // These are the various operations that the StartupCommand can
+    // implement on behalf of a StartupApplication.
+    //
+    enum {
+	StartImage	= 3,
+	StartPrompter	= 4,
+	StartEditor	= 5,
+	EmptyVPE	= 6,
+	StartTutorial	= 7,
+	StartDemo	= 8,
+	Quit		= 9,
+	Help		= 10
+    };
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassStartupCommand;
-  }
+    //
+    // Destructor:
+    //
+    ~StartupCommand(){}
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName() { return ClassStartupCommand; }
 };
 
-#endif  // _StartupCommand_h
+
+#endif // _StartupCommand_h

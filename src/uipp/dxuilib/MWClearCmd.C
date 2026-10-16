@@ -9,22 +9,30 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #include "MWClearCmd.h"
 #include "MsgWin.h"
+
+
 
 //
 // Constructor:
 //
-MWClearCmd::MWClearCmd( const char *name, CommandScope *scope, boolean active,
-                        MsgWin *win )
-    : NoUndoCommand( name, scope, active )
+MWClearCmd::MWClearCmd(const char *name,
+	   CommandScope *scope,
+	   boolean active,
+	   MsgWin *win):
+    NoUndoCommand(name, scope, active)
 {
-  this->messageWindow = win;
+    this->messageWindow = win;
 }
 
-boolean MWClearCmd::doIt( CommandInterface *ci )
-{
-  this->messageWindow->clear();
 
-  return TRUE;
+boolean MWClearCmd::doIt(CommandInterface *ci)
+{
+    this->messageWindow->clear();
+
+    return TRUE;
 }

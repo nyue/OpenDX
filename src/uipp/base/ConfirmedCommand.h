@@ -9,8 +9,13 @@
 #include <dxconfig.h>
 #include "../base/defines.h"
 
+
+
+
 #ifndef _ConfirmedCommand_h
 #define _ConfirmedCommand_h
+
+
 
 #include <Xm/Xm.h>
 
@@ -19,51 +24,54 @@
 //
 // Class name definition:
 //
-#define ClassConfirmedCommand "ConfirmedCommand"
+#define ClassConfirmedCommand	"ConfirmedCommand"
 
 //
 // ConfirmedCommand class definition:
-//
+//				
 class ConfirmedCommand : public NoUndoCommand
 {
- private:
-  char* dialogQuestion;
-  char* dialogTitle;
+  private:
+    char* dialogQuestion;
+    char* dialogTitle;
 
-  static void OkDCB( void* clientData );
+    static void OkDCB(void* clientData);
 
- protected:
-  //
-  // Constructor:
-  //
-  Widget dialogParent;
+  protected:
+    //
+    // Constructor:
+    //
+    Widget dialogParent;
 
-  ConfirmedCommand( const char* name, CommandScope* scope, boolean active,
-                    char* dialogTitle, char* dialogQuestion,
-                    Widget parent = NULL );
+    ConfirmedCommand(const char*   name,
+		     CommandScope* scope,
+		     boolean       active,
+		     char*         dialogTitle,
+		     char*         dialogQuestion,
+		     Widget	parent = NULL);
 
- public:
-  //
-  // Destructor:
-  //
-  ~ConfirmedCommand()
-  {
-  }
 
-  //
-  // Overrides the supperclass execute() function:
-  //   First posts a dialog to ask for user confirmation before
-  //   actually executing the command.
-  //
-  virtual boolean execute( CommandInterface* ci = NULL );
+  public:
+    //
+    // Destructor:
+    //
+    ~ConfirmedCommand(){}
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassConfirmedCommand;
-  }
+    //
+    // Overrides the supperclass execute() function:
+    //   First posts a dialog to ask for user confirmation before
+    //   actually executing the command.
+    //
+    virtual boolean execute(CommandInterface *ci = NULL);
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName()
+    {
+	return ClassConfirmedCommand;
+    }
 };
 
-#endif  // _ConfirmedCommand_h
+
+#endif // _ConfirmedCommand_h

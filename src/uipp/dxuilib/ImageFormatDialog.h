@@ -8,8 +8,10 @@
 
 #include <dxconfig.h>
 
+
 #ifndef _ImageFormatDialog_h
 #define _ImageFormatDialog_h
+
 
 #include "Dialog.h"
 #include "NoOpCommand.h"
@@ -18,13 +20,13 @@
 //
 // Class name definition:
 //
-#define ClassImageFormatDialog "ImageFormatDialog"
-#define CM_PER_INCH 2.54
+#define ClassImageFormatDialog	"ImageFormatDialog"
+#define CM_PER_INCH     2.54
 
-extern "C" void ImageFormatDialog_ChoiceCB( Widget, XtPointer, XtPointer );
-// extern "C" void ImageFormatDialog_UnitsCB(Widget, XtPointer, XtPointer);
-extern "C" void ImageFormatDialog_DirtyGammaCB( Widget, XtPointer, XtPointer );
-extern "C" void ImageFormatDialog_RestoreCB( Widget, XtPointer, XtPointer );
+extern "C" void ImageFormatDialog_ChoiceCB(Widget, XtPointer, XtPointer);
+//extern "C" void ImageFormatDialog_UnitsCB(Widget, XtPointer, XtPointer);
+extern "C" void ImageFormatDialog_DirtyGammaCB(Widget, XtPointer, XtPointer);
+extern "C" void ImageFormatDialog_RestoreCB(Widget, XtPointer, XtPointer);
 
 class ImageNode;
 class ImageFormat;
@@ -35,23 +37,24 @@ class List;
 
 //
 // SaveImageDialog class definition:
-//
+//				
 class ImageFormatDialog : public Dialog, public NoOpCommand
 {
- private:
-  static boolean ClassInitialized;
-  static String DefaultResources[];
-  static Cursor WatchCursor;
+  private:
 
-  static void ImageOutputCompletePH( void*, int, void* );
+    static boolean ClassInitialized;
+    static String  DefaultResources[];
+    static Cursor  WatchCursor;
 
-  friend class ImageFormat;
+    static void ImageOutputCompletePH (void* , int, void* );
 
-  List* image_formats;
-  CommandScope* commandScope;
+    friend class ImageFormat;
 
-  Widget format_om;
-  Widget format_pd;
+    List*		image_formats;
+    CommandScope*	commandScope;
+
+    Widget		format_om;
+    Widget		format_pd;
 #if 0
     Widget		units;
     Widget		units_om;
@@ -61,131 +64,109 @@ class ImageFormatDialog : public Dialog, public NoOpCommand
     Widget		cms_button;
     Widget		chosen_units;
 #endif
-  Widget aboveBody;
-  Widget belowBody;
-  Widget gamma_number;
-  Widget restore;
+    Widget		aboveBody;
+    Widget		belowBody;
+    Widget		gamma_number;
+    Widget		restore;
 
-  int dirty;
-  int busyCursors;
-  boolean resetting;
+    int 		dirty;
+    int			busyCursors;
+    boolean		resetting;
 
- protected:
-  ImageFormat* choice;
-  ImageNode* node;
+  protected:
 
-  ToggleButtonInterface* rerenderOption;
-  ToggleButtonInterface* delayedOption;
+    ImageFormat*		choice;
+    ImageNode*			node;
 
-  Command* rerenderCmd;
-  Command* delayedCmd;
+    ToggleButtonInterface*	rerenderOption;
+    ToggleButtonInterface*	delayedOption;
 
-  virtual Widget createDialog( Widget parent );
+    Command*			rerenderCmd;
+    Command*			delayedCmd;
 
-  virtual boolean okCallback( Dialog* );
-  virtual void cancelCallback( Dialog* );
-  virtual void restoreCallback();
+    virtual Widget createDialog(Widget parent);
 
-  virtual const char* getOutputFile() = 0;
+    virtual boolean 		okCallback(Dialog *);
+    virtual void 		cancelCallback(Dialog *);
+    virtual void		restoreCallback();
 
-  virtual boolean isPrinting() = 0;
-  virtual Widget createControls( Widget parent ) = 0;
+    virtual const char*		getOutputFile() = 0;
 
-  //
-  // Install the default resources for this class and then call the
-  // same super class method to get the default resources from the
-  // super classes.
-  //
-  virtual void installDefaultResources( Widget baseWidget );
 
-  //
-  // Constructor:
-  //
-  ImageFormatDialog( char* name, Widget parent, ImageNode* node,
-                     CommandScope* commandScope );
+    virtual boolean		isPrinting() = 0;
+    virtual Widget		createControls(Widget parent) = 0;
 
-  friend void ImageFormatDialog_ChoiceCB( Widget, XtPointer, XtPointer );
-  // friend void ImageFormatDialog_UnitsCB(Widget, XtPointer, XtPointer);
-  friend void ImageFormatDialog_DirtyGammaCB( Widget, XtPointer, XtPointer );
-  friend void ImageFormatDialog_RestoreCB( Widget, XtPointer, XtPointer );
+    //
+    // Install the default resources for this class and then call the
+    // same super class method to get the default resources from the
+    // super classes.
+    //
+    virtual void installDefaultResources(Widget baseWidget);
 
-  enum
-  {
-    DirtyFormat = 1,
-    DirtyEnabled = 2,
-    DirtyRerender = 4,
-    DirtyGamma = 8,
-    DirtyDelayed = 16
-  };
+    //
+    // Constructor:
+    //
+    ImageFormatDialog(char* name, Widget parent, ImageNode* node, 
+	CommandScope* commandScope);
 
-  boolean isMetric();
-  void setChoice( ImageFormat* );
-  virtual void parseRecordFormat( const char* );
-  virtual int getRequiredWidth()
-  {
-    return 455;
-  }
-  virtual int getRequiredHeight() = 0;
+    friend void ImageFormatDialog_ChoiceCB(Widget, XtPointer, XtPointer);
+    //friend void ImageFormatDialog_UnitsCB(Widget, XtPointer, XtPointer);
+    friend void ImageFormatDialog_DirtyGammaCB(Widget, XtPointer, XtPointer);
+    friend void ImageFormatDialog_RestoreCB(Widget, XtPointer, XtPointer);
 
- public:
-  //
-  // manage activation of OK and Apply buttons
-  //
-  virtual void activate();
-  virtual void deactivate( const char* msg = NULL );
-  virtual void setCommandActivation();
-  virtual void manage();
-  virtual void currentImage();
-  virtual void update();
-  virtual boolean postFileSelectionDialog()
-  {
-    return TRUE;
-  }
+    enum {
+	DirtyFormat     = 1,
+	DirtyEnabled    = 2,
+	DirtyRerender   = 4,
+	DirtyGamma	= 8,
+	DirtyDelayed	= 16
+    };
 
-  void associateNode( ImageNode* node )
-  {
-    this->node = node;
-  }
-  boolean makeExecOutputImage( const char*, int, float, const char*,
-                               const char* );
-  boolean makeExecOutputImage( const char*, const char*, const char* );
+    boolean 			isMetric();
+    void			setChoice(ImageFormat*);
+    virtual void		parseRecordFormat (const char *);
+    virtual int			getRequiredWidth() { return 455; }
+    virtual int			getRequiredHeight() = 0;
 
-  boolean allowRerender();
-  boolean isRerenderAllowed();
-  boolean dirtyGamma()
-  {
-    return ( this->dirty & ImageFormatDialog::DirtyGamma );
-  }
-  boolean delayedColors();
-  double getGamma();
-  void setGamma( double gamma );
-  ImageNode* getNode()
-  {
-    return this->node;
-  }
-  boolean getDelayedColors();
-  boolean dirtyFormat()
-  {
-    return ( this->dirty & ImageFormatDialog::DirtyFormat );
-  }
-  void setBusyCursor( boolean busy );
-  boolean isResetting()
-  {
-    return this->resetting;
-  }
+  public:
 
-  //
-  // Destructor:
-  //
-  ~ImageFormatDialog();
+    //
+    // manage activation of OK and Apply buttons
+    //
+    virtual void 		activate();
+    virtual void 		deactivate(const char* msg=NULL);
+    virtual void 		setCommandActivation();
+    virtual void 		manage();
+    virtual void		currentImage();
+    virtual void    		update();
+    virtual boolean 		postFileSelectionDialog() { return TRUE; }
 
-  //
-  // Returns a pointer to the class name.
-  //
-  const char* getClassName()
-  {
-    return ClassImageFormatDialog;
-  }
+    void associateNode(ImageNode* node) { this->node = node; }
+    boolean makeExecOutputImage(const char *, int , float , const char *, const char *);
+    boolean makeExecOutputImage(const char *, const char *, const char *);
+
+    boolean 	allowRerender();
+    boolean	isRerenderAllowed();
+    boolean	dirtyGamma() { return (this->dirty & ImageFormatDialog::DirtyGamma); }
+    boolean	delayedColors();
+    double	getGamma();
+    void	setGamma(double gamma);
+    ImageNode* 	getNode() { return this->node; }
+    boolean	getDelayedColors();
+    boolean     dirtyFormat() { return (this->dirty & ImageFormatDialog::DirtyFormat); }
+    void	setBusyCursor(boolean busy);
+    boolean	isResetting() { return this->resetting; }
+
+    //
+    // Destructor:
+    //
+    ~ImageFormatDialog();
+
+    //
+    // Returns a pointer to the class name.
+    //
+    const char* getClassName() { return ClassImageFormatDialog; }
 };
 
-#endif  // _ImageFormatDialog_h
+
+#endif // _ImageFormatDialog_h
