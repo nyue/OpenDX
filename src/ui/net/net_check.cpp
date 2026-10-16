@@ -1,19 +1,32 @@
 // net_check FILE...         parse each .net and print one line per file
 // net_check --dump FILE     print the nodes and links for eyeballing
 // net_check -w FILE...      also print each file's warnings
+// net_check --coverage [--mdf F]... [--macros PATH] FILE...
+//                           check each node against the module definitions:
+//                           unknown modules, and input/output counts beyond them
 // net_check --roundtrip FILE...
 //                           check the position writer: unchanged positions give
 //                           the file back byte for byte; moved ones re-parse at
 //                           the new place with every other line unchanged
+// net_check --edit-roundtrip [--mdf F]... [--macros PATH] [--seed N]
+//           [--trials N] [--edits N] [--out DIR] [--benign] [-v] FILE...
+//                           check the structural writer (writeNet): identity, then
+//                           random add/delete/connect/disconnect/set/move
+//                           sequences written, re-parsed and compared; --out
+//                           keeps one edited copy per file (for exec_check);
+//                           --benign: only edits that keep what the program computes
 //
 // Exit status 1 if any file fails to parse.
 
 #include "NetFile.h"
 #include "NetWriter.h"
+#include "ModuleDefs.h"
+#include "edit_roundtrip.h"
 
 #include <cmath>
 #include <cstdio>
 #include <fstream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -111,14 +124,39 @@ std::string roundtrip(const char* file) {
 }  // namespace
 
 int main(int argc, char** argv) {
-    bool dumpMode = false, warnings = false, roundtripMode = false;
+    bool dumpMode = false, warnings = false, roundtripMode = false, coverageMode = false;
+    bool editMode = false;
+    EditRoundtripOptions editOptions;
+    dxui::ModuleLibrary library;
+    std::string macroPath;
     std::vector<const char*> files;
     for (int i = 1; i < argc; ++i) {
         std::string_view a = argv[i];
         if (a == "--dump") {
             dumpMode = true;
+        } else if (a == "--coverage") {
+            coverageMode = true;
+        } else if (a == "--mdf" && i + 1 < argc) {
+            std::string err;
+            if (!library.loadMdfFile(argv[++i], &err)) { std::fprintf(stderr, "%s\n", err.c_str()); return 2; }
+        } else if (a == "--macros" && i + 1 < argc) {
+            macroPath = argv[++i];
         } else if (a == "--roundtrip") {
             roundtripMode = true;
+        } else if (a == "--edit-roundtrip") {
+            editMode = true;
+        } else if (a == "--seed" && i + 1 < argc) {
+            editOptions.seed = static_cast<unsigned>(std::stoul(argv[++i]));
+        } else if (a == "--trials" && i + 1 < argc) {
+            editOptions.trials = std::stoi(argv[++i]);
+        } else if (a == "--edits" && i + 1 < argc) {
+            editOptions.edits = std::stoi(argv[++i]);
+        } else if (a == "--out" && i + 1 < argc) {
+            editOptions.outDir = argv[++i];
+        } else if (a == "-v") {
+            editOptions.verbose = true;
+        } else if (a == "--benign") {
+            editOptions.benign = true;
         } else if (a == "-w") {
             warnings = true;
         } else {
@@ -127,11 +165,51 @@ int main(int argc, char** argv) {
     }
     if (files.empty()) {
         std::fprintf(stderr, "usage: net_check [-w] FILE...\n       net_check --dump FILE\n"
-                             "       net_check --roundtrip FILE...\n");
+                             "       net_check --roundtrip FILE...\n"
+                             "       net_check --edit-roundtrip [--mdf F]... [--macros PATH] [--seed N]\n"
+                             "                 [--trials N] [--edits N] [--out DIR] [--benign] [-v] FILE...\n");
         return 2;
     }
 
     int failures = 0;
+    if (editMode) {
+        library.loadMacroPath(macroPath);
+        return runEditRoundtrip(files, library, editOptions) ? 1 : 0;
+    }
+    if (coverageMode) {
+        int macros = library.loadMacroPath(macroPath);
+        std::printf("library: %zu modules (%d macros)\n", library.size(), macros);
+        std::map<std::string, int> unknown, tooMany;
+        std::size_t nodes = 0;
+        for (const char* file : files) {
+            dxui::NetFile f;
+            if (!dxui::parseNetFile(file, f)) continue;
+            for (const dxui::NetMacro& m : f.macros)
+                for (const dxui::NetNode& n : m.nodes) {
+                    ++nodes;
+                    const dxui::ModuleDef* def = library.find(n.module);
+                    if (!def) { ++unknown[n.module]; continue; }
+                    // More outputs than declared is normal (Route, Switch take
+                    // extra ones); more inputs only through REPEAT.
+                    bool inOk = n.numInputs <= static_cast<int>(def->inputs.size()) ||
+                                def->input(n.numInputs) != nullptr;
+                    if (!inOk) {
+                        ++tooMany[n.module + " (file in=" + std::to_string(n.numInputs) +
+                                  " out=" + std::to_string(n.numOutputs) + ", mdf in=" +
+                                  std::to_string(def->inputs.size()) + " out=" +
+                                  std::to_string(def->outputs.size()) + ")"];
+                    }
+                }
+        }
+        int unknownNodes = 0, mismatchNodes = 0;
+        for (auto& [k, v] : unknown) unknownNodes += v;
+        for (auto& [k, v] : tooMany) mismatchNodes += v;
+        std::printf("%zu nodes; %d of unknown modules; %d with more inputs than defined\n",
+                    nodes, unknownNodes, mismatchNodes);
+        for (auto& [k, v] : unknown) std::printf("  unknown %-28s x%d\n", k.c_str(), v);
+        for (auto& [k, v] : tooMany) std::printf("  ports   %s x%d\n", k.c_str(), v);
+        return (unknownNodes || mismatchNodes) ? 1 : 0;
+    }
     if (roundtripMode) {
         for (const char* file : files) {
             std::string problem = roundtrip(file);
