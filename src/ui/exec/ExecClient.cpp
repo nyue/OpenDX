@@ -1,15 +1,21 @@
 #include "ExecClient.h"
+#include "NetScript.h"
 
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
+#include <sstream>
 #include <regex>
 
 #include <fcntl.h>
 #include <poll.h>
 #include <spawn.h>
 #include <sys/wait.h>
+#if defined(__linux__)
+#include <sys/prctl.h>
+#endif
 #include <unistd.h>
 
 extern "C" {
@@ -99,15 +105,21 @@ bool ExecClient::start(const ExecConfig& config, std::chrono::milliseconds timeo
         return false;
     }
 
-    // Child environment: ours plus DXROOT/DXDATA.
+    // Child environment: ours, with DXROOT always set and DXDATA/DXMACROS
+    // replaced only when the config gives them (otherwise inherited).
     std::vector<std::string> envStore;
     for (char** e = environ; *e; ++e) {
-        if (std::strncmp(*e, "DXROOT=", 7) && std::strncmp(*e, "DXDATA=", 7))
+        bool replaced = !std::strncmp(*e, "DXROOT=", 7) ||
+                        (!config.dataDir.empty() && !std::strncmp(*e, "DXDATA=", 7)) ||
+                        (!config.macroPath.empty() && !std::strncmp(*e, "DXMACROS=", 9));
+        if (!replaced)
             envStore.emplace_back(*e);
     }
     envStore.push_back("DXROOT=" + config.dxroot.string());
     if (!config.dataDir.empty())
         envStore.push_back("DXDATA=" + config.dataDir.string());
+    if (!config.macroPath.empty())
+        envStore.push_back("DXMACROS=" + config.macroPath);
     std::vector<char*> envp;
     for (auto& s : envStore)
         envp.push_back(s.data());
@@ -120,6 +132,30 @@ bool ExecClient::start(const ExecConfig& config, std::chrono::milliseconds timeo
         argv.push_back(s.data());
     argv.push_back(nullptr);
 
+#if defined(__linux__)
+    // fork + exec so the child can ask to be stopped if we die without
+    // cleaning up (crash, kill -9): dxexec does not exit when the UI goes.
+    // Between fork and exec only async-signal-safe calls.
+    const pid_t parent = ::getpid();
+    const std::string workDir = config.workDir.string();
+    pid_t pid = ::fork();
+    if (pid == 0) {
+        ::prctl(PR_SET_PDEATHSIG, SIGTERM);
+        if (::getppid() != parent)
+            ::_exit(127);
+        int devnull = ::open("/dev/null", O_RDONLY);
+        if (devnull >= 0)
+            ::dup2(devnull, 0);
+        ::dup2(pipefd[1], 1);
+        ::dup2(pipefd[1], 2);
+        ::close(pipefd[0]);
+        if (!workDir.empty() && ::chdir(workDir.c_str()) != 0)
+            ::_exit(127);
+        ::execve(exe.c_str(), argv.data(), envp.data());
+        ::_exit(127);
+    }
+    int rc = pid < 0 ? errno : 0;
+#else
     posix_spawn_file_actions_t actions;
     posix_spawn_file_actions_init(&actions);
     posix_spawn_file_actions_addopen(&actions, 0, "/dev/null", O_RDONLY, 0);
@@ -132,6 +168,7 @@ bool ExecClient::start(const ExecConfig& config, std::chrono::milliseconds timeo
     pid_t pid = -1;
     int rc = posix_spawn(&pid, exe.c_str(), &actions, nullptr, argv.data(), envp.data());
     posix_spawn_file_actions_destroy(&actions);
+#endif
     ::close(pipefd[1]);
     if (rc != 0) {
         ::close(pipefd[0]);
@@ -241,6 +278,19 @@ bool ExecClient::runNetFile(const std::filesystem::path& path)
         quoted += c;
     }
     return send("include \"" + quoted + "\";");
+}
+
+bool ExecClient::runNetFileForUi(const std::filesystem::path& path,
+                                 const std::filesystem::path& imageDir)
+{
+    std::ifstream in(path, std::ios::binary);
+    if (!in) {
+        error_ = "cannot read " + path.string();
+        return false;
+    }
+    std::ostringstream text;
+    text << in.rdbuf();
+    return send(netScriptForUi(text.str(), imageDir).text);
 }
 
 std::vector<ExecMessage> ExecClient::poll()

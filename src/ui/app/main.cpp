@@ -1,12 +1,14 @@
 // dxui2: the new OpenDX user interface (ADR 0001).
 //
-//   dxui2 [--dxroot DIR] [--dxexec PATH] [--data DIR] [FILE.net]
+//   dxui2 [--dxroot DIR] [--dxexec PATH] [--data DIR] [--macros PATH] [FILE.net]
 //
 // First slice: open a .net file, show its network, run it in dxexec and show
-// the messages. DXROOT and DXDATA from the environment are the defaults.
+// the messages. DXROOT, DXDATA and DXMACROS from the environment are the
+// defaults.
 
 #include "ExecClient.h"
 #include "GraphView.h"
+#include "ImagePanel.h"
 #include "NetFile.h"
 
 #include <GL/glew.h>
@@ -16,6 +18,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
@@ -58,6 +61,8 @@ struct App {
     dxui::ExecClient client;
     dxui::GraphView graph;
     bool graphReady = false;
+    dxui::ImagePanel images;
+    bool imagesReady = false;
     bool scrollLog = false;
 
     void note(dxui::ExecMessage::Kind kind, std::string text)
@@ -84,6 +89,7 @@ struct App {
         }
         net = std::move(parsed);
         netPath = path;
+        images.clear();
         // main is the program; other macros are listed for browsing.
         macroIndex = static_cast<int>(net.macros.size()) - 1;
         for (std::size_t i = 0; i < net.macros.size(); ++i)
@@ -108,7 +114,12 @@ struct App {
             }
         }
         graph.setErrorNode(-1);
-        client.runNetFile(fs::absolute(netPath));
+        if (imagesReady) {
+            if (!client.runNetFileForUi(fs::absolute(netPath), images.directory()))
+                note(dxui::ExecMessage::Kind::Error, client.error());
+        } else {
+            client.runNetFile(fs::absolute(netPath));
+        }
     }
 
     // Exec errors name the failing node as /<macro>:<n>/<Module>:<instance>.
@@ -271,7 +282,12 @@ struct App {
     void drawImage()
     {
         ImGui::Begin("Image");
-        ImGui::TextWrapped("Rendered images will appear here (next slice).");
+        if (imagesReady) {
+            images.update();
+            images.draw();
+        } else {
+            ImGui::TextWrapped("No image folder; Image nodes open their own windows.");
+        }
         ImGui::End();
     }
 };
@@ -313,6 +329,11 @@ std::string layoutFile()
     return (dir / "dxui2.ini").string();
 }
 
+// SIGINT/SIGTERM ask the main loop to quit, so shutdown still stops dxexec
+// and removes the image folder.
+volatile std::sig_atomic_t quitRequested = 0;
+extern "C" void onQuitSignal(int) { quitRequested = 1; }
+
 void glfwError(int code, const char* text)
 {
     std::fprintf(stderr, "GLFW error %d: %s\n", code, text);
@@ -329,19 +350,25 @@ int main(int argc, char** argv)
         app.exec.dxroot = r;
     if (const char* d = std::getenv("DXDATA"))
         app.exec.dataDir = d;
+    if (const char* m = std::getenv("DXMACROS"))
+        app.exec.macroPath = m;
     fs::path initial;
     for (int i = 1; i < argc; ++i) {
         std::string a = argv[i];
-        if ((a == "--dxroot" || a == "--dxexec" || a == "--data") && i + 1 < argc) {
+        if ((a == "--dxroot" || a == "--dxexec" || a == "--data" || a == "--macros") &&
+            i + 1 < argc) {
             const char* v = argv[++i];
             if (a == "--dxroot") app.exec.dxroot = v;
             else if (a == "--dxexec") app.exec.dxexec = v;
+            else if (a == "--macros") app.exec.macroPath = v;
             else app.exec.dataDir = v;
         } else {
             initial = a;
         }
     }
 
+    std::signal(SIGINT, onQuitSignal);
+    std::signal(SIGTERM, onQuitSignal);
     glfwSetErrorCallback(glfwError);
     if (!glfwInit())
         return 1;
@@ -367,10 +394,11 @@ int main(int argc, char** argv)
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
     app.graphReady = app.graph.init(DXUI_NOODLES_ASSETS);
+    app.imagesReady = app.images.init();
     if (!initial.empty())
         app.open(initial);
 
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window) && !quitRequested) {
         // Wake at least 10 times a second so exec messages show up while idle.
         glfwWaitEventsTimeout(0.1);
         app.pollExec();

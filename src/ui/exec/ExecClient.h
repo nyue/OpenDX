@@ -30,6 +30,7 @@ struct ExecConfig {
     std::filesystem::path dxexec;   // the executable
     std::filesystem::path dxroot;   // DXROOT for it (fonts, lib/colors.txt, ...)
     std::filesystem::path dataDir;  // DXDATA: where Import looks; may be empty
+    std::string macroPath;          // DXMACROS: where include finds macros; may be empty
     std::filesystem::path workDir;  // its current directory; empty = inherit
 };
 
@@ -49,7 +50,13 @@ public:
     // Sends DX script text, e.g. `include "file.net";`.
     bool send(const std::string& script);
     // include "<path>" -- a .net file defines main() and ends by calling it.
+    // Image nodes then open the executive's own windows.
     bool runNetFile(const std::filesystem::path& path);
+    // Sends the file rewritten by netScriptForUi: Image nodes write their
+    // pictures to imageDir/<id>.rgb instead. Returns false and sets error()
+    // if the file cannot be read.
+    bool runNetFileForUi(const std::filesystem::path& path,
+                         const std::filesystem::path& imageDir);
 
     // Handles pending messages from dxexec and returns everything queued.
     std::vector<ExecMessage> poll();

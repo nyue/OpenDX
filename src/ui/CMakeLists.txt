@@ -7,7 +7,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/net/CMakeLists.txt)
   add_subdirectory(net)
 endif()
 
-add_library(dx_execclient STATIC exec/ExecClient.cpp)
+add_library(dx_execclient STATIC exec/ExecClient.cpp exec/NetScript.cpp)
 target_include_directories(dx_execclient PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/exec)
 find_package(Threads REQUIRED)
 target_link_libraries(dx_execclient PRIVATE dx_dxl PUBLIC Threads::Threads)
@@ -17,7 +17,7 @@ target_link_libraries(exec_check PRIVATE dx_execclient)
 
 # The application. GraphView renders with noodles (which loads GL through
 # GLEW); ImGui uses its own loader.
-add_executable(dxui2 app/main.cpp app/GraphView.cpp)
+add_executable(dxui2 app/main.cpp app/GraphView.cpp app/ImagePanel.cpp)
 target_include_directories(dxui2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/app)
 target_link_libraries(dxui2 PRIVATE dx_execclient dx_netfile dx_imgui noodles)
 target_compile_definitions(dxui2 PRIVATE
