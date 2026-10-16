@@ -1358,7 +1358,9 @@ delete_window(Pointer p)
     struct window *w = (struct window *)p;
 
     DXDebug("X", "closing window connection, fd %d", w->fd);
-    DXRegisterWindowHandlerWithCheckProc(NULL, NULL, w->dpy, NULL);
+    /* No display if opening it failed; there is no handler to remove. */
+    if (w->dpy)
+	DXRegisterWindowHandlerWithCheckProc(NULL, NULL, w->dpy, NULL);
 
     if (! reset_window(w))
 	goto error;
