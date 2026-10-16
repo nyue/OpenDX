@@ -1,0 +1,9 @@
+// A 2D scalar field raised into a height surface.
+g = Construct([-1 -1], [0.05 0.05], [41 41]);
+m = Mark(g, "positions");
+f = Compute("sin(4*$0.x) * cos(4*$0.y)", m);
+sheet = RubberSheet(f, 0.3);
+obj = AutoColor(sheet);
+cam = AutoCamera(obj, "off-diagonal", NULL, 320);
+img = Render(obj, cam);
+WriteImage(img, "out", "rgb");

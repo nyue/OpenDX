@@ -1,0 +1,13 @@
+// Mesh lines and the outer boundary of a coarse grid.
+g = Construct([-1 -1 -1], [0.5 0.5 0.5], [5 5 5]);
+m = Mark(g, "positions");
+f = Compute("$0.x + $0.y + $0.z", m);
+plane = MapToPlane(f, [0 0 0], [1 1 1]);
+edges = ShowConnections(plane);
+mesh = Color(edges, "cyan");
+outer = ShowBoundary(f);
+box = Color(outer, "orange", 0.3);
+obj = Collect(mesh, box);
+cam = AutoCamera(obj, "off-diagonal", NULL, 320);
+img = Render(obj, cam);
+WriteImage(img, "out", "rgb");

@@ -1,0 +1,8 @@
+// Volume rendering of a scalar field with partial opacity.
+g = Construct([-1 -1 -1], [0.1 0.1 0.1], [21 21 21]);
+m = Mark(g, "positions");
+f = Compute("1.0 - ($0.x*$0.x + $0.y*$0.y + $0.z*$0.z)", m);
+obj = AutoColor(f, 0.5);
+cam = AutoCamera(obj, "off-diagonal", NULL, 320);
+img = Render(obj, cam);
+WriteImage(img, "out", "rgb");

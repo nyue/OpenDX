@@ -1,0 +1,9 @@
+// Arrow glyphs on a swirling vector field.
+g = Construct([-1 -1 0], [0.25 0.25 1], [9 9 1]);
+m = Mark(g, "positions");
+v = Compute("[-$0.y, $0.x, 0.0]", m);
+glyphs = AutoGlyph(v);
+obj = AutoColor(glyphs);
+cam = AutoCamera(obj, "front", NULL, 320);
+img = Render(obj, cam);
+WriteImage(img, "out", "rgb");

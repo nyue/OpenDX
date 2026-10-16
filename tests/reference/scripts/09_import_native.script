@@ -1,0 +1,6 @@
+// Read a native .dx file (found through DXDATA) and colour it.
+f = Import("tetra.dx");
+obj = AutoColor(f);
+cam = AutoCamera(obj, "off-diagonal", NULL, 320);
+img = Render(obj, cam);
+WriteImage(img, "out", "rgb");

@@ -1,0 +1,10 @@
+// Streamlines through a helical vector field, drawn as tubes.
+g = Construct([-1 -1 -1], [0.2 0.2 0.2], [11 11 11]);
+m = Mark(g, "positions");
+v = Compute("[-$0.y, $0.x, 0.3]", m);
+lines = Streamline(v, {[0.3 0 -0.9], [0.6 0 -0.9], [0.9 0 -0.9]});
+tubes = Tube(lines, 0.04);
+obj = AutoColor(tubes);
+cam = AutoCamera(obj, "off-diagonal", NULL, 320);
+img = Render(obj, cam);
+WriteImage(img, "out", "rgb");

@@ -1,0 +1,12 @@
+// Axes, tick labels and a caption around an isosurface (exercises fonts).
+g = Construct([-1 -1 -1], [0.1 0.1 0.1], [21 21 21]);
+m = Mark(g, "positions");
+f = Compute("$0.x*$0.x + $0.y*$0.y + $0.z*$0.z", m);
+s = Isosurface(f, 0.5);
+iso = Color(s, "orange");
+cam = AutoCamera(iso, "off-diagonal", 6, 320);
+axes = AutoAxes(iso, cam, {"x", "y", "z"}, labelscale=0.4);
+cap = Caption("OpenDX reference", [0.5 0.05]);
+obj = Collect(axes, cap);
+img = Render(obj, cam);
+WriteImage(img, "out", "rgb");

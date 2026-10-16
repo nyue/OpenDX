@@ -1,0 +1,9 @@
+// A scalar field cut by a plane and coloured with the default colormap.
+g = Construct([-1 -1 -1], [0.1 0.1 0.1], [21 21 21]);
+m = Mark(g, "positions");
+f = Compute("sin(3*$0.x) * cos(3*$0.y) + $0.z", m);
+slice = MapToPlane(f, [0 0 0], [0 0 1]);
+obj = AutoColor(slice);
+cam = AutoCamera(obj, "front", NULL, 320);
+img = Render(obj, cam);
+WriteImage(img, "out", "rgb");
