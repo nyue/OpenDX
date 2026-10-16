@@ -1,6 +1,7 @@
 // dxui2: the new OpenDX user interface (ADR 0001).
 //
-//   dxui2 [--dxroot DIR] [--dxexec PATH] [--data DIR] [--macros PATH] [FILE.net]
+//   dxui2 [--dxroot DIR] [--dxexec PATH] [--data DIR] [--macros PATH]
+//         [--mdf FILE]... [FILE.net]
 //
 // First slice: open a .net file, show its network, run it in dxexec and show
 // the messages. DXROOT, DXDATA and DXMACROS from the environment are the
@@ -11,6 +12,8 @@
 #include "ImagePanel.h"
 #include "NetFile.h"
 #include "NetWriter.h"
+#include "ModuleDefs.h"
+#include "NetEdit.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -19,18 +22,23 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include <cctype>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #ifndef DXUI_NOODLES_ASSETS
 #define DXUI_NOODLES_ASSETS ""
+#endif
+#ifndef DXUI_SOURCE_UI_MDF
+#define DXUI_SOURCE_UI_MDF ""   // ui.mdf in the source tree, for uninstalled runs
 #endif
 
 namespace fs = std::filesystem;
@@ -68,13 +76,17 @@ struct App {
     bool imagesReady = false;
     bool scrollLog = false;
 
-    // Editing: the file's text as last read or saved (the writer patches
-    // it), node moves for undo/redo, and where the undo stack stood at the
-    // last save (-1 once that state can no longer be reached).
+    // Editing. Every save writes from the file as it was loaded (its text
+    // and parse) to the current model, so line numbers in the model always
+    // refer to that text. Undo keeps the network before and after each edit;
+    // savedAt is where the undo stack stood at the last save (-1 once that
+    // state can no longer be reached).
     std::string netText;
+    dxui::NetFile loaded;
     struct Edit {
         int macro;
-        dxui::NodeMove move;
+        dxui::NetMacro before, after;
+        bool structural;   // more than positions changed
     };
     std::vector<Edit> undoStack, redoStack;
     long savedAt = 0;
@@ -88,6 +100,38 @@ struct App {
     bool quitNow = false;
 
     bool dirty() const { return static_cast<long>(undoStack.size()) != savedAt; }
+
+    // Module definitions: dx.mdf, ui.mdf, --mdf files, then macros from
+    // DXMACROS and from the open file's own folder (as the legacy UI did).
+    dxui::ModuleLibrary library;
+    std::vector<fs::path> extraMdf;
+    std::string moduleFilter;
+    ImVec2 graphOrigin{0, 0}, graphSize{0, 0};   // the Network panel's graph, last frame
+
+    void loadLibrary(const fs::path& netDir)
+    {
+        library = dxui::ModuleLibrary();
+        std::vector<fs::path> mdfs = {exec.dxroot / "lib" / "dx.mdf"};
+        fs::path ui = exec.dxroot / "ui" / "ui.mdf";
+        std::error_code ec;
+        if (!fs::exists(ui, ec) && *DXUI_SOURCE_UI_MDF)
+            ui = DXUI_SOURCE_UI_MDF;
+        mdfs.push_back(ui);
+        mdfs.insert(mdfs.end(), extraMdf.begin(), extraMdf.end());
+        for (const fs::path& f : mdfs) {
+            std::string error;
+            if (!library.loadMdfFile(f, &error))
+                note(dxui::ExecMessage::Kind::Warning, "module definitions: " + error);
+        }
+        int macros = library.loadMacroPath(exec.macroPath);
+        if (!netDir.empty())
+            macros += library.loadMacroPath(netDir.string());
+        note(dxui::ExecMessage::Kind::Info,
+             std::to_string(library.size()) + " module definitions (" +
+                 std::to_string(macros) + " macros)");
+        if (graphReady)
+            graph.setLibrary(&library);
+    }
 
     void note(dxui::ExecMessage::Kind kind, std::string text)
     {
@@ -140,6 +184,9 @@ struct App {
                  path.string() + ":" + std::to_string(err.line) + ": " + err.message);
             return;
         }
+        loadLibrary(path.parent_path());
+        loaded = parsed;
+        valueEdits.clear();
         net = std::move(parsed);
         netText = text.str();
         netPath = path;
@@ -180,67 +227,161 @@ struct App {
         }
     }
 
-    void placeNode(int macroIdx, int node, int x, int y)
+    dxui::NetMacro* editable()
     {
-        auto& n = net.macros[static_cast<std::size_t>(macroIdx)].nodes[static_cast<std::size_t>(node)];
-        n.x = static_cast<float>(x);
-        n.y = static_cast<float>(y);
-        if (graphReady && macroIdx == macroIndex)
-            graph.setNodePosition(node, x, y);
+        if (macroIndex < 0 || macroIndex >= static_cast<int>(net.macros.size()))
+            return nullptr;
+        return &net.macros[static_cast<std::size_t>(macroIndex)];
+    }
+
+    void record(dxui::NetMacro before, bool structural)
+    {
+        if (savedAt > static_cast<long>(undoStack.size()))
+            savedAt = -1;   // the saved state was undone and is now gone
+        undoStack.push_back({macroIndex, std::move(before), *editable(), structural});
+        redoStack.clear();
+    }
+
+    // Runs one edit on the current macro: kept with undo if it succeeds, its
+    // reason shown if it is refused.
+    template <class Op>
+    bool apply(Op op)
+    {
+        dxui::NetMacro* m = editable();
+        if (!m)
+            return false;
+        dxui::NetMacro before = *m;
+        std::string why;
+        if (!op(*m, why)) {
+            note(dxui::ExecMessage::Kind::Warning, why);
+            return false;
+        }
+        // Keep the network savable: an edit the writer cannot write out is
+        // taken back at once, with its reason.
+        std::string text;
+        if (!dxui::writeNet(netText, loaded, net, &library, text, &why)) {
+            *m = std::move(before);
+            note(dxui::ExecMessage::Kind::Warning, "not allowed: " + why);
+            return false;
+        }
+        record(std::move(before), true);
+        valueEdits.clear();
+        if (graphReady)
+            graph.refresh();
+        return true;
     }
 
     // Drags the graph view finished: into the model and the undo stack.
     void takeMoves()
     {
-        for (const dxui::NodeMove& m : graph.takeMoves()) {
-            if (savedAt > static_cast<long>(undoStack.size()))
-                savedAt = -1;   // the saved state was undone and is now gone
-            auto& n = net.macros[static_cast<std::size_t>(macroIndex)].nodes[static_cast<std::size_t>(m.node)];
-            n.x = static_cast<float>(m.toX);
-            n.y = static_cast<float>(m.toY);
-            undoStack.push_back({macroIndex, m});
-            redoStack.clear();
+        for (const dxui::NodeMove& mv : graph.takeMoves()) {
+            dxui::NetMacro* m = editable();
+            dxui::NetMacro before = *m;
+            auto& n = m->nodes[static_cast<std::size_t>(mv.node)];
+            n.x = static_cast<float>(mv.toX);
+            n.y = static_cast<float>(mv.toY);
+            record(std::move(before), false);
         }
+    }
+
+    // Wiring gestures from the graph view.
+    void takeGraphEdits()
+    {
+        for (const dxui::GraphEdit& e : graph.takeEdits()) {
+            if (e.kind == dxui::GraphEdit::Kind::Connect)
+                apply([&](dxui::NetMacro& m, std::string& why) {
+                    return dxui::connect(m, e.fromNode, e.fromPort, e.toNode, e.toPort, &why);
+                });
+            else
+                apply([&](dxui::NetMacro& m, std::string& why) {
+                    return dxui::disconnect(m, e.toNode, e.toPort, &why);
+                });
+        }
+    }
+
+    void addModule(const std::string& name, int x, int y)
+    {
+        const dxui::ModuleDef* def = library.find(name);
+        if (!def)
+            return;
+        int added = -1;
+        if (apply([&](dxui::NetMacro& m, std::string&) {
+                added = dxui::addNode(m, *def, static_cast<float>(x), static_cast<float>(y));
+                return true;
+            }) && graphReady)
+            graph.select(added);
+    }
+
+    void deleteSelected()
+    {
+        int sel = graphReady ? graph.selectedNode() : -1;
+        if (sel < 0)
+            return;
+        apply([&](dxui::NetMacro& m, std::string& why) { return dxui::deleteNode(m, sel, &why); });
+    }
+
+    void restore(const Edit& e, bool after)
+    {
+        net.macros[static_cast<std::size_t>(e.macro)] = after ? e.after : e.before;
+        valueEdits.clear();
+        if (graphReady && e.macro == macroIndex)
+            graph.refresh();
     }
 
     void undo()
     {
         if (undoStack.empty())
             return;
-        Edit e = undoStack.back();
+        Edit e = std::move(undoStack.back());
         undoStack.pop_back();
-        placeNode(e.macro, e.move.node, e.move.fromX, e.move.fromY);
-        redoStack.push_back(e);
+        restore(e, false);
+        redoStack.push_back(std::move(e));
     }
 
     void redo()
     {
         if (redoStack.empty())
             return;
-        Edit e = redoStack.back();
+        Edit e = std::move(redoStack.back());
         redoStack.pop_back();
-        placeNode(e.macro, e.move.node, e.move.toX, e.move.toY);
-        undoStack.push_back(e);
+        restore(e, true);
+        undoStack.push_back(std::move(e));
     }
 
-    // Writes the node positions into the file's text and saves it to `path`.
+    bool structuralEdits() const
+    {
+        for (const Edit& e : undoStack)
+            if (e.structural)
+                return true;
+        return false;
+    }
+
+    // Writes the model into the loaded file's text and saves it to `path`.
     bool save(const fs::path& path)
     {
         if (netText.empty())
             return false;
+        // Only moves: patch positions (works for any file). Otherwise the
+        // structural writer, from the file as loaded to the current model.
         std::string text = netText, out, error;
-        for (const dxui::NetMacro& m : net.macros) {
-            if (!dxui::writeNodePositions(text, m, out, &error)) {
+        if (structuralEdits()) {
+            if (!dxui::writeNet(netText, loaded, net, &library, text, &error)) {
                 note(dxui::ExecMessage::Kind::Error, "not saved: " + error);
                 return false;
             }
-            text = out;
+        } else {
+            for (const dxui::NetMacro& m : net.macros) {
+                if (!dxui::writeNodePositions(text, m, out, &error)) {
+                    note(dxui::ExecMessage::Kind::Error, "not saved: " + error);
+                    return false;
+                }
+                text = out;
+            }
         }
         if (!dxui::saveTextAtomically(path, text, &error)) {
             note(dxui::ExecMessage::Kind::Error, "not saved: " + error);
             return false;
         }
-        netText = text;
         netPath = path;
         saveAsPath = path.string();
         savedAt = static_cast<long>(undoStack.size());
@@ -374,10 +515,14 @@ struct App {
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Edit")) {
-            if (ImGui::MenuItem("Undo Move", "Ctrl+Z", false, !undoStack.empty()))
+            if (ImGui::MenuItem("Undo", "Ctrl+Z", false, !undoStack.empty()))
                 undo();
-            if (ImGui::MenuItem("Redo Move", "Ctrl+Shift+Z", false, !redoStack.empty()))
+            if (ImGui::MenuItem("Redo", "Ctrl+Shift+Z", false, !redoStack.empty()))
                 redo();
+            ImGui::Separator();
+            if (ImGui::MenuItem("Delete Node", "Delete", false,
+                                graphReady && graph.selectedNode() >= 0))
+                deleteSelected();
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Execute")) {
@@ -411,7 +556,20 @@ struct App {
             unsigned int tex = graph.render(w, h);
             // The texture is bottom-up (GL); flip it with the UVs.
             ImGui::Image(static_cast<ImTextureID>(tex), size, ImVec2(0, 1), ImVec2(1, 0));
+            graphOrigin = origin;
+            graphSize = size;
             ImGuiIO& io = ImGui::GetIO();
+            // A module dragged from the Modules panel lands where it is dropped.
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* pl = ImGui::AcceptDragDropPayload("DX_MODULE")) {
+                    std::string name(static_cast<const char*>(pl->Data),
+                                     static_cast<std::size_t>(pl->DataSize));
+                    int x, y;
+                    graph.panelToWorkspace(io.MousePos.x - origin.x, io.MousePos.y - origin.y, x, y);
+                    addModule(name, x, y);
+                }
+                ImGui::EndDragDropTarget();
+            }
             dxui::GraphInput in;
             in.hovered = ImGui::IsItemHovered();
             in.x = io.MousePos.x - origin.x;
@@ -427,8 +585,20 @@ struct App {
             in.altDown = io.KeyAlt;
             graph.handleInput(in);
             takeMoves();
+            takeGraphEdits();
+            float x1, y1, x2, y2;
+            if (graph.wirePreview(x1, y1, x2, y2)) {
+                ImVec2 a(origin.x + x1, origin.y + y1), b(origin.x + x2, origin.y + y2);
+                float bend = std::max(40.0f, std::abs(b.x - a.x) * 0.5f);
+                ImGui::GetWindowDrawList()->AddBezierCubic(
+                    a, ImVec2(a.x + bend, a.y), ImVec2(b.x - bend, b.y), b,
+                    IM_COL32(115, 180, 255, 255), 2.5f);
+            }
             if (in.hovered && ImGui::IsKeyPressed(ImGuiKey_F))
                 graph.frameAll();
+            if (ImGui::IsWindowFocused() && !ImGui::GetIO().WantTextInput &&
+                (ImGui::IsKeyPressed(ImGuiKey_Delete) || ImGui::IsKeyPressed(ImGuiKey_Backspace)))
+                deleteSelected();
         } else if (!graphReady) {
             ImGui::TextWrapped("Graph view unavailable: %s", graph.error().c_str());
         }
@@ -458,14 +628,7 @@ struct App {
         const dxui::NetMacro* m = macro();
         int sel = graphReady ? graph.selectedNode() : -1;
         if (m && sel >= 0 && sel < static_cast<int>(m->nodes.size())) {
-            const auto& n = m->nodes[static_cast<std::size_t>(sel)];
-            ImGui::Text("%s[%d]", n.module.c_str(), n.instance);
-            ImGui::Text("label: %s", n.label.c_str());
-            ImGui::Text("inputs: %d  outputs: %d", n.numInputs, n.numOutputs);
-            ImGui::Separator();
-            for (const auto& in : n.inputs)
-                ImGui::TextWrapped("input %d%s = %s", in.index,
-                                   in.defaulting ? " (default)" : "", in.value.c_str());
+            drawNodeDetails(*m, static_cast<std::size_t>(sel));
         } else if (m) {
             ImGui::Text("macro %s: %zu nodes, %zu links", m->name.c_str(),
                         m->nodes.size(), m->links.size());
@@ -475,6 +638,172 @@ struct App {
             ImGui::TextUnformatted("No program open.");
         }
         ImGui::End();
+    }
+
+    // The module palette: categories, a filter, and modules to add by
+    // double-click (at the middle of the view) or by dragging onto the graph.
+    void drawModules()
+    {
+        ImGui::Begin("Modules");
+        if (!macro()) {
+            ImGui::TextDisabled("Open a program to add modules.");
+            ImGui::End();
+            return;
+        }
+        ImGui::SetNextItemWidth(-1);
+        inputText("##filter", moduleFilter);
+        std::string filter = lowered(moduleFilter);
+        for (const auto& [category, names] : library.byCategory()) {
+            std::vector<const std::string*> shown;
+            for (const std::string& n : names)
+                if (filter.empty() || lowered(n).find(filter) != std::string::npos)
+                    shown.push_back(&n);
+            if (shown.empty())
+                continue;
+            ImGuiTreeNodeFlags flags = filter.empty() ? 0 : ImGuiTreeNodeFlags_DefaultOpen;
+            if (!ImGui::TreeNodeEx(category.c_str(), flags))
+                continue;
+            for (const std::string* n : shown) {
+                ImGui::Selectable(n->c_str());
+                if (ImGui::IsItemHovered()) {
+                    if (const dxui::ModuleDef* d = library.find(*n); d && !d->description.empty())
+                        ImGui::SetTooltip("%s", d->description.c_str());
+                    if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+                        int x, y;
+                        graph.panelToWorkspace(graphSize.x * 0.5f, graphSize.y * 0.5f, x, y);
+                        addModule(*n, x, y);
+                    }
+                }
+                if (ImGui::BeginDragDropSource()) {
+                    ImGui::SetDragDropPayload("DX_MODULE", n->data(), n->size());
+                    ImGui::TextUnformatted(n->c_str());
+                    ImGui::EndDragDropSource();
+                }
+            }
+            ImGui::TreePop();
+        }
+        ImGui::End();
+    }
+
+    static std::string lowered(std::string s)
+    {
+        for (char& c : s)
+            c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        return s;
+    }
+
+    static bool inputText(const char* id, std::string& s, ImGuiInputTextFlags flags = 0)
+    {
+        return ImGui::InputText(id, s.data(), s.capacity() + 1,
+                                flags | ImGuiInputTextFlags_CallbackResize,
+                                [](ImGuiInputTextCallbackData* d) {
+                                    auto* str = static_cast<std::string*>(d->UserData);
+                                    if (d->EventFlag == ImGuiInputTextFlags_CallbackResize) {
+                                        str->resize(static_cast<std::size_t>(d->BufTextLen));
+                                        d->Buf = str->data();
+                                    }
+                                    return 0;
+                                },
+                                &s);
+    }
+
+    // Text being typed into Details' value fields, per input (node, input).
+    std::map<std::pair<int, int>, std::string> valueEdits;
+
+    // One row per input: its name, then where it is wired from, the value
+    // the file sets, or the definition's default (dimmed).
+    void drawNodeDetails(const dxui::NetMacro& m, std::size_t index)
+    {
+        const dxui::NetNode& n = m.nodes[index];
+        const dxui::ModuleDef* def = library.find(n.module);
+        ImGui::Text("%s[%d]", n.module.c_str(), n.instance);
+        if (!n.label.empty() && n.label != n.module) {
+            ImGui::SameLine();
+            ImGui::TextDisabled("\"%s\"", n.label.c_str());
+        }
+        if (def && !def->description.empty())
+            ImGui::TextWrapped("%s", def->description.c_str());
+        else if (!def)
+            ImGui::TextDisabled("no module definition found");
+        ImGui::Separator();
+
+        const int defIn = def ? static_cast<int>(def->inputs.size()) : 0;
+        const int count = std::max(n.numInputs, defIn);
+        if (!ImGui::BeginTable("inputs", 2, ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp))
+            return;
+        ImGui::TableSetupColumn("input", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("value");
+        for (int k = 1; k <= count; ++k) {
+            const dxui::ModuleParam* param = def ? def->input(k) : nullptr;
+            if (param && param->visible == 2)
+                continue;   // internal to the module
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            std::string name = param ? param->name : "input " + std::to_string(k);
+            ImGui::TextUnformatted(name.c_str());
+            if (param && ImGui::IsItemHovered())
+                ImGui::SetTooltip("%s\n%s", param->types.c_str(), param->description.c_str());
+            ImGui::TableNextColumn();
+
+            const dxui::NetLink* wire = nullptr;
+            for (const dxui::NetLink& l : m.links)
+                if (l.toNode == index && l.toInput == k)
+                    wire = &l;
+            const dxui::NetInput* set = nullptr;
+            for (const dxui::NetInput& in : n.inputs)
+                if (in.index == k && in.hasValue && !in.defaulting)
+                    set = &in;
+            ImGui::PushID(k);
+            if (wire && wire->fromNode < m.nodes.size()) {
+                const dxui::NetNode& from = m.nodes[wire->fromNode];
+                const dxui::ModuleDef* fromDef = library.find(from.module);
+                const dxui::ModuleParam* out = fromDef ? fromDef->output(wire->fromOutput) : nullptr;
+                if (ImGui::SmallButton("x")) {
+                    const int node = static_cast<int>(index);
+                    apply([&](dxui::NetMacro& mm, std::string& why) {
+                        return dxui::disconnect(mm, node, k, &why);
+                    });
+                    ImGui::PopID();
+                    break;   // the macro changed under this loop
+                }
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("disconnect");
+                ImGui::SameLine();
+                ImGui::TextColored(ImVec4(0.45f, 0.70f, 1.0f, 1), "<- %s[%d] %s", from.module.c_str(),
+                                   from.instance,
+                                   out ? out->name.c_str()
+                                       : ("output " + std::to_string(wire->fromOutput)).c_str());
+            } else {
+                // Editable: Enter sets the value (DX syntax, e.g. "name", 5,
+                // [0 0 1]); an empty field goes back to the default.
+                auto key = std::make_pair(static_cast<int>(index), k);
+                auto it = valueEdits.find(key);
+                if (it == valueEdits.end())
+                    it = valueEdits.emplace(key, set ? set->value : std::string()).first;
+                ImGui::SetNextItemWidth(-1);
+                if (!set && it->second.empty())
+                    ImGui::SetNextItemAllowOverlap();
+                bool commit = inputText("##v", it->second, ImGuiInputTextFlags_EnterReturnsTrue);
+                if (!set && it->second.empty() && !ImGui::IsItemActive()) {
+                    ImVec2 at = ImGui::GetItemRectMin();
+                    ImGui::GetWindowDrawList()->AddText(
+                        ImVec2(at.x + 4, at.y + 2), ImGui::GetColorU32(ImGuiCol_TextDisabled),
+                        param ? param->defaultValue.c_str() : "");
+                }
+                if (commit) {
+                    std::string value = it->second;
+                    const int node = static_cast<int>(index);
+                    apply([&](dxui::NetMacro& mm, std::string& why) {
+                        return dxui::setInputValue(mm, node, k, value, &why);
+                    });
+                    valueEdits.clear();
+                    ImGui::PopID();
+                    break;
+                }
+            }
+            ImGui::PopID();
+        }
+        ImGui::EndTable();
     }
 
     void drawImage()
@@ -502,9 +831,11 @@ void defaultLayout(ImGuiID dockspace)
     ImGui::DockBuilderSetNodeSize(dockspace, ImGui::GetMainViewport()->WorkSize);
     ImGuiID centre = dockspace;
     ImGuiID bottom = ImGui::DockBuilderSplitNode(centre, ImGuiDir_Down, 0.25f, nullptr, &centre);
+    ImGuiID left = ImGui::DockBuilderSplitNode(centre, ImGuiDir_Left, 0.16f, nullptr, &centre);
     ImGuiID right = ImGui::DockBuilderSplitNode(centre, ImGuiDir_Right, 0.32f, nullptr, &centre);
     ImGuiID rightTop = ImGui::DockBuilderSplitNode(right, ImGuiDir_Up, 0.55f, nullptr, &right);
     ImGui::DockBuilderDockWindow("Network", centre);
+    ImGui::DockBuilderDockWindow("Modules", left);
     ImGui::DockBuilderDockWindow("Image", rightTop);
     ImGui::DockBuilderDockWindow("Details", right);
     ImGui::DockBuilderDockWindow("Messages", bottom);
@@ -553,6 +884,10 @@ int main(int argc, char** argv)
     fs::path initial;
     for (int i = 1; i < argc; ++i) {
         std::string a = argv[i];
+        if (a == "--mdf" && i + 1 < argc) {
+            app.extraMdf.emplace_back(argv[++i]);
+            continue;
+        }
         if ((a == "--dxroot" || a == "--dxexec" || a == "--data" || a == "--macros") &&
             i + 1 < argc) {
             const char* v = argv[++i];
@@ -630,6 +965,7 @@ int main(int argc, char** argv)
         }
         app.drawNetwork();
         app.drawDetails();
+        app.drawModules();
         app.drawMessages();
         app.drawImage();
         app.drawSavePrompt();

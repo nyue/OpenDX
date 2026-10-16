@@ -21,7 +21,12 @@ add_executable(dxui2 app/main.cpp app/GraphView.cpp app/ImagePanel.cpp)
 target_include_directories(dxui2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/app)
 target_link_libraries(dxui2 PRIVATE dx_execclient dx_netfile dx_imgui noodles)
 target_compile_definitions(dxui2 PRIVATE
-  DXUI_NOODLES_ASSETS="${NOODLES_ASSETS_DIR}")
+  DXUI_NOODLES_ASSETS="${NOODLES_ASSETS_DIR}"
+  DXUI_SOURCE_UI_MDF="${CMAKE_SOURCE_DIR}/src/uipp/ui/ui.mdf")
+
+# The legacy UI's module definitions for UI-side nodes (Image, Transmitter,
+# Input/Output, ...), where the legacy install puts them.
+install(FILES ${CMAKE_SOURCE_DIR}/src/uipp/ui/ui.mdf DESTINATION dx/ui)
 
 # Warnings on for the new code (not for fetched dependencies or DXLink).
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

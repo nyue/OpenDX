@@ -20,6 +20,7 @@
 
 #include "GraphView.h"
 
+#include "ModuleDefs.h"
 #include "NetFile.h"
 
 #include "core/NodeData.h"
@@ -200,6 +201,7 @@ struct GraphView::Impl {
     noodles::GraphModel graph;
 
     const NetMacro* macro = nullptr;
+    const ModuleLibrary* library = nullptr;
     std::vector<std::string> ids;  // NetMacro node index -> noodles id
     std::unordered_map<std::string, int> indexOf;
 
@@ -233,6 +235,20 @@ struct GraphView::Impl {
     double pressWorldX = 0, pressWorldY = 0;
     noodles::Vec2d dragStart{0, 0};
     std::vector<NodeMove> moves;
+
+    // Pin name -> DX port number, per node (pins are named by pinName()).
+    std::vector<std::unordered_map<std::string, int>> inPortOf, outPortOf;
+
+    // Dragging a wire from a port.
+    struct Wire {
+        bool active = false;
+        int node = -1, port = -1;
+        bool fromOutput = true;
+        int wiredFrom = -1, wiredFromPort = -1;  // input already wired: its source
+        double ax = 0, ay = 0;                    // anchor (world)
+        double cx = 0, cy = 0;                    // pointer (world)
+    } wire;
+    std::vector<GraphEdit> edits;
 
     ~Impl()
     {
@@ -302,6 +318,28 @@ struct GraphView::Impl {
 
     // --- building the graph -------------------------------------------------
 
+    const ModuleDef* defOf(std::size_t i) const
+    {
+        return library && macro ? library->find(macro->nodes[i].module) : nullptr;
+    }
+
+    // Pin names double as pin ids for links: the definition's name, numbered
+    // where it repeats (Collect's "object 2"); "in k"/"out k" without one.
+    static std::string pinName(const ModuleDef* def, int k, bool output)
+    {
+        const ModuleParam* param = def ? (output ? def->output(k) : def->input(k)) : nullptr;
+        if (!param || param->name.empty())
+            return output ? outputPin(k) : inputPin(k);
+        const auto& list = output ? def->outputs : def->inputs;
+        const auto declared = static_cast<int>(list.size());
+        int same = 0;
+        for (const ModuleParam& q : list)
+            same += q.name == param->name;
+        if (k > declared || same > 1)
+            return param->name + " " + std::to_string(k);
+        return param->name;
+    }
+
     void build()
     {
         graph.clear();
@@ -329,6 +367,8 @@ struct GraphView::Impl {
         ids.reserve(n);
         offset.assign(n, {0.0, 0.0});
         pageOf.assign(n, -1);
+        inPortOf.assign(n, {});
+        outPortOf.assign(n, {});
         for (std::size_t i = 0; i < n; ++i) {
             const NetNode& src = m.nodes[i];
             noodles::NodeData d;
@@ -346,28 +386,43 @@ struct GraphView::Impl {
             d.displayColorG = tint[1];
             d.displayColorB = tint[2];
 
-            // Inputs: the file's `visible = 0` hides an unwired input; a node
-            // with many inputs shows only wired or explicitly visible ones.
+            // Inputs, as DX shows them: a wired input always; otherwise the
+            // file's `visible =` if it lists the input, else the module
+            // definition's (visible:1). Without a definition, a node with many
+            // inputs shows only wired or explicitly visible ones.
+            const ModuleDef* def = defOf(i);
             std::map<int, bool> listedVisible;
             for (const NetInput& in : src.inputs)
                 listedVisible[in.index] = in.visible;
-            const int numIn = std::clamp(std::max(src.numInputs, needIn[i]), 0, 4096);
+            const int defIn = def ? static_cast<int>(def->inputs.size()) : 0;
+            const int defOut = def ? static_cast<int>(def->outputs.size()) : 0;
+            const int numIn = std::clamp(std::max({src.numInputs, needIn[i], defIn}), 0, 4096);
             const bool showAll = numIn <= kShowAllInputsUpTo;
             int hidden = 0;
             for (int k = 1; k <= numIn; ++k) {
                 bool show = wiredIn[i].count(k) > 0;
                 if (!show) {
                     auto it = listedVisible.find(k);
-                    show = it != listedVisible.end() ? it->second : showAll;
+                    if (it != listedVisible.end())
+                        show = it->second;
+                    else if (const ModuleParam* param = def ? def->input(k) : nullptr)
+                        show = param->visible == 1;
+                    else
+                        show = showAll;
                 }
-                if (show)
-                    d.originalInputPins.push_back(inputPin(k));
-                else
+                if (show) {
+                    d.originalInputPins.push_back(pinName(def, k, false));
+                    inPortOf[i][d.originalInputPins.back()] = k;
+                } else {
                     ++hidden;
+                }
             }
-            const int numOut = std::clamp(std::max(src.numOutputs, needOut[i]), 0, 4096);
-            for (int k = 1; k <= numOut; ++k)
-                d.originalOutputPins.push_back(outputPin(k));
+            // Some modules (Route, Switch) take more outputs than they declare.
+            const int numOut = std::clamp(std::max({src.numOutputs, needOut[i], defOut}), 0, 4096);
+            for (int k = 1; k <= numOut; ++k) {
+                d.originalOutputPins.push_back(pinName(def, k, true));
+                outPortOf[i][d.originalOutputPins.back()] = k;
+            }
 
             std::string subtitle;
             if (!src.label.empty() && src.label != src.module)
@@ -397,9 +452,9 @@ struct GraphView::Impl {
                 continue;
             noodles::LinkData link;
             link.sourceNodeId = ids[l.fromNode];
-            link.sourcePort = outputPin(l.fromOutput);
+            link.sourcePort = pinName(defOf(l.fromNode), l.fromOutput, true);
             link.targetNodeId = ids[l.toNode];
-            link.targetPort = inputPin(l.toInput);
+            link.targetPort = pinName(defOf(l.toNode), l.toInput, false);
             link.targetPropertyName = link.targetPort;
             graph.links.push_back(std::move(link));
         }
@@ -655,6 +710,42 @@ struct GraphView::Impl {
         return best;
     }
 
+    // The port within a few pixels of a panel point: node, DX port number,
+    // output or input, and the port's world position.
+    struct PortHit {
+        int node = -1, port = -1;
+        bool output = false;
+        double x = 0, y = 0;
+    };
+    PortHit portAt(double sx, double sy) const
+    {
+        double wx, wy;
+        screenToWorld(sx, sy, wx, wy);
+        const double tolerance = 9.0 / zoom;
+        PortHit best;
+        double bestD = tolerance * tolerance;
+        for (std::size_t i = 0; i < ids.size(); ++i) {
+            const noodles::NodeData& d = graph.nodes.at(ids[i]);
+            for (bool output : {false, true}) {
+                const auto& pins = output ? d.outputPins : d.inputPins;
+                const auto& portOf = output ? outPortOf[i] : inPortOf[i];
+                const double px = output ? d.position[0] + d.size[0] : d.position[0];
+                for (const std::string& pin : pins) {
+                    auto it = portOf.find(pin);
+                    if (it == portOf.end())
+                        continue;
+                    const double py = pinCentreY(d, pin, output);
+                    const double dd = (px - wx) * (px - wx) + (py - wy) * (py - wy);
+                    if (dd < bestD) {
+                        bestD = dd;
+                        best = {static_cast<int>(i), it->second, output, px, py};
+                    }
+                }
+            }
+        }
+        return best;
+    }
+
     void projection(int w, int h, float* out) const
     {
         const double left = panX, right = panX + w / zoom;
@@ -810,6 +901,14 @@ bool GraphView::init(const std::filesystem::path& assetsDir)
     return true;
 }
 
+void GraphView::setLibrary(const ModuleLibrary* library)
+{
+    Impl& s = *impl_;
+    s.library = library;
+    if (s.ready)
+        s.build();
+}
+
 void GraphView::setMacro(const NetMacro* macro)
 {
     Impl& s = *impl_;
@@ -845,6 +944,52 @@ void GraphView::handleInput(const GraphInput& in)
     // A press on a node selects it and arms a drag. A press on empty space
     // drags the view, and clears the selection only if it is released without
     // moving (a click).
+    // A press on a port starts a wire instead.
+    if (in.leftClicked && in.hovered) {
+        const Impl::PortHit port = s.portAt(in.x, in.y);
+        if (port.node >= 0) {
+            s.wire = Impl::Wire();
+            s.wire.active = true;
+            s.wire.node = port.node;
+            s.wire.port = port.port;
+            s.wire.fromOutput = port.output;
+            s.wire.ax = s.wire.cx = port.x;
+            s.wire.ay = s.wire.cy = port.y;
+            if (!port.output && s.macro)
+                for (const NetLink& l : s.macro->links)
+                    if (static_cast<int>(l.toNode) == port.node && l.toInput == port.port) {
+                        s.wire.wiredFrom = static_cast<int>(l.fromNode);
+                        s.wire.wiredFromPort = l.fromOutput;
+                    }
+            return;
+        }
+    }
+    if (s.wire.active) {
+        s.screenToWorld(in.x, in.y, s.wire.cx, s.wire.cy);
+        if (!in.leftDown) {
+            const Impl::PortHit target = s.portAt(in.x, in.y);
+            Impl::Wire w = s.wire;
+            s.wire = Impl::Wire();
+            if (target.node >= 0 && target.output != w.fromOutput && target.node != w.node) {
+                GraphEdit e{GraphEdit::Kind::Connect};
+                if (w.fromOutput) {
+                    e.fromNode = w.node; e.fromPort = w.port;
+                    e.toNode = target.node; e.toPort = target.port;
+                } else {
+                    e.fromNode = target.node; e.fromPort = target.port;
+                    e.toNode = w.node; e.toPort = w.port;
+                }
+                s.edits.push_back(e);
+            } else if (target.node < 0 && !w.fromOutput && w.wiredFrom >= 0) {
+                GraphEdit e{GraphEdit::Kind::Disconnect};
+                e.toNode = w.node;
+                e.toPort = w.port;
+                s.edits.push_back(e);
+            }
+        }
+        return;
+    }
+
     if (in.leftClicked) {
         const int hit = s.hovered;
         if (hit >= 0 && hit != s.selected) {
@@ -904,6 +1049,68 @@ void GraphView::handleInput(const GraphInput& in)
         s.panX -= in.dragDx / s.zoom;
         s.panY -= in.dragDy / s.zoom;
     }
+}
+
+std::vector<GraphEdit> GraphView::takeEdits()
+{
+    std::vector<GraphEdit> out;
+    out.swap(impl_->edits);
+    return out;
+}
+
+bool GraphView::wirePreview(float& x1, float& y1, float& x2, float& y2) const
+{
+    const Impl& s = *impl_;
+    if (!s.wire.active)
+        return false;
+    x1 = static_cast<float>((s.wire.ax - s.panX) * s.zoom);
+    y1 = static_cast<float>((s.wire.ay - s.panY) * s.zoom);
+    x2 = static_cast<float>((s.wire.cx - s.panX) * s.zoom);
+    y2 = static_cast<float>((s.wire.cy - s.panY) * s.zoom);
+    if (!s.wire.fromOutput) {   // always draw output -> input
+        std::swap(x1, x2);
+        std::swap(y1, y2);
+    }
+    return true;
+}
+
+void GraphView::panelToWorkspace(float sx, float sy, int& x, int& y) const
+{
+    const Impl& s = *impl_;
+    double wx, wy;
+    s.screenToWorld(sx, sy, wx, wy);
+    // Page offsets differ per node; a new node joins the first page's frame.
+    const double ox = s.offset.empty() ? 0.0 : s.offset[0][0];
+    const double oy = s.offset.empty() ? 0.0 : s.offset[0][1];
+    x = static_cast<int>(std::lround((wy - oy) / kScaleAcrossFlow));
+    y = static_cast<int>(std::lround((wx - ox) / kScaleAlongFlow));
+}
+
+void GraphView::refresh()
+{
+    Impl& s = *impl_;
+    if (!s.ready)
+        return;
+    const int count = s.macro ? static_cast<int>(s.macro->nodes.size()) : 0;
+    if (s.selected >= count) s.selected = -1;
+    if (s.hovered >= count) s.hovered = -1;
+    if (s.errorNode >= count) s.errorNode = -1;
+    s.dragNode = -1;
+    s.dragging = false;
+    s.wire = Impl::Wire();
+    const double panX = s.panX, panY = s.panY, zoom = s.zoom;
+    s.build();
+    s.panX = panX;
+    s.panY = panY;
+    s.zoom = zoom;
+}
+
+void GraphView::select(int node)
+{
+    Impl& s = *impl_;
+    s.selected = (node >= 0 && node < static_cast<int>(s.ids.size())) ? node : -1;
+    if (s.ready)
+        s.restyle();
 }
 
 std::vector<NodeMove> GraphView::takeMoves()

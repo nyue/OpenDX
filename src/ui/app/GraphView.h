@@ -15,6 +15,7 @@
 namespace dxui {
 
 struct NetMacro;
+class ModuleLibrary;
 
 // Mouse state for the graph panel, in pixels relative to its top-left corner.
 struct GraphInput {
@@ -33,6 +34,14 @@ struct NodeMove {
     int fromX, fromY, toX, toY;
 };
 
+// A wiring gesture the view asks the app to apply (ports 1-based).
+struct GraphEdit {
+    enum class Kind { Connect, Disconnect };
+    Kind kind;
+    int fromNode = -1, fromPort = -1;   // Connect only
+    int toNode = -1, toPort = -1;
+};
+
 class GraphView {
 public:
     GraphView();
@@ -46,6 +55,9 @@ public:
     // The macro to draw; nullptr clears. The pointer must stay valid until the
     // next setMacro. Frames the whole graph.
     void setMacro(const NetMacro* macro);
+    // Module definitions, for pin names and which inputs show; may be null.
+    // Must outlive the view or be replaced. Rebuilds the graph.
+    void setLibrary(const ModuleLibrary* library);
 
     // Pan and zoom from the panel's input. Left press on a node selects it and,
     // once the pointer has moved a few pixels, drags it; on empty space it pans.
@@ -54,6 +66,16 @@ public:
     std::vector<NodeMove> takeMoves();
     // Places a node at DX workspace coordinates, e.g. for undo or redo.
     void setNodePosition(int node, int x, int y);
+    // Wiring gestures since the last call: drag from an output to an input to
+    // connect; drag from a wired input to empty space to disconnect.
+    std::vector<GraphEdit> takeEdits();
+    // While a wire is being dragged: its ends in panel pixels.
+    bool wirePreview(float& x1, float& y1, float& x2, float& y2) const;
+    // DX workspace coordinates of a point in the panel (for dropping nodes).
+    void panelToWorkspace(float sx, float sy, int& x, int& y) const;
+    // Rebuilds after the macro was edited, keeping the view and selection.
+    void refresh();
+    void select(int node);
     void frameAll();
 
     // Renders at width x height pixels and returns the GL texture name.
