@@ -163,4 +163,57 @@ bool setInputValue(NetMacro& macro, int node, int input, const std::string& valu
     return true;
 }
 
+bool inputShown(const NetMacro& macro, int node, int input, const ModuleDef* def)
+{
+    if (!validNode(macro, node) || input < 1)
+        return false;
+    const auto n = static_cast<std::size_t>(node);
+    for (const NetLink& l : macro.links)
+        if (l.toNode == n && l.toInput == input)
+            return true;
+    const ModuleParam* param = def ? def->input(input) : nullptr;
+    if (param && param->visible == 2)
+        return false;
+    for (const NetInput& in : macro.nodes[n].inputs)
+        if (in.index == input)
+            return in.visible;
+    if (param)
+        return param->visible == 1;
+    return macro.nodes[n].numInputs <= 10;
+}
+
+bool setInputVisible(NetMacro& macro, int node, int input, bool visible, const ModuleDef* def,
+                     std::string* why)
+{
+    if (!validNode(macro, node))
+        return refuse(why, "no such node");
+    if (input < 1)
+        return refuse(why, "inputs are numbered from 1");
+    const auto n = static_cast<std::size_t>(node);
+    if (!visible)
+        for (const NetLink& l : macro.links)
+            if (l.toNode == n && l.toInput == input)
+                return refuse(why, "a wired input stays visible; disconnect it first");
+    if (visible && def)
+        if (const ModuleParam* p = def->input(input); p && p->visible == 2)
+            return refuse(why, "that input is internal to the module");
+    NetNode& nd = macro.nodes[n];
+    auto it = std::find_if(nd.inputs.begin(), nd.inputs.end(),
+                           [&](const NetInput& in) { return in.index == input; });
+    if (it == nd.inputs.end()) {
+        NetInput in{};
+        in.index = input;
+        in.defaulting = true;
+        in.hasValue = false;
+        nd.inputs.push_back(in);
+        std::sort(nd.inputs.begin(), nd.inputs.end(),
+                  [](const NetInput& a, const NetInput& b) { return a.index < b.index; });
+        it = std::find_if(nd.inputs.begin(), nd.inputs.end(),
+                          [&](const NetInput& in2) { return in2.index == input; });
+    }
+    it->visible = visible;
+    nd.numInputs = std::max(nd.numInputs, input);
+    return true;
+}
+
 } // namespace dxui

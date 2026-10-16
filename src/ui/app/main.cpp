@@ -729,8 +729,35 @@ struct App {
 
         const int defIn = def ? static_cast<int>(def->inputs.size()) : 0;
         const int count = std::max(n.numInputs, defIn);
-        if (!ImGui::BeginTable("inputs", 2, ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp))
+        const int node = static_cast<int>(index);
+
+        // Expand / collapse: show every input, or hide the unwired ones.
+        if (ImGui::SmallButton("Show all")) {
+            apply([&](dxui::NetMacro& mm, std::string&) {
+                for (int k = 1; k <= count; ++k)
+                    if (!dxui::inputShown(mm, node, k, def))
+                        dxui::setInputVisible(mm, node, k, true, def);
+                return true;
+            });
             return;
+        }
+        ImGui::SameLine();
+        if (ImGui::SmallButton("Hide unused")) {
+            apply([&](dxui::NetMacro& mm, std::string&) {
+                for (int k = 1; k <= count; ++k) {
+                    bool wired = false;
+                    for (const dxui::NetLink& l : mm.links)
+                        wired |= l.toNode == index && l.toInput == k;
+                    if (!wired && dxui::inputShown(mm, node, k, def))
+                        dxui::setInputVisible(mm, node, k, false, def);
+                }
+                return true;
+            });
+            return;
+        }
+        if (!ImGui::BeginTable("inputs", 3, ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp))
+            return;
+        ImGui::TableSetupColumn("shown", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("input", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("value");
         for (int k = 1; k <= count; ++k) {
@@ -738,6 +765,29 @@ struct App {
             if (param && param->visible == 2)
                 continue;   // internal to the module
             ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::PushID(-k);
+            {
+                // Shown on the node; a wired input always is.
+                bool wiredIn = false;
+                for (const dxui::NetLink& l : m.links)
+                    wiredIn |= l.toNode == index && l.toInput == k;
+                bool shown = dxui::inputShown(m, node, k, def);
+                ImGui::BeginDisabled(wiredIn);
+                if (ImGui::Checkbox("##shown", &shown)) {
+                    apply([&](dxui::NetMacro& mm, std::string& why) {
+                        return dxui::setInputVisible(mm, node, k, shown, def, &why);
+                    });
+                    ImGui::EndDisabled();
+                    ImGui::PopID();
+                    break;   // the macro changed under this loop
+                }
+                ImGui::EndDisabled();
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip(wiredIn ? "wired inputs are always shown"
+                                              : "show this input on the node");
+            }
+            ImGui::PopID();
             ImGui::TableNextColumn();
             std::string name = param ? param->name : "input " + std::to_string(k);
             ImGui::TextUnformatted(name.c_str());
@@ -759,7 +809,6 @@ struct App {
                 const dxui::ModuleDef* fromDef = library.find(from.module);
                 const dxui::ModuleParam* out = fromDef ? fromDef->output(wire->fromOutput) : nullptr;
                 if (ImGui::SmallButton("x")) {
-                    const int node = static_cast<int>(index);
                     apply([&](dxui::NetMacro& mm, std::string& why) {
                         return dxui::disconnect(mm, node, k, &why);
                     });
@@ -792,7 +841,6 @@ struct App {
                 }
                 if (commit) {
                     std::string value = it->second;
-                    const int node = static_cast<int>(index);
                     apply([&](dxui::NetMacro& mm, std::string& why) {
                         return dxui::setInputValue(mm, node, k, value, &why);
                     });

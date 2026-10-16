@@ -21,6 +21,7 @@
 #include "GraphView.h"
 
 #include "ModuleDefs.h"
+#include "NetEdit.h"
 #include "NetFile.h"
 
 #include "core/NodeData.h"
@@ -53,8 +54,6 @@ namespace {
 // across it (DX x). Noodles nodes are wider than DX's, hence the larger first.
 constexpr double kScaleAlongFlow = 3.6, kScaleAcrossFlow = 3.0;
 // Nodes with up to this many inputs show every input not hidden by the file;
-// above it, only wired or explicitly visible inputs get a row.
-constexpr int kShowAllInputsUpTo = 10;
 // Spacing between page cells, world units.
 constexpr double kPageGap = 260.0;
 constexpr double kPagePadding = 70.0;
@@ -391,25 +390,15 @@ struct GraphView::Impl {
             // definition's (visible:1). Without a definition, a node with many
             // inputs shows only wired or explicitly visible ones.
             const ModuleDef* def = defOf(i);
-            std::map<int, bool> listedVisible;
-            for (const NetInput& in : src.inputs)
-                listedVisible[in.index] = in.visible;
             const int defIn = def ? static_cast<int>(def->inputs.size()) : 0;
             const int defOut = def ? static_cast<int>(def->outputs.size()) : 0;
             const int numIn = std::clamp(std::max({src.numInputs, needIn[i], defIn}), 0, 4096);
-            const bool showAll = numIn <= kShowAllInputsUpTo;
             int hidden = 0;
             for (int k = 1; k <= numIn; ++k) {
-                bool show = wiredIn[i].count(k) > 0;
-                if (!show) {
-                    auto it = listedVisible.find(k);
-                    if (it != listedVisible.end())
-                        show = it->second;
-                    else if (const ModuleParam* param = def ? def->input(k) : nullptr)
-                        show = param->visible == 1;
-                    else
-                        show = showAll;
-                }
+                // The same rule Details uses (NetEdit inputShown); links that
+                // need a port beyond the node's inputs still get one.
+                bool show = wiredIn[i].count(k) > 0 ||
+                            inputShown(m, static_cast<int>(i), k, def);
                 if (show) {
                     d.originalInputPins.push_back(pinName(def, k, false));
                     inPortOf[i][d.originalInputPins.back()] = k;

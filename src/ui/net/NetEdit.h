@@ -34,4 +34,17 @@ bool disconnect(NetMacro& macro, int to, int input, std::string* why = nullptr);
 bool setInputValue(NetMacro& macro, int node, int input, const std::string& value,
                    std::string* why = nullptr);
 
+// Whether input `input` of `node` is shown on the node, as DX decides: always
+// when wired; else the file's `// input[i]: visible =` if it lists the input;
+// else the definition's (visible:1); with no definition, every input of a node
+// with at most 10 inputs. Internal inputs (visible:2) are never shown.
+bool inputShown(const NetMacro& macro, int node, int input, const ModuleDef* def);
+
+// Shows or hides an input on the node (the legacy UI's Expand/Collapse per
+// input); written as `// input[i]: visible = 0|1`. A wired input cannot be
+// hidden; an internal input (visible:2 in its definition) cannot be shown.
+// `def` may be null (no definition known).
+bool setInputVisible(NetMacro& macro, int node, int input, bool visible,
+                     const ModuleDef* def, std::string* why = nullptr);
+
 } // namespace dxui

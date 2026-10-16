@@ -303,6 +303,20 @@ void randomEdits(const NetFile& f, const ModuleLibrary& lib, std::mt19937& rng, 
                 t.log.push_back("delete " + what);
                 ++done;
             }
+        } else if (r < 70) {   // show or hide an unwired input
+            int n = anyNode(plain);
+            if (n < 0) continue;
+            NetNode& node = m.nodes[static_cast<std::size_t>(n)];
+            if (node.numInputs < 1) continue;
+            int in = 1 + static_cast<int>(pick(static_cast<std::size_t>(node.numInputs)));
+            if (wired(n, in)) continue;
+            const ModuleDef* def = lib.find(node.module);
+            bool show = rng() % 2 == 0;
+            std::string what = name(node);
+            if (setInputVisible(m, n, in, show, def)) {
+                t.log.push_back(std::string(show ? "show " : "hide ") + what + "." + std::to_string(in));
+                ++done;
+            }
         } else if (r < 84) {   // set or clear a value
             int n = anyNode(plain);
             if (n < 0) continue;
