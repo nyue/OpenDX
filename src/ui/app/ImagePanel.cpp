@@ -1,4 +1,5 @@
 #include "ImagePanel.h"
+#include "Camera.h"
 
 #include <GL/glew.h>
 #include <imgui.h>
@@ -20,18 +21,7 @@ namespace dxui {
 
 ImagePanel::ImagePanel()
 {
-    // DX's 24-bit display gamma: DXGAMMA_24BIT, then DXGAMMA, else 2.0
-    // (libdx/displayx.c, include/dx/arch.h).
-    double gamma = 2.0;
-    for (const char* name : {"DXGAMMA_24BIT", "DXGAMMA"}) {
-        if (const char* s = std::getenv(name)) {
-            double g = std::atof(s);
-            if (g > 0) {
-                gamma = g;
-                break;
-            }
-        }
-    }
+    const double gamma = displayGamma();
     for (int i = 0; i < 256; ++i)
         gamma_[i] = static_cast<unsigned char>(
             std::lround(255.0 * std::pow(i / 255.0, 1.0 / gamma)));
@@ -78,12 +68,13 @@ void ImagePanel::clear()
         if (image.texture)
             glDeleteTextures(1, &image.texture);
     images_.clear();
+    scenes_.clear();
     if (dir_.empty())
         return;
     std::error_code ec;
     for (const auto& entry : fs::directory_iterator(dir_, ec)) {
         auto ext = entry.path().extension();
-        if (ext == ".rgb" || ext == ".size")
+        if (ext == ".rgb" || ext == ".size" || ext == ".scene")
             fs::remove(entry.path(), ec);
     }
 }
@@ -137,6 +128,12 @@ void ImagePanel::update(bool eager)
 
     std::error_code ec;
     for (const auto& entry : fs::directory_iterator(dir_, ec)) {
+        if (entry.path().extension() == ".scene") {
+            auto st = fs::last_write_time(entry.path(), ec);
+            if (!ec)
+                scenes_[entry.path().stem().string()] = st;
+            continue;
+        }
         if (entry.path().extension() != ".size")
             continue;
         std::string id = entry.path().stem().string();
@@ -149,6 +146,18 @@ void ImagePanel::update(bool eager)
         if (load(id, image))
             image.stamp = stamp;
     }
+}
+
+std::filesystem::file_time_type ImagePanel::sceneStamp(const std::string& id) const
+{
+    auto it = scenes_.find(id);
+    return it == scenes_.end() ? std::filesystem::file_time_type{} : it->second;
+}
+
+bool ImagePanel::gpuShown(const std::string& id) const
+{
+    auto it = gpuOff_.find(id);
+    return gpuTexture && scenes_.count(id) && (it == gpuOff_.end() || !it->second);
 }
 
 std::filesystem::file_time_type ImagePanel::stamp(const std::string& id) const
@@ -169,8 +178,21 @@ ImageGesture ImagePanel::draw()
     for (auto& [id, image] : images_) {
         if (!image.texture || !ImGui::BeginTabItem(id.c_str()))
             continue;
+        if (scenes_.count(id) && gpuTexture) {
+            bool gpu = !gpuOff_[id];
+            if (ImGui::Checkbox("GPU", &gpu))
+                gpuOff_[id] = !gpu;
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("ticked: drawn here on the GPU\nunticked: the executive's own render");
+            ImGui::SameLine();
+        }
         ImGui::TextDisabled("%dx%d   drag: rotate   middle/right drag: pan   wheel: zoom",
                             image.width, image.height);
+        if (gpuShown(id) && gpuNote) {
+            std::string note = gpuNote(id);
+            if (!note.empty())
+                ImGui::TextDisabled("%s", note.c_str());
+        }
         ImVec2 avail = ImGui::GetContentRegionAvail();
         float scale = std::min(avail.x / static_cast<float>(image.width),
                                avail.y / static_cast<float>(image.height));
@@ -179,9 +201,16 @@ ImageGesture ImagePanel::draw()
             ImVec2 cur = ImGui::GetCursorPos();
             ImGui::SetCursorPos(ImVec2(cur.x + (avail.x - size.x) * 0.5f,
                                        cur.y + (avail.y - size.y) * 0.5f));
-            // Rows arrive top first, as GL stores them: no flip.
+            // Rows arrive top first, as GL stores them: no flip. The GPU
+            // view renders bottom-up, so it is flipped.
             ImVec2 at = ImGui::GetCursorPos();
-            ImGui::Image(static_cast<ImTextureID>(image.texture), size);
+            unsigned int gpu = gpuShown(id) ? gpuTexture(id, static_cast<int>(size.x),
+                                                         static_cast<int>(size.y))
+                                            : 0;
+            if (gpu)
+                ImGui::Image(static_cast<ImTextureID>(gpu), size, ImVec2(0, 1), ImVec2(1, 0));
+            else
+                ImGui::Image(static_cast<ImTextureID>(image.texture), size);
             // An invisible button over the image takes the drags.
             ImGui::SetCursorPos(at);
             ImGui::InvisibleButton("##view", size,

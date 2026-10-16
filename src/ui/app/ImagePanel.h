@@ -9,6 +9,7 @@
 #pragma once
 
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <string>
 
@@ -48,6 +49,16 @@ public:
     ImageGesture draw();
     // When the image `id` last changed on disk (zero if not seen).
     std::filesystem::file_time_type stamp(const std::string& id) const;
+    // When <id>.scene last changed (zero if there is none).
+    std::filesystem::file_time_type sceneStamp(const std::string& id) const;
+
+    // The GPU view (ADR 0003): when set and it returns a texture for an image,
+    // the tab shows that texture (rows bottom-up) instead of the executive's
+    // picture, unless the tab's GPU box is unticked. `note` is shown under the
+    // tab (e.g. what the GPU view does not draw).
+    std::function<unsigned int(const std::string& id, int width, int height)> gpuTexture;
+    std::function<std::string(const std::string& id)> gpuNote;
+    bool gpuShown(const std::string& id) const;
 
 private:
     struct Image {
@@ -59,6 +70,8 @@ private:
 
     std::filesystem::path dir_;
     std::map<std::string, Image> images_;
+    std::map<std::string, std::filesystem::file_time_type> scenes_;
+    std::map<std::string, bool> gpuOff_;   // tabs switched to the executive's picture
     unsigned char gamma_[256];
     double lastScan_ = -1.0;
 };

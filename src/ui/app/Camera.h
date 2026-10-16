@@ -38,6 +38,20 @@ inline Vec3 rotated(Vec3 v, Vec3 k, double a)
     return v * std::cos(a) + cross(k, v) * std::sin(a) + k * (dot(k, v) * (1 - std::cos(a)));
 }
 
+// DX's display gamma for 24-bit colour: DXGAMMA_24BIT, then DXGAMMA, else
+// 2.0 (libdx/displayx.c, include/dx/arch.h). Pictures are corrected by
+// 255 * (v / 255) ^ (1 / gamma) when shown, as DX's Display does.
+inline double displayGamma()
+{
+    for (const char* name : {"DXGAMMA_24BIT", "DXGAMMA"})
+        if (const char* s = std::getenv(name)) {
+            double g = std::atof(s);
+            if (g > 0)
+                return g;
+        }
+    return 2.0;
+}
+
 struct DxCamera {
     Vec3 to{0, 0, 0}, from{0, 0, 1}, up{0, 1, 0};
     double size = 1;          // width (orthographic) or view angle in degrees

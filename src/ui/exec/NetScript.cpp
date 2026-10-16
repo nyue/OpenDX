@@ -101,6 +101,10 @@ NetScript netScriptForUi(std::string_view netText, const std::filesystem::path& 
             // Report the camera before the wrapper ends (`camera` is one of
             // the Image macro's outputs in every DX version's wrapper).
             out.text += "    DxuiCamera(id, camera);\n";
+            // The rendered object as a scene for the UI's GPU view (ADR 0003);
+            // `object` is the Image macro's renderable output.
+            out.text += "    dxuiSceneName = Format(" + quoted(imageDir.string() + "/%s.scene") +
+                        ", id);\n    DxuiScene(object, dxuiSceneName);\n";
             inImage = false;
         } else if (std::regex_search(line, m, nodeComment)) {
             node = m[1] == "Display" ? "Display_" + m[2].str() : "";

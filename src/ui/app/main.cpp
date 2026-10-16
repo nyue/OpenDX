@@ -11,6 +11,7 @@
 #include "GraphView.h"
 #include "Camera.h"
 #include "ImagePanel.h"
+#include "SceneView.h"
 #include "NetFile.h"
 #include "NetWriter.h"
 #include "ModuleDefs.h"
@@ -189,6 +190,7 @@ struct App {
         loaded = parsed;
         valueEdits.clear();
         cameras.clear();
+        gpuScenes.clear();
         viewing.clear();
         viewPending = viewToModel = false;
         programRan = false;
@@ -479,6 +481,61 @@ struct App {
     std::filesystem::file_time_type viewStampBefore{};
     bool programRan = false;
     const bool timing = std::getenv("DXUI_TIMING") != nullptr;   // per-step latency to stderr
+    int gpuDragFrames = 0;
+    double gpuDragStart = 0, gpuDragLast = 0;
+
+    // GPU views (ADR 0003): one per image id, reloaded when its scene changes.
+    struct GpuScene {
+        std::unique_ptr<dxui::SceneView> view;
+        std::filesystem::file_time_type stamp{};
+    };
+    std::map<std::string, GpuScene> gpuScenes;
+
+    void updateScenes()
+    {
+        for (const auto& [id, cam] : cameras) {
+            (void)cam;
+            auto st = images.sceneStamp(id);
+            if (st == std::filesystem::file_time_type{})
+                continue;
+            GpuScene& g = gpuScenes[id];
+            if (g.view && g.stamp == st)
+                continue;
+            if (!g.view)
+                g.view = std::make_unique<dxui::SceneView>();
+            std::string error;
+            if (g.view->load(images.directory() / (id + ".scene"), &error))
+                g.stamp = st;
+            else if (error.find("truncated") == std::string::npos)   // half-written: retry
+                note(dxui::ExecMessage::Kind::Warning, id + " scene: " + error);
+        }
+    }
+
+    unsigned int gpuTexture(const std::string& id, int w, int h)
+    {
+        auto it = gpuScenes.find(id);
+        auto cam = cameras.find(id);
+        if (it == gpuScenes.end() || !it->second.view || !it->second.view->loaded() ||
+            cam == cameras.end() || !cam->second.valid())
+            return 0;
+        return it->second.view->render(w, h, cam->second);
+    }
+
+    std::string gpuNote(const std::string& id)
+    {
+        auto it = gpuScenes.find(id);
+        if (it == gpuScenes.end() || !it->second.view || !it->second.view->loaded())
+            return {};
+        const auto& sk = it->second.view->scene().skipped;
+        static const char* names[] = {"screen objects (captions, colour bars)", "volumes",
+                                      "textures", "clipping", "other objects"};
+        std::string out;
+        for (std::size_t k = 0; k < sk.size(); ++k)
+            if (sk[k])
+                out += (out.empty() ? "GPU view leaves out: " : ", ") + std::to_string(sk[k]) +
+                       " " + names[k];
+        return out;
+    }
 
     void takeValue(const std::string& text)
     {
@@ -578,9 +635,25 @@ struct App {
             viewToModel = true;
             lastViewMove = ImGui::GetTime();
         }
-        // Stepped: the next camera goes out as soon as the previous image has
-        // arrived (one render in flight); the last one when the drag ends.
-        if (viewPending && (!viewInFlight || g.released))
+        // GPU view: the camera only moves here; the executive gets it once, at
+        // the end, so its own picture stays in step. Otherwise stepped: the
+        // next camera goes out as soon as the previous image has arrived (one
+        // render in flight); the last one when the drag ends.
+        const bool gpu = images.gpuShown(g.id);
+        // DXUI_TIMING: frames shown during a GPU drag and their spacing.
+        if (timing && gpu && (g.rotate || g.pan)) {
+            double now = ImGui::GetTime();
+            if (gpuDragFrames == 0)
+                gpuDragStart = now;
+            ++gpuDragFrames;
+            gpuDragLast = now;
+        }
+        if (timing && g.released && gpuDragFrames > 1) {
+            std::fprintf(stderr, "dxui2: GPU drag %d frames, %.1f ms apart, no executive run\n",
+                         gpuDragFrames, (gpuDragLast - gpuDragStart) * 1000.0 / (gpuDragFrames - 1));
+            gpuDragFrames = 0;
+        }
+        if (viewPending && (gpu ? g.released : (!viewInFlight || g.released)))
             sendView(g.id);
         if (g.released && viewToModel) {
             keepView(g.id);
@@ -1008,6 +1081,7 @@ struct App {
         ImGui::Begin("Image");
         if (imagesReady) {
             images.update(viewInFlight);
+            updateScenes();
             if (viewInFlight) {
                 // The image arrived, or give up waiting after a second.
                 double waited = ImGui::GetTime() - lastViewSend;
@@ -1143,6 +1217,10 @@ int main(int argc, char** argv)
 
     app.graphReady = app.graph.init(DXUI_NOODLES_ASSETS);
     app.imagesReady = app.images.init();
+    app.images.gpuTexture = [&app](const std::string& id, int w, int h) {
+        return app.gpuTexture(id, w, h);
+    };
+    app.images.gpuNote = [&app](const std::string& id) { return app.gpuNote(id); };
     if (!initial.empty())
         app.open(initial);
 
