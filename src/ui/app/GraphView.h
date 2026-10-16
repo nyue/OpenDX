@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace dxui {
 
@@ -26,6 +27,12 @@ struct GraphInput {
     bool altDown = false;
 };
 
+// A finished drag of one node, in DX workspace pixels (as the .net stores them).
+struct NodeMove {
+    int node;                  // index into NetMacro::nodes
+    int fromX, fromY, toX, toY;
+};
+
 class GraphView {
 public:
     GraphView();
@@ -40,8 +47,13 @@ public:
     // next setMacro. Frames the whole graph.
     void setMacro(const NetMacro* macro);
 
-    // Pan and zoom from the panel's input. Selection: left click selects a node.
+    // Pan and zoom from the panel's input. Left press on a node selects it and,
+    // once the pointer has moved a few pixels, drags it; on empty space it pans.
     void handleInput(const GraphInput& input);
+    // Drags finished since the last call. The caller updates the model.
+    std::vector<NodeMove> takeMoves();
+    // Places a node at DX workspace coordinates, e.g. for undo or redo.
+    void setNodePosition(int node, int x, int y);
     void frameAll();
 
     // Renders at width x height pixels and returns the GL texture name.

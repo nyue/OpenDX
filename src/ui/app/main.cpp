@@ -10,6 +10,7 @@
 #include "GraphView.h"
 #include "ImagePanel.h"
 #include "NetFile.h"
+#include "NetWriter.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -22,6 +23,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -65,6 +68,27 @@ struct App {
     bool imagesReady = false;
     bool scrollLog = false;
 
+    // Editing: the file's text as last read or saved (the writer patches
+    // it), node moves for undo/redo, and where the undo stack stood at the
+    // last save (-1 once that state can no longer be reached).
+    std::string netText;
+    struct Edit {
+        int macro;
+        dxui::NodeMove move;
+    };
+    std::vector<Edit> undoStack, redoStack;
+    long savedAt = 0;
+    std::string saveAsPath;
+
+    // An action waiting on the unsaved-changes prompt.
+    enum class Pending { None, Quit, Open };
+    Pending pending = Pending::None;
+    fs::path pendingOpen;
+    bool askToSave = false;
+    bool quitNow = false;
+
+    bool dirty() const { return static_cast<long>(undoStack.size()) != savedAt; }
+
     void note(dxui::ExecMessage::Kind kind, std::string text)
     {
         log.push_back({kind, std::move(text)});
@@ -78,17 +102,51 @@ struct App {
         return &net.macros[static_cast<std::size_t>(macroIndex)];
     }
 
+    // Opens a file, asking first if the current one has unsaved changes.
     void open(const fs::path& path)
     {
+        if (dirty()) {
+            pending = Pending::Open;
+            pendingOpen = path;
+            askToSave = true;
+            return;
+        }
+        doOpen(path);
+    }
+
+    void requestQuit()
+    {
+        if (dirty()) {
+            pending = Pending::Quit;
+            askToSave = true;
+        } else {
+            quitNow = true;
+        }
+    }
+
+    void doOpen(const fs::path& path)
+    {
+        std::ifstream in(path, std::ios::binary);
+        if (!in) {
+            note(dxui::ExecMessage::Kind::Error, "cannot read " + path.string());
+            return;
+        }
+        std::ostringstream text;
+        text << in.rdbuf();
         dxui::NetFile parsed;
         dxui::NetParseError err;
-        if (!dxui::parseNetFile(path, parsed, &err)) {
+        if (!dxui::parseNet(text.str(), parsed, &err)) {
             note(dxui::ExecMessage::Kind::Error,
                  path.string() + ":" + std::to_string(err.line) + ": " + err.message);
             return;
         }
         net = std::move(parsed);
+        netText = text.str();
         netPath = path;
+        saveAsPath = path.string();
+        undoStack.clear();
+        redoStack.clear();
+        savedAt = 0;
         images.clear();
         // main is the program; other macros are listed for browsing.
         macroIndex = static_cast<int>(net.macros.size()) - 1;
@@ -120,6 +178,120 @@ struct App {
         } else {
             client.runNetFile(fs::absolute(netPath));
         }
+    }
+
+    void placeNode(int macroIdx, int node, int x, int y)
+    {
+        auto& n = net.macros[static_cast<std::size_t>(macroIdx)].nodes[static_cast<std::size_t>(node)];
+        n.x = static_cast<float>(x);
+        n.y = static_cast<float>(y);
+        if (graphReady && macroIdx == macroIndex)
+            graph.setNodePosition(node, x, y);
+    }
+
+    // Drags the graph view finished: into the model and the undo stack.
+    void takeMoves()
+    {
+        for (const dxui::NodeMove& m : graph.takeMoves()) {
+            if (savedAt > static_cast<long>(undoStack.size()))
+                savedAt = -1;   // the saved state was undone and is now gone
+            auto& n = net.macros[static_cast<std::size_t>(macroIndex)].nodes[static_cast<std::size_t>(m.node)];
+            n.x = static_cast<float>(m.toX);
+            n.y = static_cast<float>(m.toY);
+            undoStack.push_back({macroIndex, m});
+            redoStack.clear();
+        }
+    }
+
+    void undo()
+    {
+        if (undoStack.empty())
+            return;
+        Edit e = undoStack.back();
+        undoStack.pop_back();
+        placeNode(e.macro, e.move.node, e.move.fromX, e.move.fromY);
+        redoStack.push_back(e);
+    }
+
+    void redo()
+    {
+        if (redoStack.empty())
+            return;
+        Edit e = redoStack.back();
+        redoStack.pop_back();
+        placeNode(e.macro, e.move.node, e.move.toX, e.move.toY);
+        undoStack.push_back(e);
+    }
+
+    // Writes the node positions into the file's text and saves it to `path`.
+    bool save(const fs::path& path)
+    {
+        if (netText.empty())
+            return false;
+        std::string text = netText, out, error;
+        for (const dxui::NetMacro& m : net.macros) {
+            if (!dxui::writeNodePositions(text, m, out, &error)) {
+                note(dxui::ExecMessage::Kind::Error, "not saved: " + error);
+                return false;
+            }
+            text = out;
+        }
+        if (!dxui::saveTextAtomically(path, text, &error)) {
+            note(dxui::ExecMessage::Kind::Error, "not saved: " + error);
+            return false;
+        }
+        netText = text;
+        netPath = path;
+        saveAsPath = path.string();
+        savedAt = static_cast<long>(undoStack.size());
+        note(dxui::ExecMessage::Kind::Info, "saved " + path.string());
+        return true;
+    }
+
+    // The unsaved-changes prompt, then whatever was waiting on it.
+    void drawSavePrompt()
+    {
+        if (askToSave) {
+            ImGui::OpenPopup("Unsaved changes");
+            askToSave = false;
+        }
+        if (!ImGui::BeginPopupModal("Unsaved changes", nullptr,
+                                    ImGuiWindowFlags_AlwaysAutoResize))
+            return;
+        ImGui::Text("%s has unsaved changes.", netPath.filename().string().c_str());
+        bool proceed = false;
+        if (ImGui::Button("Save")) {
+            proceed = save(netPath);
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Discard")) {
+            proceed = true;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+            pending = Pending::None;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+        if (!proceed)
+            return;
+        if (pending == Pending::Quit) {
+            quitNow = true;
+        } else if (pending == Pending::Open) {
+            undoStack.clear();   // discarded or saved: no longer dirty
+            savedAt = 0;
+            doOpen(pendingOpen);
+        }
+        pending = Pending::None;
+    }
+
+    std::string title() const
+    {
+        if (netPath.empty())
+            return "OpenDX";
+        return "OpenDX - " + netPath.filename().string() + (dirty() ? " *" : "");
     }
 
     // Exec errors name the failing node as /<macro>:<n>/<Module>:<instance>.
@@ -179,8 +351,33 @@ struct App {
             if (ImGui::Button("Open") && !openPath.empty())
                 open(openPath);
             ImGui::Separator();
+            if (ImGui::MenuItem("Save", "Ctrl+S", false, !netPath.empty()))
+                save(netPath);
+            ImGui::SetNextItemWidth(420);
+            ImGui::InputText("##saveas", saveAsPath.data(), saveAsPath.capacity() + 1,
+                             ImGuiInputTextFlags_CallbackResize,
+                             [](ImGuiInputTextCallbackData* d) {
+                                 auto* s = static_cast<std::string*>(d->UserData);
+                                 if (d->EventFlag == ImGuiInputTextFlags_CallbackResize) {
+                                     s->resize(static_cast<std::size_t>(d->BufTextLen));
+                                     d->Buf = s->data();
+                                 }
+                                 return 0;
+                             },
+                             &saveAsPath);
+            ImGui::SameLine();
+            if (ImGui::Button("Save As") && !saveAsPath.empty() && !netText.empty())
+                save(saveAsPath);
+            ImGui::Separator();
             if (ImGui::MenuItem("Quit"))
-                glfwSetWindowShouldClose(glfwGetCurrentContext(), 1);
+                requestQuit();
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Edit")) {
+            if (ImGui::MenuItem("Undo Move", "Ctrl+Z", false, !undoStack.empty()))
+                undo();
+            if (ImGui::MenuItem("Redo Move", "Ctrl+Shift+Z", false, !redoStack.empty()))
+                redo();
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Execute")) {
@@ -229,6 +426,7 @@ struct App {
             in.wheel = in.hovered ? io.MouseWheel : 0.0f;
             in.altDown = io.KeyAlt;
             graph.handleInput(in);
+            takeMoves();
             if (in.hovered && ImGui::IsKeyPressed(ImGuiKey_F))
                 graph.frameAll();
         } else if (!graphReady) {
@@ -393,12 +591,21 @@ int main(int argc, char** argv)
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
+    // Closing the window goes through the unsaved-changes prompt.
+    glfwSetWindowUserPointer(window, &app);
+    glfwSetWindowCloseCallback(window, [](GLFWwindow* w) {
+        auto* a = static_cast<App*>(glfwGetWindowUserPointer(w));
+        glfwSetWindowShouldClose(w, GLFW_FALSE);
+        a->requestQuit();
+    });
+
     app.graphReady = app.graph.init(DXUI_NOODLES_ASSETS);
     app.imagesReady = app.images.init();
     if (!initial.empty())
         app.open(initial);
 
-    while (!glfwWindowShouldClose(window) && !quitRequested) {
+    std::string shownTitle;
+    while (!app.quitNow && !quitRequested) {
         // Wake at least 10 times a second so exec messages show up while idle.
         glfwWaitEventsTimeout(0.1);
         app.pollExec();
@@ -409,13 +616,28 @@ int main(int argc, char** argv)
         ImGuiID dockspace = ImGui::DockSpaceOverViewport();
         defaultLayout(dockspace);
         app.drawMenu();
-        if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_E))
-            app.run();
+        // Shortcuts, unless a text field has the keyboard.
+        if (!ImGui::GetIO().WantTextInput) {
+            if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_E))
+                app.run();
+            if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_S) && !app.netPath.empty())
+                app.save(app.netPath);
+            if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_Z))
+                app.undo();
+            if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiMod_Shift | ImGuiKey_Z) ||
+                ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_Y))
+                app.redo();
+        }
         app.drawNetwork();
         app.drawDetails();
         app.drawMessages();
         app.drawImage();
+        app.drawSavePrompt();
         ImGui::Render();
+        if (std::string t = app.title(); t != shownTitle) {
+            glfwSetWindowTitle(window, t.c_str());
+            shownTitle = t;
+        }
 
         int fbw, fbh;
         glfwGetFramebufferSize(window, &fbw, &fbh);

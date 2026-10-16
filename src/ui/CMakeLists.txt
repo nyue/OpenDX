@@ -22,3 +22,10 @@ target_include_directories(dxui2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/app)
 target_link_libraries(dxui2 PRIVATE dx_execclient dx_netfile dx_imgui noodles)
 target_compile_definitions(dxui2 PRIVATE
   DXUI_NOODLES_ASSETS="${NOODLES_ASSETS_DIR}")
+
+# Warnings on for the new code (not for fetched dependencies or DXLink).
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  foreach(target dx_netfile net_check dx_execclient exec_check dxui2)
+    target_compile_options(${target} PRIVATE -Wall -Wextra)
+  endforeach()
+endif()

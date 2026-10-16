@@ -222,6 +222,18 @@ struct GraphView::Impl {
     bool leftPanning = false, middlePanning = false, prevMiddle = false;
     float leftTravel = 0;  // pointer movement since the left press, pixels
 
+    // Per node: the page cell offset added in arrangePages (world units) and
+    // the page it sits on (-1 for a single-page network).
+    std::vector<std::array<double, 2>> offset;
+    std::vector<int> pageOf;
+
+    // Dragging a node: armed by a press on it, moving once past a few pixels.
+    int dragNode = -1;
+    bool dragging = false;
+    double pressWorldX = 0, pressWorldY = 0;
+    noodles::Vec2d dragStart{0, 0};
+    std::vector<NodeMove> moves;
+
     ~Impl()
     {
         if (fbo)
@@ -315,6 +327,8 @@ struct GraphView::Impl {
         }
 
         ids.reserve(n);
+        offset.assign(n, {0.0, 0.0});
+        pageOf.assign(n, -1);
         for (std::size_t i = 0; i < n; ++i) {
             const NetNode& src = m.nodes[i];
             noodles::NodeData d;
@@ -483,6 +497,8 @@ struct GraphView::Impl {
             for (std::size_t i : members[order[p]]) {
                 noodles::NodeData& d = graph.nodes.at(ids[i]);
                 d.position = noodles::Vec2d(d.position[0] + dx, d.position[1] + dy);
+                offset[i] = {dx, dy};
+                pageOf[i] = static_cast<int>(p);
             }
             Page page;
             page.name = order[p].empty() ? std::string("(no page)") : order[p];
@@ -524,6 +540,37 @@ struct GraphView::Impl {
             link.selected = !sel.empty() && (link.sourceNodeId == sel || link.targetNodeId == sel);
         }
         graph.markLinksChanged();
+    }
+
+    // DX workspace <-> world, through the transpose, the scales and the page
+    // cell offset (the inverse of build() and arrangePages()).
+    noodles::Vec2d worldFromDx(std::size_t i, double x, double y) const
+    {
+        return noodles::Vec2d(y * kScaleAlongFlow + offset[i][0],
+                              x * kScaleAcrossFlow + offset[i][1]);
+    }
+    void dxFromWorld(std::size_t i, const noodles::Vec2d& w, int& x, int& y) const
+    {
+        x = static_cast<int>(std::lround((w[1] - offset[i][1]) / kScaleAcrossFlow));
+        y = static_cast<int>(std::lround((w[0] - offset[i][0]) / kScaleAlongFlow));
+    }
+
+    // After positions change: links follow, caches rebuild, and the node's
+    // page backdrop grows to keep it inside.
+    void moved(std::size_t i)
+    {
+        if (pageOf[i] >= 0 && static_cast<std::size_t>(pageOf[i]) < pages.size()) {
+            const noodles::NodeData& d = graph.nodes.at(ids[i]);
+            Rect& box = pages[static_cast<std::size_t>(pageOf[i])].box;
+            box.add(d.position[0] - kPagePadding, d.position[1] - kPagePadding);
+            box.add(d.position[0] + d.size[0] + kPagePadding,
+                    d.position[1] + d.size[1] + kPagePadding);
+        }
+        frame.reset();
+        nodeManager.resetNodeQuadCaches();
+        textManager.resetPositionCaches();
+        updateLinks();
+        contentChanged = true;
     }
 
     // Selection, error and hover change appearance only; positions stay put.
@@ -769,6 +816,9 @@ void GraphView::setMacro(const NetMacro* macro)
     s.macro = macro;
     s.selected = s.hovered = s.errorNode = -1;
     s.leftPanning = s.middlePanning = false;
+    s.dragNode = -1;
+    s.dragging = false;
+    s.moves.clear();
     if (s.ready)
         s.build();
     s.framePending = true;
@@ -792,8 +842,9 @@ void GraphView::handleInput(const GraphInput& in)
         s.middlePanning = false;
     s.prevMiddle = in.middleDown;
 
-    // A press on a node selects it. A press on empty space drags the view, and
-    // clears the selection only if it is released without moving (a click).
+    // A press on a node selects it and arms a drag. A press on empty space
+    // drags the view, and clears the selection only if it is released without
+    // moving (a click).
     if (in.leftClicked) {
         const int hit = s.hovered;
         if (hit >= 0 && hit != s.selected) {
@@ -802,9 +853,45 @@ void GraphView::handleInput(const GraphInput& in)
         }
         s.leftPanning = hit < 0;
         s.leftTravel = 0;
+        s.dragNode = hit;
+        s.dragging = false;
+        if (hit >= 0) {
+            s.screenToWorld(in.x, in.y, s.pressWorldX, s.pressWorldY);
+            s.dragStart = s.graph.nodes.at(s.ids[static_cast<std::size_t>(hit)]).position;
+        }
     }
-    if (s.leftPanning)
+    if (s.leftPanning || s.dragNode >= 0)
         s.leftTravel += std::abs(in.dragDx) + std::abs(in.dragDy);
+
+    if (s.dragNode >= 0) {
+        const auto i = static_cast<std::size_t>(s.dragNode);
+        noodles::NodeData& d = s.graph.nodes.at(s.ids[i]);
+        if (in.leftDown) {
+            // Past a few pixels the press becomes a drag (a click only selects).
+            if (!s.dragging && s.leftTravel >= 4.0f)
+                s.dragging = true;
+            if (s.dragging) {
+                double wx, wy;
+                s.screenToWorld(in.x, in.y, wx, wy);
+                d.position = noodles::Vec2d(s.dragStart[0] + wx - s.pressWorldX,
+                                            s.dragStart[1] + wy - s.pressWorldY);
+                s.moved(i);
+            }
+        } else {
+            if (s.dragging) {
+                // Snap to whole workspace pixels, which is what gets saved.
+                int fromX, fromY, toX, toY;
+                s.dxFromWorld(i, s.dragStart, fromX, fromY);
+                s.dxFromWorld(i, d.position, toX, toY);
+                d.position = s.worldFromDx(i, toX, toY);
+                s.moved(i);
+                if (toX != fromX || toY != fromY)
+                    s.moves.push_back({s.dragNode, fromX, fromY, toX, toY});
+            }
+            s.dragNode = -1;
+            s.dragging = false;
+        }
+    }
     if (!in.leftDown && s.leftPanning) {
         s.leftPanning = false;
         if (s.leftTravel < 4.0f && s.selected >= 0) {
@@ -817,6 +904,23 @@ void GraphView::handleInput(const GraphInput& in)
         s.panX -= in.dragDx / s.zoom;
         s.panY -= in.dragDy / s.zoom;
     }
+}
+
+std::vector<NodeMove> GraphView::takeMoves()
+{
+    std::vector<NodeMove> out;
+    out.swap(impl_->moves);
+    return out;
+}
+
+void GraphView::setNodePosition(int node, int x, int y)
+{
+    Impl& s = *impl_;
+    if (!s.ready || node < 0 || node >= static_cast<int>(s.ids.size()))
+        return;
+    const auto i = static_cast<std::size_t>(node);
+    s.graph.nodes.at(s.ids[i]).position = s.worldFromDx(i, x, y);
+    s.moved(i);
 }
 
 void GraphView::frameAll()
