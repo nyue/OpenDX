@@ -55,7 +55,7 @@ static struct state {		/* message system state */
 Error
 _dxf_initmessages(void)
 {
-    char *file, *s, name[100];
+    char *file, *s, name[1024];
     int fd, mno, size;
 
     if (state)
@@ -81,12 +81,12 @@ _dxf_initmessages(void)
     /* read and parse message file */
     file = getenv("DXMESSAGES");
     if (file)
-	sprintf(name, "%s", file);
+	snprintf(name, sizeof(name), "%s", file);
     else {
 	char *root = getenv("DXEXECROOT");
 	if (!root) root = getenv("DXROOT");
 	if (!root) root = "/usr/local/dx";
-	sprintf(name, "%s/lib/messages", root);
+	snprintf(name, sizeof(name), "%s/lib/messages", root);
     }
     fd = open(name, O_RDONLY);
     if (fd<0) {

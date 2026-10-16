@@ -113,7 +113,7 @@ Error DXColorNameToRGB(char *colorstr, RGBColor *colorvec)
     float r, g, b;
     char newstring[30], laststring[80];
     char compactstring[80];
-    char *rootstring, colorfile[100];
+    char *rootstring, colorfile[1024];
     Private cachedtable;
     FILE *in;
   
@@ -147,21 +147,21 @@ Error DXColorNameToRGB(char *colorstr, RGBColor *colorvec)
 	/* first check the environment variable DXCOLORS */
 	rootstring = (char *)getenv("DXCOLORS");
 	if (rootstring) {
-	    sprintf(colorfile,"%s",rootstring);
+	    snprintf(colorfile, sizeof(colorfile), "%s", rootstring);
 	    in = fopen(colorfile, "r");
 	    if (in) goto got_colorfile;
 	}
 	/* if we haven't succeeded yet, try DXEXECROOT */
 	rootstring = (char *)getenv("DXEXECROOT");
 	if (rootstring) {
-	    sprintf(colorfile,"%s/lib/colors.txt",rootstring);
+	    snprintf(colorfile, sizeof(colorfile), "%s/lib/colors.txt", rootstring);
 	    in = fopen(colorfile, "r");
 	    if (in) goto got_colorfile;
 	}
 	/* if we haven't succeeded yet, try DXROOT */
 	rootstring = (char *)getenv("DXROOT");
 	if (rootstring) {
-	    sprintf(colorfile,"%s/lib/colors.txt",rootstring);
+	    snprintf(colorfile, sizeof(colorfile), "%s/lib/colors.txt", rootstring);
 	    in = fopen(colorfile, "r");
 	    if (in) goto got_colorfile;
 	}
