@@ -8,6 +8,10 @@ find_package(X11 REQUIRED)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL GLX)
 find_package(Threads REQUIRED)
 
+# glibc checks writes into buffers of known size at run time and aborts with
+# a message instead of corrupting memory. Needs optimisation, so not in Debug.
+set(dx_fortify $<$<AND:$<C_COMPILER_ID:GNU,Clang>,$<NOT:$<CONFIG:Debug>>>:_FORTIFY_SOURCE=2>)
+
 set(gen ${CMAKE_CURRENT_BINARY_DIR}/generated)
 file(MAKE_DIRECTORY ${gen}/libdx ${gen}/dxmods ${gen}/dpexec)
 
@@ -87,7 +91,8 @@ function(dx_object_library name dir)
   add_library(${name} OBJECT ${ARGN})
   target_include_directories(${name} PRIVATE
     ${DX_GENERATED_INCLUDE} ${CMAKE_SOURCE_DIR}/include)
-  target_compile_definitions(${name} PRIVATE HAVE_CONFIG_H ${DX_ARCH} _GNU_SOURCE)
+  target_compile_definitions(${name} PRIVATE
+    HAVE_CONFIG_H ${DX_ARCH} _GNU_SOURCE ${dx_fortify})
   add_dependencies(${name} dx_generated)
 endfunction()
 
@@ -183,7 +188,8 @@ add_executable(dxexec dxexec/main.c)
 target_include_directories(dxexec PRIVATE
     ${DX_GENERATED_INCLUDE} ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/dpexec)
-target_compile_definitions(dxexec PRIVATE HAVE_CONFIG_H ${DX_ARCH} _GNU_SOURCE)
+target_compile_definitions(dxexec PRIVATE
+    HAVE_CONFIG_H ${DX_ARCH} _GNU_SOURCE ${dx_fortify})
 target_link_libraries(dxexec PRIVATE
     dx_dpexec dx_dxmods dx_libdx dx_hwrender
     OpenGL::GL OpenGL::GLX OpenGL::GLU X11::X11 X11::Xext
