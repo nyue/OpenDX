@@ -1,0 +1,63 @@
+// Draws one macro of a .net file with noodles into an offscreen texture.
+//
+// The app shows the texture in an ImGui panel and forwards that panel's mouse
+// input, so the graph lives inside the docking layout like any other panel.
+// Requires a current OpenGL 3.3 core context; call init() once after creating
+// it (it initialises GLEW, which noodles uses).
+
+#pragma once
+
+#include <filesystem>
+#include <memory>
+#include <string>
+
+namespace dxui {
+
+struct NetMacro;
+
+// Mouse state for the graph panel, in pixels relative to its top-left corner.
+struct GraphInput {
+    float x = 0, y = 0;
+    bool hovered = false;      // pointer is over the panel
+    bool leftDown = false, leftClicked = false, leftDoubleClicked = false;
+    bool middleDown = false, rightDown = false;
+    float dragDx = 0, dragDy = 0;  // pointer movement this frame while a button is held
+    float wheel = 0;           // scroll steps this frame (positive = zoom in)
+    bool altDown = false;
+};
+
+class GraphView {
+public:
+    GraphView();
+    ~GraphView();
+    GraphView(const GraphView&) = delete;
+    GraphView& operator=(const GraphView&) = delete;
+
+    // assetsDir holds noodles' shaders/ and fonts/. Returns false with error() set.
+    bool init(const std::filesystem::path& assetsDir);
+
+    // The macro to draw; nullptr clears. The pointer must stay valid until the
+    // next setMacro. Frames the whole graph.
+    void setMacro(const NetMacro* macro);
+
+    // Pan and zoom from the panel's input. Selection: left click selects a node.
+    void handleInput(const GraphInput& input);
+    void frameAll();
+
+    // Renders at width x height pixels and returns the GL texture name.
+    unsigned int render(int width, int height);
+
+    // Node index into NetMacro::nodes, or -1.
+    int selectedNode() const;
+    int hoveredNode() const;
+    // Marks a node as failed (drawn distinctly), e.g. from an exec error; -1 clears.
+    void setErrorNode(int node);
+
+    const std::string& error() const;
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> impl_;
+};
+
+} // namespace dxui

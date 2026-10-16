@@ -1,0 +1,24 @@
+# The new user interface (ADR 0001): Dear ImGui + noodles + GLFW, driving
+# dxexec through DXLink.
+
+include(${CMAKE_SOURCE_DIR}/cmake/UiDependencies.cmake)
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/net/CMakeLists.txt)
+  add_subdirectory(net)
+endif()
+
+add_library(dx_execclient STATIC exec/ExecClient.cpp)
+target_include_directories(dx_execclient PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/exec)
+find_package(Threads REQUIRED)
+target_link_libraries(dx_execclient PRIVATE dx_dxl PUBLIC Threads::Threads)
+
+add_executable(exec_check exec/exec_check.cpp)
+target_link_libraries(exec_check PRIVATE dx_execclient)
+
+# The application. GraphView renders with noodles (which loads GL through
+# GLEW); ImGui uses its own loader.
+add_executable(dxui2 app/main.cpp app/GraphView.cpp)
+target_include_directories(dxui2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/app)
+target_link_libraries(dxui2 PRIVATE dx_execclient dx_netfile dx_imgui noodles)
+target_compile_definitions(dxui2 PRIVATE
+  DXUI_NOODLES_ASSETS="${NOODLES_ASSETS_DIR}")
