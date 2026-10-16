@@ -30,7 +30,7 @@ arguments: give each step its own variable.
 ## How the references were made
 
 Built from the 4.4.4 baseline (`8b6f39f` plus the `linux/sys.h` fix) on
-AlmaLinux 9, GCC 11.5, with the committed autotools files:
+Rocky Linux 9.7, GCC 11.5, with the committed autotools files:
 
 ```sh
 ./configure --prefix=<install> CXXFLAGS="-g -O2 -std=gnu++14 -Wno-narrowing -fpermissive"
@@ -41,3 +41,12 @@ Rendering uses DX's software renderer and is byte-for-byte repeatable, so any
 difference is a change in behaviour. Expect that to loosen once the compiler or
 platform changes (phase 1); raise `--tolerance` then rather than regenerating
 the references, so a real change still shows.
+
+The CMake build of `dxexec` (phase 1) reproduces these references byte for
+byte:
+
+```sh
+cmake -S . -B <build> -G Ninja -DCMAKE_INSTALL_PREFIX=<install>
+cmake --build <build> && cmake --install <build>
+python3.11 tests/run_reference.py --dxroot <install>/dx
+```
