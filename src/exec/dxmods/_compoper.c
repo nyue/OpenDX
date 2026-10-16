@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 /* This file contains the description of each operator from a type and 
@@ -573,7 +574,7 @@ CheckInput (PTreeNode *pt, ObjStruct *os, OperBinding *binding)
 		char invalidName[1000];
 		Array invalidArray;
 
-		sprintf(invalidName, "invalid %s", dep);
+		snprintf(invalidName, DX_ARRAY_SIZE(invalidName), "invalid %s", dep);
 		invalidArray = (Array)DXGetComponentValue(
 		    (Field)os->inputs[pt->u.i], invalidName);
 		if (invalidArray != NULL) {

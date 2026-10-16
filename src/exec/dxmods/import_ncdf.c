@@ -6,6 +6,7 @@
 /*    "IBM PUBLIC LICENSE - Open Visualization Data Explorer"          */
 /***********************************************************************/
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 
@@ -1519,7 +1520,7 @@ static Error setattr(Arrayinfo ap, Field f, char *compname)
     /* save the component name now, because it may get overwritten
      *  further down
      */
-    strcpy(savename, compname);
+    _dxf_strcpy_n(savename, DX_ARRAY_SIZE(savename), compname);
 
     /* see if there is an 'attribute' attribute on this variable
      */

@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #include <dx/dx.h>
 #include <ctype.h>
@@ -183,7 +184,7 @@ m_Plot(Object *in, Object *out) {
     struct legendargstruct legendarg;
     struct plotargstruct plotarg;
 
-    strcpy(marker, "");
+    _dxf_strcpy_n(marker, DX_ARRAY_SIZE(marker), "");
     strcpy(plotlabel,"");
 
     legendarg.islabel=0;
@@ -418,9 +419,9 @@ m_Plot(Object *in, Object *out) {
 
 
     if (!strcmp(ptypex,"log10"))
-        strcpy(ptypex, "log");
+        _dxf_strcpy_n(ptypex, DX_ARRAY_SIZE(ptypex), "log");
     if (!strcmp(ptypex,"linear"))
-        strcpy(ptypex, "lin");
+        _dxf_strcpy_n(ptypex, DX_ARRAY_SIZE(ptypex), "lin");
 
     if (!strcmp(ptypey,"log10"))
         strcpy(ptypey, "log");
@@ -1753,7 +1754,7 @@ static Error plottask(Pointer p) {
     }
 
     if (DXGetComponentAttribute((Field)ino, "data", "dep"))
-        strcpy(depatt,DXGetString((String)DXGetComponentAttribute((Field)ino,
+        _dxf_strcpy_n(depatt, DX_ARRAY_SIZE(depatt),DXGetString((String)DXGetComponentAttribute((Field)ino,
                                   "data","dep")));
     else {
         DXSetError(ERROR_DATA_INVALID,"data component is missing dep attribute");
@@ -1951,7 +1952,7 @@ for (i=0; i<numitems;i++) {
         DXSetError (ERROR_DATA_INVALID, "#10241", "data");
         goto error;
     }
-    strcpy(depatt,DXGetString((String)DXGetComponentAttribute((Field)ino,
+    _dxf_strcpy_n(depatt, DX_ARRAY_SIZE(depatt),DXGetString((String)DXGetComponentAttribute((Field)ino,
                               "data","dep")));
     if (!strcmp(depatt,"connections")) {
         if (!PlotDepConnections(arg))
@@ -2056,7 +2057,7 @@ static Error PlotDepConnections(struct arg *arg) {
             DXSetError (ERROR_DATA_INVALID, "#10241", "colors");
             goto error;
         }
-        strcpy(coldepatt,DXGetString((String)DXGetComponentAttribute((Field)ino,
+        _dxf_strcpy_n(coldepatt, DX_ARRAY_SIZE(coldepatt),DXGetString((String)DXGetComponentAttribute((Field)ino,
                                      "colors","dep")));
         if (strcmp(coldepatt,"connections")) {
             DXSetError(ERROR_DATA_INVALID, "#10360", "data", "colors");
@@ -2877,7 +2878,7 @@ static Error PlotDepPositions(struct arg *arg) {
             DXSetError (ERROR_DATA_INVALID, "#10241", "colors");
             goto error;
         }
-        strcpy(coldepatt,DXGetString((String)DXGetComponentAttribute((Field)ino,
+        _dxf_strcpy_n(coldepatt, DX_ARRAY_SIZE(coldepatt),DXGetString((String)DXGetComponentAttribute((Field)ino,
                                      "colors","dep")));
         if (strcmp(coldepatt,"positions")) {
             DXSetError(ERROR_DATA_INVALID, "#10360", "data", "colors");

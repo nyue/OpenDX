@@ -11,6 +11,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <dx/dx.h>
@@ -1570,21 +1571,21 @@ static void Summary_Print(struct sum_info *s)
 
 	switch ((Class)i) {
 	  case CLASS_GROUP:
-	    sprintf(sbuf, sformat, s[i].num, "Groups.", USED(struct group));
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Groups.", USED(struct group));
 	    sprintf(mbuf, mformat, "Members", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
 		    s[i].sum);
 	    break;
 
 	  case CLASS_SERIES:
-	    sprintf(sbuf, sformat, s[i].num, "Series.", USED(struct series));
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Series.", USED(struct series));
 	    sprintf(mbuf, mformat, "Members", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
 		    s[i].sum);
 	    break;
 
 	  case CLASS_COMPOSITEFIELD:
-	    sprintf(sbuf, sformat, s[i].num, "CompositeFields.", 
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "CompositeFields.", 
 		    USED(struct compositefield));
 	    sprintf(mbuf, mformat, "Members", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
@@ -1592,28 +1593,28 @@ static void Summary_Print(struct sum_info *s)
 	    break;
 
 	  case CLASS_MULTIGRID:
-	    sprintf(sbuf, sformat, s[i].num, "MultiGrids.", USED(struct multigrid));
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "MultiGrids.", USED(struct multigrid));
 	    sprintf(mbuf, mformat, "Members", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
 		    s[i].sum);
 	    break;
 
 	  case CLASS_FIELD:
-	    sprintf(sbuf, sformat, s[i].num, "Fields.", USED(struct field));
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Fields.", USED(struct field));
 	    sprintf(mbuf, mformat, "Components", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
 		    s[i].sum);
 	    break;
 
 	  case CLASS_ARRAY:
-	    sprintf(sbuf, sformat, s[i].num, "Arrays.", USED(struct array));
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Arrays.", USED(struct array));
 	    sprintf(mbuf, mformat, "Items", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
 		    s[i].sum);
 	    break;
 
 	  case CLASS_CONSTANTARRAY:
-	    sprintf(sbuf, sformat, s[i].num, "ConstantArrays.",
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "ConstantArrays.",
 		    USED(struct constantarray));
 	    sprintf(mbuf, mformat, "Items", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
@@ -1621,7 +1622,7 @@ static void Summary_Print(struct sum_info *s)
 	    break;
 
 	  case CLASS_REGULARARRAY:
-	    sprintf(sbuf, sformat, s[i].num, "RegularArrays.",
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "RegularArrays.",
 		    USED(struct regulararray));
 	    sprintf(mbuf, mformat, "Items", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
@@ -1629,7 +1630,7 @@ static void Summary_Print(struct sum_info *s)
 	    break;
 
 	  case CLASS_PATHARRAY:
-	    sprintf(sbuf, sformat, s[i].num, "PathArrays.",
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "PathArrays.",
 		    USED(struct patharray));
 	    sprintf(mbuf, mformat, "Items", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
@@ -1637,7 +1638,7 @@ static void Summary_Print(struct sum_info *s)
 	    break;
 
 	  case CLASS_PRODUCTARRAY:
-	    sprintf(sbuf, sformat, s[i].num, "ProductArrays.",
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "ProductArrays.",
 		    USED(struct productarray));
 	    sprintf(mbuf, mformat, "Terms", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
@@ -1645,7 +1646,7 @@ static void Summary_Print(struct sum_info *s)
 	    break;
 
 	  case CLASS_MESHARRAY:
-	    sprintf(sbuf, sformat, s[i].num, "MeshArrays.", 
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "MeshArrays.", 
 		    USED(struct mesharray));
 	    sprintf(mbuf, mformat, "Terms", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
@@ -1653,67 +1654,67 @@ static void Summary_Print(struct sum_info *s)
 	    break;
 
 	  case CLASS_STRING:
-	    sprintf(sbuf, sformat, s[i].num, "Strings.", USED(struct string));
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Strings.", USED(struct string));
 	    sprintf(mbuf, mformat, "Length", 
 		    s[i].min, s[i].max, ((float)s[i].sum)/s[i].num,
 		    s[i].sum);
 	    break;
 	
 	  case CLASS_CAMERA:
-	    sprintf(sbuf, sformat, s[i].num, "Cameras.", USED(struct camera));
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Cameras.", USED(struct camera));
 	    break;
 
 	  case CLASS_XFORM:
-	    sprintf(sbuf, sformat, s[i].num, "Transforms.", 
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Transforms.", 
 		    USED(struct xform));
 	    break;
 
 	  case CLASS_OBJECT:
-	    sprintf(sbuf, sformat, s[i].num, "Generic Objects.",
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Generic Objects.",
 		    USED(struct object));
 	    break;
 
 	  case CLASS_LIGHT:
-	    sprintf(sbuf, sformat, s[i].num, "Lights.",
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Lights.",
 		    USED(struct light)); 
 	    break;
 	
 	  case CLASS_CLIPPED:
-	    sprintf(sbuf, sformat, s[i].num, "Clipped Objects.",
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Clipped Objects.",
 		    USED(struct clipped));
 	    break;
 	
 	  case CLASS_INTERPOLATOR:
-	    sprintf(sbuf, sformat, s[i].num, "Interpolators.",
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Interpolators.",
 		    USED(struct interpolator));
 	    break;
 	
 	  case CLASS_SCREEN:
-	    sprintf(sbuf, sformat, s[i].num, "Screen Objects.",
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Screen Objects.",
 		    USED(struct screen));
 	    break;
 	    
 	  case CLASS_PRIVATE:
-	    sprintf(sbuf, sformat, s[i].num, "Private Objects.",
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Private Objects.",
 		    USED(struct private));
 	    break;
 	
 	  case CLASS_DELETED:
-	    sprintf(sbuf, sformat, s[i].num, "Deleted Objects.", 
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Deleted Objects.", 
 		    USED(struct object));
 	    break;
 	    
 	  case CLASS_MIN:
 	  case CLASS_MAX:
 	  default:
-	    sprintf(sbuf, sformat, s[i].num, "Unrecognized objects.",
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), sformat, s[i].num, "Unrecognized objects.",
 		    USED(struct object));
 	    break;
 	}
 
 	sprintf(ebuf, eformat, s[i].depth);
 	
-	sprintf(linebuf, lformat, sbuf, mbuf, ebuf);
+	snprintf(linebuf, DX_ARRAY_SIZE(linebuf), lformat, sbuf, mbuf, ebuf);
 	DXMessage(linebuf);
 
 	if (s[i].bytes > 0)

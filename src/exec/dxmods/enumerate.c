@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 
@@ -572,7 +573,7 @@ Array MakeLinearList(Array start, Array end, int *n, Array delta)
              *  negative.  if it's not, return -1.  you can't generate a
              *  negative count from the equations, so this is a safe signal.
 	     */
-	    sprintf(tbuf, 
+	    snprintf(tbuf, DX_ARRAY_SIZE(tbuf), 
 		    "float($2.%d) == 0.0   ? "
 		    "  1 : "
 		    " (  (($1.%d >= $0.%d) && ($2.%d > 0) || "
@@ -658,7 +659,7 @@ Array MakeLinearList(Array start, Array end, int *n, Array delta)
 
     bytes = DXGetItemSize(output);
 
-    sprintf(cbuf, "%s($0 + ($1 * $2))", TypeName(t));
+    snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "%s($0 + ($1 * $2))", TypeName(t));
     compstr = DXNewString(cbuf);
     if (!compstr)
 	goto error;

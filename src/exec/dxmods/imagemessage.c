@@ -10,6 +10,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -165,7 +166,7 @@ m_ImageMessage( Object *in, Object *out )
                     goto error;
                 }
 
-                sprintf( cbuf, "[%g %g %g]", vec[ 0 ], vec[ 1 ], vec[ 2 ] );
+                snprintf( cbuf, DX_ARRAY_SIZE(cbuf), "[%g %g %g]", vec[ 0 ], vec[ 1 ], vec[ 2 ] );
                 color = cbuf;
             }
 
@@ -708,11 +709,11 @@ m_ImageMessage( Object *in, Object *out )
                 buffer0[ 0 ] = '\0';
             }
 
-            sprintf( buf2, " aaxticklocs=%g", buf[ 0 ] );
+            snprintf( buf2, DX_ARRAY_SIZE(buf2), " aaxticklocs=%g", buf[ 0 ] );
             STRCAT( b0ptr, buf2 );
 
             for ( i = 1; i < n; i++ ) {
-                sprintf( buf2, ", %g", buf[ i ] );
+                snprintf( buf2, DX_ARRAY_SIZE(buf2), ", %g", buf[ i ] );
                 STRCAT( b0ptr, buf2 );
             }
 
@@ -772,11 +773,11 @@ m_ImageMessage( Object *in, Object *out )
                 buffer0[ 0 ] = '\0';
             }
 
-            sprintf( buf2, " aayticklocs=%g", buf[ 0 ] );
+            snprintf( buf2, DX_ARRAY_SIZE(buf2), " aayticklocs=%g", buf[ 0 ] );
             STRCAT( b0ptr, buf2 );
 
             for ( i = 1; i < n; i++ ) {
-                sprintf( buf2, ", %g", buf[ i ] );
+                snprintf( buf2, DX_ARRAY_SIZE(buf2), ", %g", buf[ i ] );
                 STRCAT( b0ptr, buf2 );
             }
 
@@ -836,11 +837,11 @@ m_ImageMessage( Object *in, Object *out )
                 buffer0[ 0 ] = '\0';
             }
 
-            sprintf( buf2, " aazticklocs=%g", buf[ 0 ] );
+            snprintf( buf2, DX_ARRAY_SIZE(buf2), " aazticklocs=%g", buf[ 0 ] );
             STRCAT( b0ptr, buf2 );
 
             for ( i = 1; i < n; i++ ) {
-                sprintf( buf2, ", %g", buf[ i ] );
+                snprintf( buf2, DX_ARRAY_SIZE(buf2), ", %g", buf[ i ] );
                 STRCAT( b0ptr, buf2 );
             }
 

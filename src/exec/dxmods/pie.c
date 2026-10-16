@@ -16,6 +16,7 @@
 /*=====================Include Files===================================*/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <stdio.h>
@@ -68,12 +69,12 @@ static Error GetParameters(Object, Object, Object, Object, Object,
         char buf[2048];                                                \
         dataptr = (type *)DXGetArrayData(component);                   \
         for (i=0; i<numitems; i++){                                    \
-           sprintf(buf, format, dataptr[i]);                           \
+           snprintf(buf, DX_ARRAY_SIZE(buf), format, dataptr[i]);                           \
            if (strlen(buf)>maxlen) maxlen=strlen(buf);                 \
         }                                                              \
         newarray = DXNewArray(TYPE_STRING, CATEGORY_REAL, 1, maxlen+1);\
         for (i=0; i<numitems; i++) {                                   \
-            sprintf(buf, format, dataptr[i]);                          \
+            snprintf(buf, DX_ARRAY_SIZE(buf), format, dataptr[i]);                          \
             if (!DXAddArrayData(newarray, i, 1, &buf))                 \
                goto error;                                             \
         }                                                              \

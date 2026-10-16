@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 #include <dx/dx.h>
 
 static Matrix Identity = {
@@ -262,17 +263,17 @@ Error _dxfTextField(Pointer p)
      goto error;
    }
    if (rank==0)
-     strcpy(glyph_rank,"scalar");
+     _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"scalar");
    else if (rank==1 && datashape[0] == 1)
-     strcpy(glyph_rank,"scalar");
+     _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"scalar");
    else if (rank==1 && datashape[0] == 2)
-     strcpy(glyph_rank,"2-vector");
+     _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"2-vector");
    else if (rank==1 && datashape[0] == 3)
-     strcpy(glyph_rank,"3-vector");
+     _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"3-vector");
    else if (rank==2 && datashape[0]==3 &&datashape[1]==3)
-     strcpy(glyph_rank,"matrix");
+     _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"matrix");
    else if (rank==2 && datashape[0]==2 &&datashape[1]==2)
-     strcpy(glyph_rank,"matrix2");
+     _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"matrix2");
    else if (type != TYPE_STRING) {
      DXSetError(ERROR_DATA_INVALID,
 		"data must be string, scalar, 2-vector, 3-vector, 2x2 or 3x3 matrix");
@@ -327,7 +328,7 @@ Error _dxfTextField(Pointer p)
      data_ptr_ui = (uint *)DXGetArrayData(data);
      break;
    case (TYPE_STRING):
-     strcpy(glyph_rank,"string");
+     _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"string");
      break;
    default:
      DXSetError(ERROR_DATA_INVALID,"unrecognized data type");
@@ -505,7 +506,7 @@ Error _dxfTextField(Pointer p)
            DXSetError(ERROR_DATA_INVALID,"unrecognized data type");
            goto error;
 	 }
-	 sprintf(string, "%g", s);
+	 snprintf(string, DX_ARRAY_SIZE(string), "%g", s);
 	 position = DXGetArrayEntry(handle,i,scratch);
 	 if (posshape[0] == 1) {
 	   translation = DXTranslate(DXVec(position[0], 0.0, 0.0));
@@ -576,7 +577,7 @@ Error _dxfTextField(Pointer p)
 	 default:
 	   break;
 	 }
-	 sprintf(string, "[%g %g]", v.x, v.y);
+	 snprintf(string, DX_ARRAY_SIZE(string), "[%g %g]", v.x, v.y);
          position = DXGetArrayEntry(handle,i,scratch);
 	 if (posshape[0] == 1) {
 	   translation = DXTranslate(DXVec(position[0], 0.0, 0.0));
@@ -655,7 +656,7 @@ Error _dxfTextField(Pointer p)
 	 default:
 	   break;
 	 }
-	 sprintf(string, "[%g %g %g]", v.x, v.y, v.z);
+	 snprintf(string, DX_ARRAY_SIZE(string), "[%g %g %g]", v.x, v.y, v.z);
          position = DXGetArrayEntry(handle,i,scratch);
 	 if (posshape[0] == 1) {
 	   translation = DXTranslate(DXVec(position[0], 0.0, 0.0));
@@ -782,7 +783,7 @@ Error _dxfTextField(Pointer p)
 	 default:
 	   break;
 	 }
-	 sprintf(string, "[%g %g %g][%g %g %g][%g %g %g]", 
+	 snprintf(string, DX_ARRAY_SIZE(string), "[%g %g %g][%g %g %g][%g %g %g]", 
 		 t.tau[0][0], t.tau[0][1], t.tau[0][2],
 		 t.tau[1][0], t.tau[1][1], t.tau[1][2],
 		 t.tau[2][0], t.tau[2][1], t.tau[2][2]);
@@ -1391,7 +1392,7 @@ Error
   data_array = (Array)DXGetComponentValue((Field)outo,"data");
   
   if (!data_array) {
-    strcpy(glyph_rank,"scalar");
+    _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"scalar");
     /* since there's no data to follow, are there colors? If so, follow
      * those. Otherwise, follow positions */
     if (DXGetComponentValue((Field)outo,"colors")) {
@@ -1409,27 +1410,27 @@ Error
     attr = DXGetString((String)DXGetComponentAttribute((Field)outo,
 						       "data", "dep"));
     if (data_rank==0) {
-      strcpy(glyph_rank,"scalar");
+      _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"scalar");
       data_incr = 1;
     }
     else if (data_rank==1 && data_shape[0] == 1) {
-      strcpy(glyph_rank,"scalar");
+      _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"scalar");
       data_incr = 1;
     }
     else if (data_rank==1 && data_shape[0] == 2) {
-      strcpy(glyph_rank,"2-vector");
+      _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"2-vector");
       data_incr = 2;
     }
     else if (data_rank==1 && data_shape[0] == 3) {
-      strcpy(glyph_rank,"3-vector");
+      _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"3-vector");
       data_incr = 3;
     }
     else if (data_rank==2 && data_shape[0]==3 &&data_shape[1]==3) {
-      strcpy(glyph_rank,"matrix");
+      _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"matrix");
       data_incr = 9;
     }
     else if (data_rank==2 && data_shape[0]==2 &&data_shape[1]==2) {
-      strcpy(glyph_rank,"matrix2");
+      _dxf_strcpy_n(glyph_rank, DX_ARRAY_SIZE(glyph_rank),"matrix2");
       data_incr = 4;
     }
     else {
@@ -1642,9 +1643,9 @@ Error
       }
       if (strcmp(glyph_rank,"scalar")) {
 	if ((pos_shape[0]==3)&&(hasnormals))
-	  strcpy(overridetype_string,"sphere62");
+	  _dxf_strcpy_n(overridetype_string, DX_ARRAY_SIZE(overridetype_string),"sphere62");
 	else
-	  strcpy(overridetype_string,"circle10");
+	  _dxf_strcpy_n(overridetype_string, DX_ARRAY_SIZE(overridetype_string),"circle10");
 	if (!GetGlyphs(overridetype_string, &numoverridepoints,
 		       &numoverrideconns,
 		       &overridepoints, &overrideconns, &overridenormals,
@@ -1674,7 +1675,7 @@ Error
         goto error;
       }
       if (strcmp(glyph_rank,"scalar")) {
-	strcpy(overridetype_string,"point");
+	_dxf_strcpy_n(overridetype_string, DX_ARRAY_SIZE(overridetype_string),"point");
 	if (!GetGlyphs(overridetype_string, &numoverridepoints,
                        &numoverrideconns,
 		       &overridepoints, &overrideconns, &overridenormals,

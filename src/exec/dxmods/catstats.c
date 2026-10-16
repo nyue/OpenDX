@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -350,14 +351,14 @@ doLeaf(Object *in, Object *out)
 	    out_knt = lookup_knt;
       } else if (DXGetObjectClass((Object)in[4]) == CLASS_ARRAY) {
 	    lookup_array = (Array)in[4];
-	    sprintf(name_str, "%s lookup", cat_comp);
+	    snprintf(name_str, DX_ARRAY_SIZE(name_str), "%s lookup", cat_comp);
 	    lookup_comp = name_str;
       } else { 
             DXSetError(ERROR_DATA_INVALID, "lookup component must be string, integer, or array");
 	    goto error;
       }
   } else {
-      sprintf(name_str, "%s lookup", cat_comp);
+      snprintf(name_str, DX_ARRAY_SIZE(name_str), "%s lookup", cat_comp);
       lookup_comp = name_str;
       lookup_array = (Array)DXGetComponentValue((Field)in[0], lookup_comp);
   } 

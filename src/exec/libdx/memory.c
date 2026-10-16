@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #define DX_MEMORY_C
@@ -1534,7 +1535,7 @@ int _dxf_initmemory(void)
 	if (getenv("DX_DEBUG_MEMORY_INIT")) {
 	    char buf[132];
 	    
-	    sprintf(buf, "initial: physmem %d, othermem %d, po_ratio %g, physical procs %d, nproc %d\n",
+	    snprintf(buf, DX_ARRAY_SIZE(buf), "initial: physmem %d, othermem %d, po_ratio %g, physical procs %d, nproc %d\n",
 		    physmem, othermem, po_ratio, _dxf_GetPhysicalProcs(), DXProcessors(0));
 	    write(2, buf, strlen(buf));
 	}
@@ -1583,7 +1584,7 @@ int _dxf_initmemory(void)
 	if (getenv("DX_DEBUG_MEMORY_INIT")) {
 	    char buf[132];
 	    
-	    sprintf(buf, "final: physmem %d, othermem %d, total_size %ld (%ldM)\n",
+	    snprintf(buf, DX_ARRAY_SIZE(buf), "final: physmem %d, othermem %d, total_size %ld (%ldM)\n",
 		    physmem, othermem, total_size, total_size >> 20);
 	    write(2, buf, strlen(buf));
 	}
@@ -1700,7 +1701,7 @@ int _dxf_initmemory(void)
 #else
     if (!_dxd_exRemoteSlave) {
         char tmpbuf[80];
-        sprintf(tmpbuf, 
+        snprintf(tmpbuf, DX_ARRAY_SIZE(tmpbuf), 
           "Memory cache will use %ld MB (%ld for small items, %ld for large)\n\n", 
 	  ((large_size + small_size) >> 20),
 	  (small_size >> 20), (large_size >> 20));

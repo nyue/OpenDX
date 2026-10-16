@@ -8,6 +8,7 @@
 /* #define CPV_DEBUG */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 #include <dx/dx.h>
 
 /*
@@ -970,7 +971,7 @@ ExStartModules(Program *p)
 	    case GO_VCR:
 		if (_dxd_exRemote && !error && !kill)
 		{
-		    sprintf(pbuf, "frame %12d %12d", frame, nframe);
+		    snprintf(pbuf, DX_ARRAY_SIZE(pbuf), "frame %12d %12d", frame, nframe);
 		    _dxf_ExSPack(PACK_INTERRUPT, graphId, pbuf, 31);
 		}
 		_dxf_ExVCRCallBack(graphId);
@@ -1627,7 +1628,7 @@ ExExecError(Program *p, gfunc *n, ErrorCode code, Error status)
     if (status != ERROR)
 	DXWarning("#4720", p->graphId, _dxf_ExGFuncPathToString(n));
 
-    sprintf(buf, "%d::%s", p->graphId, _dxf_ExGFuncPathToString(n));
+    snprintf(buf, DX_ARRAY_SIZE(buf), "%d::%s", p->graphId, _dxf_ExGFuncPathToString(n));
     DXPrintError(buf);
 
     if (_dxf_ExVCRRunning())

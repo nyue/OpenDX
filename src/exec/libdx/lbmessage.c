@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <dx/dx.h>
@@ -212,7 +213,7 @@ DXSetError(ErrorCode code, char *message, ...)
     /* message */
 #if DEBUGGED
     if (!usedmessfile) {
-        strcpy(_ErrorMessage, TAG);
+        _dxf_strcpy_n(_ErrorMessage, DX_ARRAY_SIZE(_ErrorMessage), TAG);
 	offset = TAGLEN;
     }
 #endif
@@ -241,10 +242,10 @@ DXAddMessage(char *message, ...)
 
     /* message */
     va_start(arg,message);
-    vsprintf(buf, message, arg);
+    vsnprintf(buf, DX_ARRAY_SIZE(buf), message, arg);
     va_end(arg);
-    strcat(_ErrorMessage, " / ");
-    strcat(_ErrorMessage, buf);
+    _dxf_strcat_n(_ErrorMessage, DX_ARRAY_SIZE(_ErrorMessage), " / ");
+    _dxf_strcat_n(_ErrorMessage, DX_ARRAY_SIZE(_ErrorMessage), buf);
 
     /* action */
     if (!state || state->error_exit)
@@ -388,7 +389,7 @@ DXMessage(char *message, ...)
 	    if (*p=='\n') {
 		*p = '\0';
 		aqmessage("*", "%s", long_buf);
-		strcpy(long_buf, p+1);
+		_dxf_strcpy_n(long_buf, DX_ARRAY_SIZE(long_buf), p+1);
 		p = long_buf;
 	    }
 	    else

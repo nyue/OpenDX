@@ -51,6 +51,7 @@
 #define ImageType DXImageType
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <stdio.h>
@@ -298,7 +299,7 @@ static Error write_im(RWImageArgs *iargs) {
 	new_frame_info->compression = ctype;
 	{
 		char gam[7];
-		sprintf(gam, "%2.4f", iargs->gamma);
+		snprintf(gam, DX_ARRAY_SIZE(gam), "%2.4f", iargs->gamma);
 		GammaImage(image, gam);
 	}
 	
@@ -452,7 +453,7 @@ static Error write_im(RWImageArgs *iargs) {
 
 		{
 			char gam[7];
-			sprintf(gam, "%2.4f", iargs->gamma);
+			snprintf(gam, DX_ARRAY_SIZE(gam), "%2.4f", iargs->gamma);
 			GammaImage(image, gam);
 		}
 		
@@ -538,7 +539,7 @@ char * _dxf_BuildIMReadFileName
             continue;
 
         if (*numeric && !appendable_files)
-            sprintf(framestr,".%d",framenum);
+            snprintf(framestr, DX_ARRAY_SIZE(framestr),".%d",framenum);
         else
             framestr[0] = '\0';
 
@@ -674,7 +675,7 @@ SizeData * _dxf_ReadImageSizesIM
         _dxf_RemoveExtension( user_basename );
 
         do {
-            sprintf( newname, "%s.%d.%s",
+            snprintf( newname, DX_ARRAY_SIZE(newname), "%s.%d.%s",
                      user_basename, data->endframe, extension );
             if ( (fh = open ( newname, O_RDONLY )) < 0 )
                 break;

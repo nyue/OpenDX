@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 /*
@@ -374,8 +375,8 @@ static int
 exGfuncFree (gfunc *p)
 {
     char        s[100];
-    strcpy (s, ">GfDel ");
-    strcat (s, p->name);
+    _dxf_strcpy_n(s, DX_ARRAY_SIZE(s), ">GfDel ");
+    _dxf_strcat_n(s, DX_ARRAY_SIZE(s), p->name);
 
     ExDebug ("*1", "DELETING:  [%08x] %d::%s", p, p->cpath);
 
@@ -827,7 +828,7 @@ static int ExParseExprLeaves (node *n, int loc, char *opstr, node *args)
     
     if (n->type != NT_LOGICAL && n->type != NT_ARITHMETIC)
     {
-	sprintf (buf, "$%d", loc);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "$%d", loc);
 	strcat (opstr, buf);
 	args[loc].v.arg.val = n;
 	return (loc + 1);
@@ -2909,7 +2910,7 @@ static char *_dxf_ExCacheStrPrepend( Program *program,
   p = int16tohex( p, _dxf_ExGraphInsertAndLookupName( program, name ) );
   p = int16tohex( p, instance );
 
-  strcpy(tmp, path);
+  _dxf_strcpy_n(tmp, DX_ARRAY_SIZE(tmp), path);
   /*
   if (tmp[0] != '/')
       s = tmp;

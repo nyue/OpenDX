@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <dx/dx.h>
@@ -73,7 +74,7 @@ _dxfHostIsLocal(char *host)
 
     if(!host || !strlen(host) || !_stricmp("localhost", host) || !_stricmp("localPC", host))
 	return 1;
-    strcpy(tmpHost, host);
+    _dxf_strcpy_n(tmpHost, DX_ARRAY_SIZE(tmpHost), host);
     p = strstr(tmpHost, ":0");
     if(p) {
 	tmpHost[p-tmpHost] = '\0';
@@ -94,11 +95,11 @@ _dxfHostIsLocal(char *host)
     if (he == NULL) {
 		return 1;   /* Default to LocalHost */
     }
-    strcpy(remoteHostname, he->h_name);
+    _dxf_strcpy_n(remoteHostname, DX_ARRAY_SIZE(remoteHostname), he->h_name);
 
     if (gethostname(localHostname, BUFSIZ) >= 0 && (he=gethostbyname(localHostname)) != NULL)
     {
-	strcpy(localHostname, he->h_name);
+	_dxf_strcpy_n(localHostname, DX_ARRAY_SIZE(localHostname), he->h_name);
 	hostnameFound = 1;
     }
     else
@@ -118,7 +119,7 @@ _dxfHostIsLocal(char *host)
 	return(0);
 #endif
     }
-    strcpy(localhostHostname, he->h_name);
+    _dxf_strcpy_n(localhostHostname, DX_ARRAY_SIZE(localhostHostname), he->h_name);
 
     return ((hostnameFound && strcmp (localHostname, remoteHostname) == 0) ||
 	    strcmp (localhostHostname, remoteHostname) == 0);

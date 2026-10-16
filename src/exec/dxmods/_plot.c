@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <math.h>
@@ -318,7 +319,7 @@ static
     offset = 0;
     
   
-    sprintf(buf,"%s","M"); 
+    snprintf(buf, DX_ARRAY_SIZE(buf),"%s","M"); 
     text = DXGeometricText(buf, font, &widthonechar); 
     DXDelete((Object)text);
     /* axis tick labels */
@@ -334,9 +335,9 @@ static
       if (ABS(value) < range/100000.) value =0;
 
       if (!islog)
-	sprintf(buf, "%s", labels[i]);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "%s", labels[i]);
       else 
-	sprintf(buf, fmt, pow(10.0,(double)((l + i*d) * ls))); 
+	snprintf(buf, DX_ARRAY_SIZE(buf), fmt, pow(10.0,(double)((l + i*d) * ls))); 
       text = DXGeometricText(buf, font, &width);
       _dxfSetTextColor((Field)text, labelcolor);
       hdir = sgn.z * flip;
@@ -692,7 +693,7 @@ static
     /* axis tick labels */
     a = o.y - .001*s.y;
     b = o.y + 1.001*s.y;
-    sprintf(buf,"%s","M");
+    snprintf(buf, DX_ARRAY_SIZE(buf),"%s","M");
     text = DXGeometricText(buf,font,&widthonechar);
     DXDelete((Object)text);
     for (i=0, maxwidth=0; i<n; i++) {
@@ -705,10 +706,10 @@ static
       if (ABS(value) < range/100000.) value =0;
       
       if (!islog)
-	sprintf(buf, "%s", labels[i]);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "%s", labels[i]);
       else 
 	/* XXX need to deal with scaling later */
-	sprintf( buf, fmt, pow(10.0,(double)((l + i*d) * ls))); 
+	snprintf( buf, DX_ARRAY_SIZE(buf), fmt, pow(10.0,(double)((l + i*d) * ls))); 
       text = DXGeometricText(buf, font, &width);
       _dxfSetTextColor((Field)text,labelcolor);
       hdir = sgn.z * flip;
@@ -1811,7 +1812,7 @@ _dxfaxes_delta(float *o, float *s, float scale, int *n, float *l, float *d,
           val = lo + i*sd;
           /* check for essentially zero relative to the range */
           if (ABS(val) < range/100000.) val=0.;
-          sprintf(tbuf, "%.*e", prec, val);
+          snprintf(tbuf, DX_ARRAY_SIZE(tbuf), "%.*e", prec, val);
           lastz = prec + 1 + (tbuf[0]=='-' ? 1 : 0);     /* least significant di
 git */
           for (z=prec, cp= &tbuf[lastz]; z>minprec; --z, --cp)

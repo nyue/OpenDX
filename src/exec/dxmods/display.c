@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if sgi
 #include <limits.h>
@@ -158,7 +159,7 @@ m_Display(Object *in, Object *out)
     }
 
     /* parse where parameter */
-    strcpy(copy, where);
+    _dxf_strcpy_n(copy, DX_ARRAY_SIZE(copy), where);
     for (s=copy; *s; s++) {
         if (*s==',') {
             if (!arg1)
@@ -278,7 +279,7 @@ m_Display(Object *in, Object *out)
         else
             renderApprox = "none";
 
-        sprintf (cacheid, "Display.%s.%x.%d.%s",
+        snprintf(cacheid, DX_ARRAY_SIZE(cacheid), "Display.%s.%x.%d.%s",
                  type, obTag, renderEvery, renderApprox);
 
         image = DXGetCacheEntry(cacheid, 0, 1, in[1]);

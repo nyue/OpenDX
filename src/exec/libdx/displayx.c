@@ -11,6 +11,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 #include <dx/dx.h>
 
 #define FORCE_VISUAL 
@@ -2170,7 +2171,7 @@ create_display(char *name, char *title, int depth, Display **dpy)
     char buf[1024];
     Display *d;
 
-    sprintf(buf, "XDisplay %s %s %d", name, title, depth);
+    snprintf(buf, DX_ARRAY_SIZE(buf), "XDisplay %s %s %d", name, title, depth);
     
     p = (Private)DXGetCacheEntry(buf, 0, 0);
     if (p)
@@ -2983,7 +2984,7 @@ Field _dxf_MakeXImage(int width, int height, int depth, char *where)
     char *s, copy[201], *host = NULL, *window = NULL;
     int directMap = 0;
 
-    strcpy(copy, where);
+    _dxf_strcpy_n(copy, DX_ARRAY_SIZE(copy), where);
     for (s = copy; *s && !window; s++)
 	if (*s == ',')
 	{
@@ -3747,7 +3748,7 @@ createTranslation(Private dpy_object, char *where,
         where = "unix:0";
 #endif
 
-    sprintf(cacheid, "X%s%d", where, desiredDepth);
+    snprintf(cacheid, DX_ARRAY_SIZE(cacheid), "X%s%d", where, desiredDepth);
 
     /*
      * If we need to create a translation...

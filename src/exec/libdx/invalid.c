@@ -8,6 +8,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 /*
@@ -2359,7 +2360,7 @@ DXCreateInvalidComponentHandle(Object o, Array iarray, char *name)
 		goto error;
 	    }
 
-	    sprintf(sbuf, "invalid %s", name);
+	    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), "invalid %s", name);
 
 	    if (! iarray)
 		iarray = (Array)DXGetComponentValue(field, sbuf);
@@ -2606,7 +2607,7 @@ DXSaveInvalidComponent(Field field, InvalidComponentHandle handle)
 	return ERROR;
     }
 
-    sprintf(sbuf, "invalid %s", handle->iName);
+    snprintf(sbuf, DX_ARRAY_SIZE(sbuf), "invalid %s", handle->iName);
 
     if (DXGetComponentValue(field, sbuf))
 	DXDeleteComponent(field, sbuf);

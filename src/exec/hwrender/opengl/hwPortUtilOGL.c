@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 #include "../hwDeclarations.h"
 
 #ifndef HELPERCODE
@@ -2004,7 +2005,7 @@ WriteViewperfFile(void *instance, xfieldP xf)
     glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *)&mat);
 
     /*     been_here_done_that=1; */
-    sprintf(basename,"dx.%d",(int)instance);
+    snprintf(basename, DX_ARRAY_SIZE(basename),"dx.%d",(int)instance);
 
     WriteToFile(basename, xf, POSITIONS, &mat);
     WriteToFile(basename, xf, CONNECTIONS, &mat);
@@ -2094,9 +2095,9 @@ WriteToFile(char *s, xfieldP xf, int type, float mat[4][4])
   float newmat[4][4];
   float *newpos;
 
-  strcpy(filename, s);
+  _dxf_strcpy_n(filename, DX_ARRAY_SIZE(filename), s);
   
-  strcat(filename, extention[type]);
+  _dxf_strcat_n(filename, DX_ARRAY_SIZE(filename), extention[type]);
   
   fp = fopen(filename,"a+");
 

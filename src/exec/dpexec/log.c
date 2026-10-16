@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
@@ -115,7 +116,7 @@ DXqmessage (char *input_who, char *message, va_list args)
             *                                   David W. 2/14/95
             */
             char *cp;
-            strcpy(whobuf,who);
+            _dxf_strcpy_n(whobuf, DX_ARRAY_SIZE(whobuf),who);
             who = whobuf;
             cp = strchr(who, ' ');
             if (cp != NULL)
@@ -135,7 +136,7 @@ DXqmessage (char *input_who, char *message, va_list args)
                 n = sprintf (buf, "%s:  ", who + 1);
 #else
 	    {
-                sprintf (buf, "%s:  ", who + 1);
+                snprintf(buf, DX_ARRAY_SIZE(buf), "%s:  ", who + 1);
 	        n = strlen(buf);
 	    }
 #endif
@@ -147,7 +148,7 @@ DXqmessage (char *input_who, char *message, va_list args)
                 n = sprintf (buf, "%2d:  %s:  ", DXProcessorId (), who);
 #else
 	    {
-                sprintf (buf, "%2d:  %s:  ", DXProcessorId (), who);
+                snprintf(buf, DX_ARRAY_SIZE(buf), "%2d:  %s:  ", DXProcessorId (), who);
 	        n = strlen(buf);
 	    }
 #endif
@@ -157,7 +158,7 @@ DXqmessage (char *input_who, char *message, va_list args)
 	n = sprintf (buf, "%2d:  ", DXProcessorId ());
 #else
 	{
-	    sprintf (buf, "%2d:  ", DXProcessorId ());
+	    snprintf(buf, DX_ARRAY_SIZE(buf), "%2d:  ", DXProcessorId ());
 	    n = strlen(buf);
 	}
 #endif

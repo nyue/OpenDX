@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 
@@ -2308,7 +2309,7 @@ Object _dxfImportBin_FP(int fd)
     /* construct a fake name.  (the lower level read/write routines have
      *  a filename as the first parm, not a file descriptor.)
      */
-    sprintf(dataset, "socket %x import", fd);
+    snprintf(dataset, DX_ARRAY_SIZE(dataset), "socket %x import", fd);
 
 
     /* read first block, get total size from header and realloc the right
@@ -2467,7 +2468,7 @@ Object _dxfExportBin_FP(Object o, int fd)
     /* construct a fake name.  (the lower level read/write routines have
      *  a filename as the first parm, not a file descriptor.)
      */
-    sprintf(dataset, "socket %x export", fd);
+    snprintf(dataset, DX_ARRAY_SIZE(dataset), "socket %x export", fd);
 
     /* count number of blocks (on non-ibmpvs is this 512 bytes, not 64k?)
      */
@@ -2598,7 +2599,7 @@ Object _dxfImportBin_Buffer(void *buffer, int *size)
     /* construct a fake name.  (the lower level read/write routines have
      *  a filename as the first parm, not a file descriptor.)
      */
-    sprintf(dataset, "socket import");
+    snprintf(dataset, DX_ARRAY_SIZE(dataset), "socket import");
 
     if (!buffer)
 	goto error;
@@ -2722,7 +2723,7 @@ _dxfExportBin_Buffer(Object o, int *size, void **buffer)
     /* construct a fake name.  (the lower level read/write routines have
      *  a filename as the first parm, not a file descriptor.)
      */
-    sprintf(dataset, "socket export");
+    snprintf(dataset, DX_ARRAY_SIZE(dataset), "socket export");
 
     /* count number of blocks (on non-ibmpvs is this 512 bytes, not 64k?)
      */

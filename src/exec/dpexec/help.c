@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <dx/dx.h>
@@ -45,7 +46,7 @@ char *_dxf_ExHelpFunction (char *f)
 
     if (function == NULL || function->v.module.def.func == m__badfunc)
     {
-	sprintf (buffer, "\nThe function %s is not defined\n\n", f);
+	snprintf(buffer, DX_ARRAY_SIZE(buffer), "\nThe function %s is not defined\n\n", f);
 	ret = (char *) DXAllocate (strlen (buffer) + 1);
 	if (ret)
 	    strcpy (ret, buffer);

@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -883,7 +884,7 @@ ShowLoop(BVertex *first)
     char buf[32];
     FILE *foo;
 
-    sprintf(buf, "bad%d.dx", nShow++);
+    snprintf(buf, DX_ARRAY_SIZE(buf), "bad%d.dx", nShow++);
 
     foo = fopen(buf, "w");
     if ( foo )

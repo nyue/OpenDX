@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 
@@ -83,7 +84,7 @@ m_SuperviseState(Object *in, Object *out)
 
 	where = new;
 
-	sprintf(oTag, "%s%s", CACHE_CAMERA, old);
+	snprintf(oTag, DX_ARRAY_SIZE(oTag), "%s%s", CACHE_CAMERA, old);
 	sprintf(nTag, "%s%s", CACHE_CAMERA, new);
 	if (NULL != (o = DXGetCacheEntry(oTag, 0, 0)))
 	{
@@ -91,7 +92,7 @@ m_SuperviseState(Object *in, Object *out)
 	    DXSetCacheEntry(NULL, CACHE_PERMANENT, oTag, 0, 0);
 	}
 
-	sprintf(oTag, "%s%s", CACHE_OBJECT, old);
+	snprintf(oTag, DX_ARRAY_SIZE(oTag), "%s%s", CACHE_OBJECT, old);
 	sprintf(nTag, "%s%s", CACHE_OBJECT, new);
 	if (NULL != (o = DXGetCacheEntry(oTag, 0, 0)))
 	{

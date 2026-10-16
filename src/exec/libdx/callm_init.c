@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #include <dx/dx.h>
 #include <stdio.h>
@@ -57,7 +58,7 @@ void _dxf_ExDie (char *format, ...)
      * compile with the metaware compiler.
      */
     va_start(arg,format);
-    vsprintf(buffer, format, arg);
+    vsnprintf(buffer, DX_ARRAY_SIZE(buffer), format, arg);
     va_end(arg);
 
     if(_dxd_exRemoteSlave)

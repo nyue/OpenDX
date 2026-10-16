@@ -9,6 +9,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <string.h>
@@ -490,7 +491,7 @@ MakeIR(Array o, int *counts, int dim, int nP)
 	{
 	    char str[64];
 
-	    sprintf(str, "cubes%dD", dim);
+	    snprintf(str, DX_ARRAY_SIZE(str), "cubes%dD", dim);
 	    if (! DXSetComponentAttribute(f, "connections", "element type",
 				    (Object)DXNewString(str)))
 		goto error;
@@ -814,7 +815,7 @@ MakeRR(Array or, Array de, Array co)
 	{
 	    char str[64];
 
-	    sprintf(str, "cubes%dD", dim);
+	    snprintf(str, DX_ARRAY_SIZE(str), "cubes%dD", dim);
 	    if (! DXSetComponentAttribute(f, "connections", "element type",
 					(Object)DXNewString(str)))
 		goto error;

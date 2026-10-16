@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(DX_NATIVE_WINDOWS)
 
@@ -2640,7 +2641,7 @@ Field _dxf_MakeWindowsImage(int width, int height, int depth, char *where)
     char *s, copy[201], *host = NULL, *window = NULL;
     int directMap = 0;
 
-    strcpy(copy, where);
+    _dxf_strcpy_n(copy, DX_ARRAY_SIZE(copy), where);
     for (s = copy; *s && !window; s++)
 		if (*s == ',')
 		{

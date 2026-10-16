@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 /* this file is compiled into all versions, but the functions are 
@@ -808,7 +809,7 @@ Error _dxfsetmem(ulong limit)
     char DX_MAP_FILE[32];
 
     DXLimit = limit;
-    sprintf(DX_MAP_FILE, "dx%d.map", _getpid()); 
+    snprintf(DX_MAP_FILE, DX_ARRAY_SIZE(DX_MAP_FILE), "dx%d.map", _getpid()); 
 
     MapFileHandle= CreateFile(DX_DAT_FILE, 
                               GENERIC_READ | GENERIC_WRITE,
@@ -859,7 +860,7 @@ Pointer _dxfgetmem(Pointer base, ulong size)
 
     if (base) return base;
 
-    sprintf(DX_MAP_FILE, "dx%d.map", _getpid()); 
+    snprintf(DX_MAP_FILE, DX_ARRAY_SIZE(DX_MAP_FILE), "dx%d.map", _getpid()); 
 
     hAMap= OpenFileMapping(FILE_MAP_READ | FILE_MAP_WRITE,
                            TRUE,

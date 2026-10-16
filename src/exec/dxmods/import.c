@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
  
 
@@ -467,9 +468,9 @@ Object _dxfget_ncdf(struct parmlist *p)
 	for(i=0, frno=startframe; frno<=endframe; frno+=deltaframe, i++) {
 	    char *fieldptr[2];
 	    
-	    strcpy(dataset_name, p->filename);
+	    _dxf_strcpy_n(dataset_name, DX_ARRAY_SIZE(dataset_name), p->filename);
 	    sprintf(numbuf, ".%d", frno);
-	    strcat(dataset_name, numbuf);
+	    _dxf_strcat_n(dataset_name, DX_ARRAY_SIZE(dataset_name), numbuf);
 	    
 	    fieldptr[0] = p->fieldlist[j];
 	    fieldptr[1] = NULL;
@@ -612,15 +613,15 @@ Object _dxfget_hdf(struct parmlist *p)
     /* for each input fieldname */
     for(j=0; j<numflds; j++) {
         if (p->fieldlist && digit)
-	   strcpy(skip ,p->fieldlist[j]);
+	   _dxf_strcpy_n(skip , DX_ARRAY_SIZE(skip),p->fieldlist[j]);
 	else if (p->fieldlist){
 	   i = _dxfwhich_hdf(p->filename,p->fieldlist[j]);
 	   if (i<0)
 	      return ERROR;
-	   sprintf(skip,"%d",i);
+	   snprintf(skip, DX_ARRAY_SIZE(skip),"%d",i);
 	}
 	else
-	   sprintf(skip,"%d",j);
+	   snprintf(skip, DX_ARRAY_SIZE(skip),"%d",j);
 	
 	/* only create a series group if there is more than one frame */
 	if(endframe > startframe) {
@@ -632,11 +633,11 @@ Object _dxfget_hdf(struct parmlist *p)
 	/* for each frame of the series, import a field */
 	for(i=0, frno=startframe; frno<=endframe; frno+=deltaframe, i++) {
 	    
-	    strcpy(dataset_name, p->filename);
+	    _dxf_strcpy_n(dataset_name, DX_ARRAY_SIZE(dataset_name), p->filename);
 
 	    if (setseries) {
 		sprintf(numbuf, ".%d", frno);
-		strcat(dataset_name, numbuf);
+		_dxf_strcat_n(dataset_name, DX_ARRAY_SIZE(dataset_name), numbuf);
 	    }
 		
 	    f = DXImportHDF(dataset_name, skip);

@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
  
 #include <dx/dx.h>
@@ -604,63 +605,63 @@ char *_dxfprtoken(struct tinfo *t, struct dict *d)
  
     switch(t->class) {
       case ENDOFHEADER:
-        sprintf(cbuf, "end of input");
+        snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "end of input");
         break;
       case NUMBER:
         switch(t->subclass) {
           case INTEGER:
-            sprintf(cbuf, "integer: %d", t->token.i);
+            snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "integer: %d", t->token.i);
             break;
           case FLOAT:
-            sprintf(cbuf, "float: %f", t->token.f);
+            snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "float: %f", t->token.f);
             break;
           case DOUBLE:
-            sprintf(cbuf, "double: %g", t->token.d);
+            snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "double: %g", t->token.d);
             break;
           case CHAR:
-            sprintf(cbuf, "byte: %x", (unsigned int)t->token.c);
+            snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "byte: %x", (unsigned int)t->token.c);
             break;
           default:
-            sprintf(cbuf, "bad number");
+            snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "bad number");
             break;
         }
         break;
       case KEYWORD:
-        sprintf(cbuf, "keyword '%s'", _dxflookkeyword(t->token.id));
+        snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "keyword '%s'", _dxflookkeyword(t->token.id));
         break;
       case IDENTIFIER:
-        sprintf(cbuf, "string '%s'", _dxfdictname(d, t->token.id));
+        snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "string '%s'", _dxfdictname(d, t->token.id));
         break;
       case STRING:
-        sprintf(cbuf, "string '%s'", _dxfdictname(d, t->token.id));
+        snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "string '%s'", _dxfdictname(d, t->token.id));
         break;
       case LEXERROR:
         switch(t->subclass) {
           case BADINPUT:
-            sprintf(cbuf, "bad input");
+            snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "bad input");
             break;
           case BADQUOTE:
-            sprintf(cbuf, "missing quote");
+            snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "missing quote");
             break;
           case BADNUMBER:
-            sprintf(cbuf, "bad number");
+            snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "bad number");
             break;
 	  case BADCOMMA:
-	    sprintf(cbuf, "multiple commas");
+	    snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "multiple commas");
 	    break;
 	  case BADBRACKET:
-	    sprintf(cbuf, "missing bracket");
+	    snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "missing bracket");
 	    break;
 	  case BADLENGTH:
-	    sprintf(cbuf, "line too long");
+	    snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "line too long");
 	    break;
           default:
-            sprintf(cbuf, "unknown error");
+            snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "unknown error");
             break;
         }
         break;
       default:
-        sprintf(cbuf, "bad input");
+        snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "bad input");
         break;
     }
  

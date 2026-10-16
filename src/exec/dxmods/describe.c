@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -490,35 +491,35 @@ static void pinfo(int isitems, int items, int vitems,
 
     if (isitems) {
 	if (items != vitems)
-	    sprintf(mbuf, "There %s %d data item%s (%d valid), each is of type ", 
+	    snprintf(mbuf, DX_ARRAY_SIZE(mbuf), "There %s %d data item%s (%d valid), each is of type ", 
 		    (items==1 ? "is" : "are"), items, (items==1 ? "" : "s"), 
 		    vitems);
 	else
-	    sprintf(mbuf, "There %s %d data item%s, each is of type ", 
+	    snprintf(mbuf, DX_ARRAY_SIZE(mbuf), "There %s %d data item%s, each is of type ", 
 		    (items==1 ? "is" : "are"), items, (items==1 ? "" : "s") );
     } else
-	strcpy(mbuf, "Each item data type is ");
+	_dxf_strcpy_n(mbuf, DX_ARRAY_SIZE(mbuf), "Each item data type is ");
 
     switch (rank) {
       case 0:
 	/* strcat(mbuf,  "scalar, "); */
 	break;
       case 1:
-	sprintf(tbuf, "%d-vector, ", shape[0]);
-	strcat(mbuf, tbuf);
+	snprintf(tbuf, DX_ARRAY_SIZE(tbuf), "%d-vector, ", shape[0]);
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf), tbuf);
 	break;
       case 2:
-	sprintf(tbuf,  "%d by %d matrix, ", shape[0], shape[1]);
-	strcat(mbuf, tbuf);
+	snprintf(tbuf, DX_ARRAY_SIZE(tbuf),  "%d by %d matrix, ", shape[0], shape[1]);
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf), tbuf);
 	break;
       default:
-	sprintf(tbuf,  "%d ", shape[0]);
-	strcat(mbuf, tbuf);
+	snprintf(tbuf, DX_ARRAY_SIZE(tbuf),  "%d ", shape[0]);
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf), tbuf);
 	for(i=1; i < rank; i++) {
-	    sprintf(tbuf,  "by %d ", shape[i]);
-	    strcat(mbuf, tbuf);
+	    snprintf(tbuf, DX_ARRAY_SIZE(tbuf),  "by %d ", shape[i]);
+	    _dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf), tbuf);
 	}
-	strcat(mbuf,  "tensor, ");
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "tensor, ");
 	break;
     }
 
@@ -526,36 +527,36 @@ static void pinfo(int isitems, int items, int vitems,
       case CATEGORY_REAL:
 	break;
       case CATEGORY_COMPLEX:
-	strcat(mbuf,  "complex, "); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "complex, "); break;
       case CATEGORY_QUATERNION:
-	strcat(mbuf,  "quaternion, "); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "quaternion, "); break;
       default:
-	strcat(mbuf,  "unrecognized, "); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "unrecognized, "); break;
     }
     
     switch (type) {
       case TYPE_STRING:
-	strcat(mbuf,  "string (a list of characters).\n"); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "string (a list of characters).\n"); break;
       case TYPE_SHORT:
-	strcat(mbuf,  "short integer (2-byte or int*2).\n"); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "short integer (2-byte or int*2).\n"); break;
       case TYPE_INT:
-	strcat(mbuf,  "integer (4-byte or int*4).\n"); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "integer (4-byte or int*4).\n"); break;
       case TYPE_HYPER:
-	strcat(mbuf,  "hyperlong (8-byte or int*8).\n"); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "hyperlong (8-byte or int*8).\n"); break;
       case TYPE_FLOAT:
-	strcat(mbuf,  "float (4-byte or real*4).\n"); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "float (4-byte or real*4).\n"); break;
       case TYPE_DOUBLE:
-	strcat(mbuf,  "double (8-byte or real*8).\n"); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "double (8-byte or real*8).\n"); break;
       case TYPE_UINT:
-	strcat(mbuf,  "unsigned integer (4-byte or int*4).\n"); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "unsigned integer (4-byte or int*4).\n"); break;
       case TYPE_USHORT:
-	strcat(mbuf,  "unsigned short (2-byte or int*2).\n"); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "unsigned short (2-byte or int*2).\n"); break;
       case TYPE_UBYTE:
-	strcat(mbuf,  "unsigned byte (1-byte or int*1).\n"); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "unsigned byte (1-byte or int*1).\n"); break;
       case TYPE_BYTE:
-	strcat(mbuf,  "byte (1-byte or int*1).\n"); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "byte (1-byte or int*1).\n"); break;
       default:
-	strcat(mbuf,  "unrecognized.\n"); break;
+	_dxf_strcat_n(mbuf, DX_ARRAY_SIZE(mbuf),  "unrecognized.\n"); break;
     }
 
     DescribeMsg(mbuf);

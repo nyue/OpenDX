@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 #include "../hwDeclarations.h"
 
 /*---------------------------------------------------------------------------*\
@@ -76,13 +77,13 @@ _tryLoad(char* path, char* file, char** error)
   /* Try to avoid automounter problems by stat of load file */
   if (file[0] == '/')
   {
-      strcpy(buff, file);
+      _dxf_strcpy_n(buff, DX_ARRAY_SIZE(buff), file);
   }
   else
   {
-      strcpy(buff,path);
-      strcat(buff,"/");
-      strcat(buff,file);
+      _dxf_strcpy_n(buff, DX_ARRAY_SIZE(buff),path);
+      _dxf_strcat_n(buff, DX_ARRAY_SIZE(buff),"/");
+      _dxf_strcat_n(buff, DX_ARRAY_SIZE(buff),file);
   }
 
   if(stat(buff,&statbuf))
@@ -145,9 +146,9 @@ _tryLoad(char* path, char* file, char** error)
   ENTRY(("_tryLoad(\"%s\", \"%s\", 0x%x)",path, file, error));
 
   /* Try to avoid automounter problems by stat of load file */
-  strcpy(buff,path);
-  strcat(buff,"/");
-  strcat(buff,file);
+  _dxf_strcpy_n(buff, DX_ARRAY_SIZE(buff),path);
+  _dxf_strcat_n(buff, DX_ARRAY_SIZE(buff),"/");
+  _dxf_strcat_n(buff, DX_ARRAY_SIZE(buff),file);
 
   if(stat(buff,&statbuf))
   {
@@ -198,12 +199,12 @@ _tryLoad(char* path, char* file, char** error)
   
   /* Try to avoid automounter problems by stat of load file */
   if (file[0] == '/' || (file[1] == ':' && file[2] == '/'))
-      strcpy(buff, file);
+      _dxf_strcpy_n(buff, DX_ARRAY_SIZE(buff), file);
   else
   {
-      strcpy(buff,path);
-      strcat(buff,"/");
-      strcat(buff,file);
+      _dxf_strcpy_n(buff, DX_ARRAY_SIZE(buff),path);
+      _dxf_strcat_n(buff, DX_ARRAY_SIZE(buff),"/");
+      _dxf_strcat_n(buff, DX_ARRAY_SIZE(buff),file);
   }
   
   for (i = 0; i < strlen(buff); i++)
@@ -211,9 +212,9 @@ _tryLoad(char* path, char* file, char** error)
 	      buff[i] = '\\';
 
   if (stricmp(buff+(strlen(buff)-4), ".dll"))
-	  strcat(buff, ".dll");
+	  _dxf_strcat_n(buff, DX_ARRAY_SIZE(buff), ".dll");
 
-  strcpy(buf1, buff);
+  _dxf_strcpy_n(buf1, DX_ARRAY_SIZE(buf1), buff);
  
   if (_stat(buf1, &statbuf))
   {
@@ -286,26 +287,26 @@ int _dxfHWload(tdmPortHandleP (**initPP)(Display*, char*), Display *dpy)
 
   if(getenv("DXEXECROOT"))
   {
-     strcpy(HWpath,getenv("DXEXECROOT"));
-     strcat(HWpath,"/bin_");
-     strcat(HWpath,DXD_ARCHNAME);
+     _dxf_strcpy_n(HWpath, DX_ARRAY_SIZE(HWpath),getenv("DXEXECROOT"));
+     _dxf_strcat_n(HWpath, DX_ARRAY_SIZE(HWpath),"/bin_");
+     _dxf_strcat_n(HWpath, DX_ARRAY_SIZE(HWpath),DXD_ARCHNAME);
   }
   else
   if(getenv("DXROOT"))
   {
-     strcpy(HWpath,getenv("DXROOT"));
-     strcat(HWpath,"/bin_");
-     strcat(HWpath,DXD_ARCHNAME);
+     _dxf_strcpy_n(HWpath, DX_ARRAY_SIZE(HWpath),getenv("DXROOT"));
+     _dxf_strcat_n(HWpath, DX_ARRAY_SIZE(HWpath),"/bin_");
+     _dxf_strcat_n(HWpath, DX_ARRAY_SIZE(HWpath),DXD_ARCHNAME);
   }
   else
   {
-     strcpy(HWpath,"/usr/lpp/dx/bin_");
-     strcat(HWpath,DXD_ARCHNAME);
+     _dxf_strcpy_n(HWpath, DX_ARRAY_SIZE(HWpath),"/usr/lpp/dx/bin_");
+     _dxf_strcat_n(HWpath, DX_ARRAY_SIZE(HWpath),DXD_ARCHNAME);
   }
 
   if(getenv("DXHWMOD")) /* Force Lib */
   {
-     strcpy(HWname,getenv("DXHWMOD"));
+     _dxf_strcpy_n(HWname, DX_ARRAY_SIZE(HWname),getenv("DXHWMOD"));
 
      *initPP = _tryLoad(HWpath, HWname, &error);
 

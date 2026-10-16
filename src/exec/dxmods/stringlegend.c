@@ -15,6 +15,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -62,7 +63,7 @@ m_Legend(Object *in, Object *out)
   Shape shape;
 
  
-  strcpy(extralabel,nullstring);
+  _dxf_strcpy_n(extralabel, DX_ARRAY_SIZE(extralabel),nullstring);
   adjust = 0; 
   outo = NULL;
   o = NULL;

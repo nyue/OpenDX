@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #include <ctype.h>
 #include <dx/dx.h>
@@ -78,7 +79,7 @@ m_AutoGlyph(Object *in, Object *out)
   Type datatype;
   char font[100];
 
-  strcpy(font,"fixed");
+  _dxf_strcpy_n(font, DX_ARRAY_SIZE(font),"fixed");
 
  
   out[0] = NULL;
@@ -104,7 +105,7 @@ m_AutoGlyph(Object *in, Object *out)
     return OK;
   }
   
-  strcpy(type_string,"standard");
+  _dxf_strcpy_n(type_string, DX_ARRAY_SIZE(type_string),"standard");
 
   /* type */
   quality = -1;
@@ -134,7 +135,7 @@ m_AutoGlyph(Object *in, Object *out)
       }
     }
     if ((quality==-1) &&(!type_is_field)) {
-      strcpy(type_string,type);
+      _dxf_strcpy_n(type_string, DX_ARRAY_SIZE(type_string),type);
       /* turn type string to lower case */
       i = 0;	
       count = 0;	
@@ -157,7 +158,7 @@ m_AutoGlyph(Object *in, Object *out)
       type_string[count]='\0';
     }
   } else {
-    strcpy(type_string,"standard");
+    _dxf_strcpy_n(type_string, DX_ARRAY_SIZE(type_string),"standard");
   }
 
   /* scale */

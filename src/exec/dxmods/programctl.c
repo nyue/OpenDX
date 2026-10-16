@@ -6,6 +6,7 @@
 /*    "IBM PUBLIC LICENSE - Open Visualization Data Explorer"          */
 /***********************************************************************/
 #include <dx/dx.h> 
+#include <dxbounded.h>
 
 #include <dxconfig.h>
 #include <ctype.h>
@@ -177,11 +178,11 @@ Error m_Execute(Object *in)
 #endif
 
   if (!strcmp(action,"once"))
-    sprintf(buf, "execute once");
+    snprintf(buf, DX_ARRAY_SIZE(buf), "execute once");
   else if (!strcmp(action,"onchange"))
-    sprintf(buf, "execute onchange");
+    snprintf(buf, DX_ARRAY_SIZE(buf), "execute onchange");
   else if (!strcmp(action,"end"))
-    sprintf(buf, "execute end");
+    snprintf(buf, DX_ARRAY_SIZE(buf), "execute end");
   else
     {
       DXSetError(ERROR_BAD_PARAMETER,"action must be one of \"once\", \"on change\" or \"end\"");
@@ -225,7 +226,7 @@ Error ManagePanels(Object *in, char *paneltype)
       goto error;
     } 
   
-  sprintf(messageid,"default");
+  snprintf(messageid, DX_ARRAY_SIZE(messageid),"default");
   /* can be a single string or a list of strings */  
   if (in[0])
     {
@@ -328,7 +329,7 @@ Error ManagePanels(Object *in, char *paneltype)
 		        sprintf(buf, "open image %s=%s", how, name);
                       else 
 		        sprintf(buf, "open controlpanel %s", name);
-                      sprintf(messageid,"%i", j);
+                      snprintf(messageid, DX_ARRAY_SIZE(messageid),"%i", j);
                       if (!SendPendingMessage(buf, (char *) &messageid))
 			goto error;
 		    }
@@ -358,7 +359,7 @@ Error ManagePanels(Object *in, char *paneltype)
 			sprintf(buf, "close image %s=%s", how,name);
                       else 
 			sprintf(buf, "close controlpanel %s", name);
-                      sprintf(messageid,"%d",j);
+                      snprintf(messageid, DX_ARRAY_SIZE(messageid),"%d",j);
                       if (!SendPendingMessage(buf, messageid))
 			goto error;
 		    }
@@ -400,7 +401,7 @@ Error ManagePanels(Object *in, char *paneltype)
 		  else
 		    sprintf(buf, "close controlpanel %s", name);
                 }
-              sprintf(messageid,"%d",j);
+              snprintf(messageid, DX_ARRAY_SIZE(messageid),"%d",j);
 	      if (!SendPendingMessage(buf, messageid))
 		goto error;
             }
@@ -443,7 +444,7 @@ Error ManagePanels(Object *in, char *paneltype)
 	      else
 		sprintf(buf, "close controlpanel %s", name);
 	    }
-	  sprintf(messageid,"%d",i);
+	  snprintf(messageid, DX_ARRAY_SIZE(messageid),"%d",i);
 	  if (!SendPendingMessage(buf, messageid))
 	    goto error;
 	}
@@ -484,7 +485,7 @@ Error m_OpenVisualProgram(Object *in)
   int flush=1;
   char messageid[20];
   
-  sprintf(messageid,"default");
+  snprintf(messageid, DX_ARRAY_SIZE(messageid),"default");
   
   
   if (in[0])

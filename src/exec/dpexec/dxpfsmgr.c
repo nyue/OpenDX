@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 
@@ -129,7 +130,7 @@ static Error dxdf()
 	if (rc < 0)
 	    continue;
 
-	strcat(dname, ":");
+	_dxf_strcat_n(dname, DX_ARRAY_SIZE(dname), ":");
 	rc = pfs_size(dname, &tsize);
 	if (rc < 0)
 	    continue;
@@ -172,7 +173,7 @@ Error dxlist(char *partname)
 	return ERROR;
     }
 
-    strcpy(buf, partname);
+    _dxf_strcpy_n(buf, DX_ARRAY_SIZE(buf), partname);
 
     DXBeginLongMessage();
 

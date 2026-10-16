@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 
@@ -336,7 +337,7 @@ DXRender(Object o, Camera camera, char *format)
 	    char depth_str[201];
 	    char *s;
 
-	    strcpy(depth_str, format);
+	    _dxf_strcpy_n(depth_str, DX_ARRAY_SIZE(depth_str), format);
 
 	    for (s = depth_str, i = 0; *s && *s != ','; s++) continue;
 	    if (*s == ',') *s++ = '\0';

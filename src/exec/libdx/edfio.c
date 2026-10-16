@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
  
 #include <dx/dx.h>
@@ -93,19 +94,19 @@ static Error elemtypecheck(int num, char *str)
 
     switch(num) {
       case 0:
-	strcpy(rightstr, "points");
+	_dxf_strcpy_n(rightstr, DX_ARRAY_SIZE(rightstr), "points");
 	break;
       case 1:
-	strcpy(rightstr, "lines");
+	_dxf_strcpy_n(rightstr, DX_ARRAY_SIZE(rightstr), "lines");
 	break;
       case 2:
-	strcpy(rightstr, "quads");
+	_dxf_strcpy_n(rightstr, DX_ARRAY_SIZE(rightstr), "quads");
 	break;
       case 3:
-	strcpy(rightstr, "cubes");
+	_dxf_strcpy_n(rightstr, DX_ARRAY_SIZE(rightstr), "cubes");
 	break;
       default:
-	sprintf(rightstr, "cubes%dD", num);
+	snprintf(rightstr, DX_ARRAY_SIZE(rightstr), "cubes%dD", num);
 	break;
     }
     

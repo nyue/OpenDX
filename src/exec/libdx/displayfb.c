@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <math.h>
@@ -290,7 +291,7 @@ DXDisplayFB(Object o, char *name, int x, int y)
     DXMarkTime("start output fb");
 
     /* strip :0 off end of name */
-    strcpy(copy, name? name : "");
+    _dxf_strcpy_n(copy, DX_ARRAY_SIZE(copy), name? name : "");
     for (s=copy; *s; s++)
 	if (*s==':')
 	    *s = '\0';

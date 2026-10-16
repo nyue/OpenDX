@@ -11,6 +11,7 @@
 /*		-create invalid data component for missing data	*/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <stdio.h>
@@ -604,7 +605,7 @@ Error load_first(struct column_info **src, struct column_info **labelsrc,
 	  if (!strcmp(labelsrc[i]->name,*lp))
 	    break;
 	}
-	  sprintf(name,"column%d",i);
+	  snprintf(name, DX_ARRAY_SIZE(name),"column%d",i);
 	  if (!strcmp(name,*lp))
 	    break;
       }
@@ -684,7 +685,7 @@ static Error process_data(char *p,struct column_info *ds,int index,char *delimit
 
   a = ds->array;
   inv = ds->inv;
-  strcpy(inv_string," ");
+  _dxf_strcpy_n(inv_string, DX_ARRAY_SIZE(inv_string)," ");
   number_type = _dxf_isnumber(p,&d,&f);
   /* check for missing data */
   if (p[0] == delimiter[0] || number_type==TYPE_BYTE) {
@@ -846,7 +847,7 @@ char **cat_string)
 	    !DXSetComponentAttribute(f,ds[i]->name,"dep", o))
 	 goto error;
     if (ds[i]->inv_count > 0){
-      sprintf(inv_name, "%s missingvalues",ds[i]->name);
+      snprintf(inv_name, DX_ARRAY_SIZE(inv_name), "%s missingvalues",ds[i]->name);
       if (!DXSetComponentValue(f,inv_name, (Object)ds[i]->inv))
         goto error;
       if (!DXSetComponentAttribute(f,inv_name,"ref", o))
@@ -1434,7 +1435,7 @@ static Error redo (struct column_info *ds, Type newtype)
       }
       else{		/* TYPE_STRING */
         for (i=0; i<items; i++) {
-	  sprintf(string,"%s"," ");
+	  snprintf(string, DX_ARRAY_SIZE(string),"%s"," ");
 	  if (!DXAddArrayData((Array)newarray,i,1,string))
 	     goto error;
  	} 
@@ -1449,7 +1450,7 @@ static Error redo (struct column_info *ds, Type newtype)
       }
       else{
         for (i=0; i<items; i++) {
-	  sprintf(string,"%d",d[i]);
+	  snprintf(string, DX_ARRAY_SIZE(string),"%d",d[i]);
 	  if (!DXAddArrayData((Array)newarray,i,1,string))
 	     goto error;
  	} 
@@ -1458,7 +1459,7 @@ static Error redo (struct column_info *ds, Type newtype)
     case(TYPE_FLOAT):
       f = (float *)DXGetArrayData(ds->array);
       for (i=0; i<items; i++) {
-        sprintf(string,"%g",f[i]);
+        snprintf(string, DX_ARRAY_SIZE(string),"%g",f[i]);
 	if (!DXAddArrayData((Array)newarray,i,1,string))
 	   goto error;
       } 

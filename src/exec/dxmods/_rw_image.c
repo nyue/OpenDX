@@ -10,6 +10,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <stdio.h>
@@ -339,8 +340,8 @@ SearchStringList(char *str, char *pattern)
 	}
 	buf[patlen] = '\0';
 
-        strcpy(cpy,str);
-        strcat(cpy,":");	/* A trailing colon cleans up the algorithm */
+        _dxf_strcpy_n(cpy, DX_ARRAY_SIZE(cpy),str);
+        _dxf_strcat_n(cpy, DX_ARRAY_SIZE(cpy),":");	/* A trailing colon cleans up the algorithm */
         p1 = cpy; 
 	while (p1 && *p1) {
 	    int len;

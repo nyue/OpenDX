@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_CTYPE_H)
 #include <ctype.h>
@@ -421,7 +422,7 @@ findfile(char *filename, char *pathname)
 	return ERROR;
     }
     
-    strcpy(pathname, foundname);
+    _dxf_strcpy_n(pathname, DX_ARRAY_SIZE(pathname), foundname);
     DXFree((Pointer)foundname);
     return OK;
 }

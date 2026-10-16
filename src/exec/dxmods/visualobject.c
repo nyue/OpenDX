@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -1489,7 +1490,7 @@ Error traverse(Object o, VisInfo *vi, Node *parent, int isattr, int num,
 	  case CLASS_PRODUCTARRAY:
 	    DXGetProductArrayInfo((ProductArray)o, &count, terms);
 	    for (i=0; i<count; i++) {
-		sprintf(cbuf, "term %d", i);
+		snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "term %d", i);
 		traverse((Object)terms[i], vi, l, 0, 0, cbuf);
 	    }
 	    break;
@@ -1497,7 +1498,7 @@ Error traverse(Object o, VisInfo *vi, Node *parent, int isattr, int num,
 	  case CLASS_MESHARRAY:
 	    DXGetMeshArrayInfo((MeshArray)o, &count, terms);
 	    for (i=0; i<count; i++) {
-		sprintf(cbuf, "term %d", i);
+		snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "term %d", i);
 		traverse((Object)terms[i], vi, l, 0, 0, cbuf);
 	    }
 
@@ -1533,7 +1534,7 @@ Error traverse(Object o, VisInfo *vi, Node *parent, int isattr, int num,
 
       case CLASS_XFORM:
 	DXGetXformInfo((Xform)o, &subo1, &m);
-	sprintf(cbuf, "[ [%g %g %g] [%g %g %g] [%g %g %g] ] + [%g %g %g]", 
+	snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "[ [%g %g %g] [%g %g %g] [%g %g %g] ] + [%g %g %g]", 
 		(double)m.A[0][0], (double)m.A[0][1], (double)m.A[0][2],
 		(double)m.A[1][0], (double)m.A[1][1], (double)m.A[1][2],
 		(double)m.A[2][0], (double)m.A[2][1], (double)m.A[2][2],
@@ -1556,7 +1557,7 @@ Error traverse(Object o, VisInfo *vi, Node *parent, int isattr, int num,
 		if (name)
 		    traverse(subo, vi, l, 0, 0, name);
 		else {
-		    sprintf(cbuf, "member %d", i);
+		    snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "member %d", i);
 		    traverse(subo, vi, l, 0, 0, cbuf);
 		}
 	    }
@@ -1565,7 +1566,7 @@ Error traverse(Object o, VisInfo *vi, Node *parent, int isattr, int num,
 		
 	  case CLASS_SERIES:
 	    for (i=0; (subo=DXGetSeriesMember((Series)o, i, &pos)); i++) {
-		sprintf(cbuf, "position %g", pos);
+		snprintf(cbuf, DX_ARRAY_SIZE(cbuf), "position %g", pos);
 		traverse(subo, vi, l, 0, 0, cbuf);
 	    }
 

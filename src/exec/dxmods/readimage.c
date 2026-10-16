@@ -10,6 +10,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
@@ -237,12 +238,12 @@ m_ReadImage ( Object *in, Object *out )
             DXSetError( ERROR_DATA_INVALID, "#12210", "name");
 	    goto error;
 	}
-        strcpy(originalname,filename);
+        _dxf_strcpy_n(originalname, DX_ARRAY_SIZE(originalname),filename);
     }
     else
-        strcpy(originalname,"image");
+        _dxf_strcpy_n(originalname, DX_ARRAY_SIZE(originalname),"image");
 
-    strcpy(basename,originalname);
+    _dxf_strcpy_n(basename, DX_ARRAY_SIZE(basename),originalname);
 
     envstr_DXDATA = (char *)getenv("DXDATA");
     *user_path = '\0';
@@ -443,8 +444,8 @@ m_ReadImage ( Object *in, Object *out )
             case img_typ_fb:
             default:
 
-	        strcpy(sizefilename,basename);
-        	strcat(sizefilename,".size");
+	        _dxf_strcpy_n(sizefilename, DX_ARRAY_SIZE(sizefilename),basename);
+        	_dxf_strcat_n(sizefilename, DX_ARRAY_SIZE(sizefilename),".size");
 
 		try_count=0;
 		do {

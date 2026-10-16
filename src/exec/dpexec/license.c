@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 /* this has to be before the ifdef, because it defines DXD_LICENSED_VERSION 
@@ -165,7 +166,7 @@ Error ExGetLicense(lictype ltype, int forceNetLS)
     }
     
 
-    strcpy(messagebuf,"");
+    _dxf_strcpy_n(messagebuf, DX_ARRAY_SIZE(messagebuf),"");
 
     if (checkexp (root, ltype))    /* check for an old syle trial license */
 	return OK;
@@ -186,9 +187,9 @@ Error ExGetLicense(lictype ltype, int forceNetLS)
     
     timenow = time(NULL);
     
-    sprintf(envbuf,"_DX_%d=", getpid());
-    sprintf(c_buf,"%x", timenow);
-    strcat(envbuf, c_buf+4);
+    snprintf(envbuf, DX_ARRAY_SIZE(envbuf),"_DX_%d=", getpid());
+    snprintf(c_buf, DX_ARRAY_SIZE(c_buf),"%x", timenow);
+    _dxf_strcat_n(envbuf, DX_ARRAY_SIZE(envbuf), c_buf+4);
     putenv(envbuf);
    
 #if DXD_HAS_VFORK
@@ -221,19 +222,19 @@ Error ExGetLicense(lictype ltype, int forceNetLS)
 	/* should we close other file descriptors here ? */
 	
 	if (getenv("DXSHADOW")) 
-	    strcpy(remname,getenv("DXSHADOW"));
+	    _dxf_strcpy_n(remname, DX_ARRAY_SIZE(remname),getenv("DXSHADOW"));
 	else 
-	    sprintf(remname,"%s/bin_%s/dxshadow",root,DXD_ARCHNAME);
+	    snprintf(remname, DX_ARRAY_SIZE(remname),"%s/bin_%s/dxshadow",root,DXD_ARCHNAME);
 
 	switch (ltype) {
-	    case MPLIC:	strcpy(arg1,"-mp");	break;
-	    case DXLIC:	strcpy(arg1,"-dev");	break;
-	    case RTLIC:	strcpy(arg1,"-rt");	break;
-	    case RTLIBLIC:	strcpy(arg1,"-rtlib");	break;
-	    default:    sprintf(arg1,"%d",ltype); break;
+	    case MPLIC:	_dxf_strcpy_n(arg1, DX_ARRAY_SIZE(arg1),"-mp");	break;
+	    case DXLIC:	_dxf_strcpy_n(arg1, DX_ARRAY_SIZE(arg1),"-dev");	break;
+	    case RTLIC:	_dxf_strcpy_n(arg1, DX_ARRAY_SIZE(arg1),"-rt");	break;
+	    case RTLIBLIC:	_dxf_strcpy_n(arg1, DX_ARRAY_SIZE(arg1),"-rtlib");	break;
+	    default:    snprintf(arg1, DX_ARRAY_SIZE(arg1),"%d",ltype); break;
 	}
 	if (forceNetLS)
-	    strcat(arg1,"only");
+	    _dxf_strcat_n(arg1, DX_ARRAY_SIZE(arg1),"only");
 
 	sprintf(arg3,"%d.%d.%d", DXD_VERSION, DXD_RELEASE, DXD_MODIFICATION);
 	execlp(remname, "dxshadow", arg1 , "-version", arg3 ,NULL);
@@ -266,7 +267,7 @@ Error ExGetLicense(lictype ltype, int forceNetLS)
 	child = (child < 4096) ? (child+4096)
 	                       : (child);       /* forces to be 4 0x chars */
 	
-	strcpy(ckey, c_buf+4);
+	_dxf_strcpy_n(ckey, DX_ARRAY_SIZE(ckey), c_buf+4);
 	sprintf(ckey+4, "%x", child);
 	
 	salt[0] = '7';
@@ -313,7 +314,7 @@ Error ExGetLicense(lictype ltype, int forceNetLS)
 	  case GOT_NODELOCKED:
 	   
 	    if (ltype == MPLIC) {
-		sprintf(messagebuf,"Exec got nodelocked %s license.",lic_name);
+		snprintf(messagebuf, DX_ARRAY_SIZE(messagebuf),"Exec got nodelocked %s license.",lic_name);
                 mplic.type = NL_LIC;
 	    } else {
 		DXMessage("Exec got nodelocked %s license.", lic_name);
@@ -327,7 +328,7 @@ Error ExGetLicense(lictype ltype, int forceNetLS)
         
 	    if (ltype == MPLIC) {
 	        shadow_fd_mplic = out[0];
-		sprintf(messagebuf,"Exec got concurrent use %s license.",
+		snprintf(messagebuf, DX_ARRAY_SIZE(messagebuf),"Exec got concurrent use %s license.",
 							lic_name);	
 		/* we save message and will register input handler 
 		 * in ExLicenseFinish 
@@ -347,7 +348,7 @@ Error ExGetLicense(lictype ltype, int forceNetLS)
 	  case GOT_NONE:
 	    
 	    if (ltype == MPLIC)
-	      sprintf(messagebuf,"Exec could not get a %s license,"
+	      snprintf(messagebuf, DX_ARRAY_SIZE(messagebuf),"Exec could not get a %s license,"
 				" running in uniprocessor mode.",lic_name);
             else 
 	      DXMessage("Exec could not get a %s license.",lic_name);
@@ -448,12 +449,12 @@ static Error checkexp(char *root, lictype ltype)
       char *fname;
       fname = getenv("DXTRIALKEYFILE");
       if (!fname) {
-          sprintf(fileName, "%s/expiration", root);
+          snprintf(fileName, DX_ARRAY_SIZE(fileName), "%s/expiration", root);
           fname = fileName;
       }
       f = fopen(fname, "r");
       if (f)  {
-	sprintf(key_location_buf,"file %s",fname);	
+	snprintf(key_location_buf, DX_ARRAY_SIZE(key_location_buf),"file %s",fname);	
 	key_location = key_location_buf;
         fgets(key, 27, f);
         fclose(f);
@@ -465,10 +466,10 @@ static Error checkexp(char *root, lictype ltype)
     if (!trial_file_exists) {
         if (ltype == MPLIC) {
 	  char buf[1024];
-	  sprintf(buf,"Found Data Explorer trial password in %s.\n",
+	  snprintf(buf, DX_ARRAY_SIZE(buf),"Found Data Explorer trial password in %s.\n",
 							key_location);
 	  if (!suppresslicmsg)
-	      strcat(messagebuf,buf);
+	      _dxf_strcat_n(messagebuf, DX_ARRAY_SIZE(messagebuf),buf);
 	  trial_file_exists = TRUE;
 	} else {
 	    if (!suppresslicmsg)
@@ -479,7 +480,7 @@ static Error checkexp(char *root, lictype ltype)
     
     if (strlen(key) != 26) {
         if (ltype == MPLIC) 
-	  strcat(messagebuf,"You are running an expired Trial version of Data Explorer.\n");
+	  _dxf_strcat_n(messagebuf, DX_ARRAY_SIZE(messagebuf),"You are running an expired Trial version of Data Explorer.\n");
 	else
 	  DXMessage("You are running an expired Trial version of Data Explorer.");
 
@@ -499,12 +500,12 @@ static Error checkexp(char *root, lictype ltype)
     	if (cryptTime[0] != 'A' ||
 	    cryptTime[10] != '9' ||
 	    cryptTime[12] != 'D') {
-	    strcat(messagebuf,"You are running an Expired trial version of Data Explorer.\n");
+	    _dxf_strcat_n(messagebuf, DX_ARRAY_SIZE(messagebuf),"You are running an Expired trial version of Data Explorer.\n");
 	    return ERROR;
     	}
     	if (cryptTime[1] != 'm' ||
 	    cryptTime[11] != 'l' ) { 
-	    strcat(messagebuf,"Single processor trial key found, MP will not be enabled.\n");
+	    _dxf_strcat_n(messagebuf, DX_ARRAY_SIZE(messagebuf),"Single processor trial key found, MP will not be enabled.\n");
 	    return ERROR;
 	}
     }
@@ -523,7 +524,7 @@ static Error checkexp(char *root, lictype ltype)
     }
     if (!host_match) {
         if (ltype == MPLIC)
-	  strcat(messagebuf,
+	  _dxf_strcat_n(messagebuf, DX_ARRAY_SIZE(messagebuf),
 		"you are running a trial version of Data Explorer"
 		" on an unlicensed host\n");
 	else
@@ -543,7 +544,7 @@ static Error checkexp(char *root, lictype ltype)
     
     if (timenow > timeOut) {
         if (ltype == MPLIC) { 
-	  strcat(messagebuf,
+	  _dxf_strcat_n(messagebuf, DX_ARRAY_SIZE(messagebuf),
 	    "You are running an expired trial version of Data Explorer.\n");
 	} else {
 	  DXMessage("You are running an expired trial version of Data "
@@ -607,24 +608,24 @@ static Error system_hostname(char *host)
 #define FOUND_ID 1
     uname(&name);
     name.machine[10] = '\0';
-    strcpy(host, name.machine+2);
+    _dxf_strcpy_n(host, DX_ARRAY_SIZE(host), name.machine+2);
 #endif
 #if hp700
 #define FOUND_ID 1
     uname(&name);
     name.idnumber[10] = '\0';
-    strcpy(host, name.idnumber+2);
+    _dxf_strcpy_n(host, DX_ARRAY_SIZE(host), name.idnumber+2);
 #endif
 #if indigo || sgi        /* sgi does not like #if...#elif..#endif construct */
 #define FOUND_ID 1
     name = sysid(NULL);
-    sprintf(host, "%d", name);
-    strcpy(host, host+2);
+    snprintf(host, DX_ARRAY_SIZE(host), "%d", name);
+    _dxf_strcpy_n(host, DX_ARRAY_SIZE(host), host+2);
 #endif
 #if sun4 
 #define FOUND_ID 1
     name = gethostid();
-    sprintf(host, "%x", name);
+    snprintf(host, DX_ARRAY_SIZE(host), "%x", name);
 #endif
 #if aviion
 #define FOUND_ID 1
@@ -633,7 +634,7 @@ static Error system_hostname(char *host)
 #if solaris
 #define FOUND_ID 1
     sysinfo(SI_HW_SERIAL,host,301);
-    sprintf(host, "%x", atol(host));
+    snprintf(host, DX_ARRAY_SIZE(host), "%x", atol(host));
 #endif
 #if alphax
 #define FOUND_ID 1
@@ -644,7 +645,7 @@ static Error system_hostname(char *host)
 
     /* Get a socket */
     s = socket(AF_INET,SOCK_DGRAM,0);
-    strcpy(host,"");
+    _dxf_strcpy_n(host, DX_ARRAY_SIZE(host),"");
     if (s < 0) {
         perror("socket");
     } else {
@@ -657,10 +658,10 @@ static Error system_hostname(char *host)
 		dev = device;
 	    strcpy(devea.ifr_name,dev);
 	    if (ioctl(s,SIOCRPHYSADDR,&devea) >= 0)  {
-		strcpy(host,"");
+		_dxf_strcpy_n(host, DX_ARRAY_SIZE(host),"");
 		for (i = 2; i < 6; i++){
-		    sprintf(buf,"%x", devea.default_pa[i] );
-		    strcat(host,buf);
+		    snprintf(buf, DX_ARRAY_SIZE(buf),"%x", devea.default_pa[i] );
+		    _dxf_strcat_n(host, DX_ARRAY_SIZE(host),buf);
 		}
 		break;
 	    } 

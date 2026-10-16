@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <stdarg.h>
@@ -158,7 +159,7 @@ outboardmsg(char *who, char *message, va_list arg)
     oneObj = DXAddArrayData (DXNewArray (TYPE_INT, CATEGORY_REAL, 0), 
 			0, 1, (Pointer) &n);
 
-    vsprintf(buf, message, arg);
+    vsnprintf(buf, DX_ARRAY_SIZE(buf), message, arg);
     msgObj = DXNewString(buf);
     
     if (!g || !whoObj || !msgObj || !oneObj)
@@ -205,11 +206,11 @@ DXsqmessage(char *who, char *message, va_list arg)
         return;
 
     if (!who || strcmp(who, "MESSAGE"))
-	sprintf(buf, "%2d: ", DXProcessorId());
+	snprintf(buf, DX_ARRAY_SIZE(buf), "%2d: ", DXProcessorId());
     else if (*who=='*')
 	buf[0] = '\0';
     else
-	sprintf(buf, "%2d: %s: ", DXProcessorId(), who);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "%2d: %s: ", DXProcessorId(), who);
     vsprintf(buf+strlen(buf), message, arg);
 
     n = strlen(buf);

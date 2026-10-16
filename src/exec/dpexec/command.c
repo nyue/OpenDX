@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <dx/dx.h>
@@ -329,7 +330,7 @@ _dxf_ExDeleteHost(char *host, int err, int closepeer)
     int i, j, limit, limit2;
     char savehost[MAXHOSTNAMELEN];
 
-    strcpy(savehost, host);
+    _dxf_strcpy_n(savehost, DX_ARRAY_SIZE(savehost), host);
     _dxf_ExDeletePeerByName(savehost, closepeer);
 
     /* entry 0 is a dummy for the master so skip it */
@@ -1525,7 +1526,7 @@ static int GetKey  (char *c, Object *in)
     i = rand();
     i = (i<4096) ? (i+4096) : (i); /* forces to be 4 0x chars */
     
-    sprintf(_dxd_LicenseKey, "%x\n", i);
+    snprintf(_dxd_LicenseKey, DX_ARRAY_SIZE(_dxd_LicenseKey), "%x\n", i);
     DXUIMessage("LICENSE", _dxd_LicenseKey);
 
 #else  /* DXD_LICENSED_VERSION */
@@ -1561,12 +1562,12 @@ static int Version (char *c, Object *in)
     }
 
 #if DXD_PRINTF_RETURNS_COUNT
-    n = sprintf (buf,
+    n = snprintf(buf, DX_ARRAY_SIZE(buf),
 		 "Executive/UI version mismatch:  %d %d %d vs ",
 		 UI_MAJOR, UI_MINOR, UI_MICRO);
 #else
     {
-        sprintf (buf,
+        snprintf(buf, DX_ARRAY_SIZE(buf),
 		 "Executive/UI version mismatch:  %d %d %d vs ",
 		 UI_MAJOR, UI_MINOR, UI_MICRO);
         n = strlen(buf);

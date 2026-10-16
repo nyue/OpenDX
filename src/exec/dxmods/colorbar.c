@@ -6,6 +6,7 @@
 /*    "IBM PUBLIC LICENSE - Open Visualization Data Explorer"          */
 /***********************************************************************/
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #include <dx/dx.h>
 #include <stdlib.h>
@@ -77,7 +78,7 @@ m_ColorBar(Object *in, Object *out)
   }  Shape; 
   Shape shape;
 
-  strcpy(extralabel,nullstring);
+  _dxf_strcpy_n(extralabel, DX_ARRAY_SIZE(extralabel),nullstring);
   adjust = 0; 
   captionsize = 15.0; 
   outo = NULL;
@@ -304,7 +305,7 @@ m_ColorBar(Object *in, Object *out)
          goto error;
       att = "positions";
       curcount = 4;
-      sprintf(extralabel,"%f",minvalue); 
+      snprintf(extralabel, DX_ARRAY_SIZE(extralabel),"%f",minvalue); 
       minvalue = 0;
       maxvalue = 1;
       doaxes = 1; 

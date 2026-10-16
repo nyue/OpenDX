@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <dx/dx.h>
@@ -101,11 +102,11 @@ char *objid(struct fmt_info *p, Object o)
     static char fred[256];
 
     if (!_dxflook_objident(p->ht, o, &id, &literal))
-	sprintf(fred, "unknown");
+	snprintf(fred, DX_ARRAY_SIZE(fred), "unknown");
     else if (literal)
-	sprintf(fred, "%d", id);
+	snprintf(fred, DX_ARRAY_SIZE(fred), "%d", id);
     else
-	sprintf(fred, "\"%s\"", _dxfdictname(p->d, id));
+	snprintf(fred, DX_ARRAY_SIZE(fred), "\"%s\"", _dxfdictname(p->d, id));
 	
 	
     return fred;

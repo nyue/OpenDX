@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #include <string.h>
 #include <dx/dx.h>
@@ -159,7 +160,7 @@ static Error file_init()
 	rc = pfs_drive_list(i, dname);
 	if (rc < 0)
 	    continue;
-	strcat(dname, ":");
+	_dxf_strcat_n(dname, DX_ARRAY_SIZE(dname), ":");
 	rc = pfs_free(dname, &size);
 	if (rc < 0)
 	    continue;

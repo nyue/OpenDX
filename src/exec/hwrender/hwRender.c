@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #define tdmRender_c
@@ -1105,7 +1106,7 @@ _validateDisplayString(tdmParsedFormatT *pFormat, int Pass)
         if(env_dis && !EQLSTR(env_dis,pFormat->where))
         {
             /* reset the defaults DISPLAY */
-            sprintf(newDisplay,"DISPLAY=%s",pFormat->where);
+            snprintf(newDisplay, DX_ARRAY_SIZE(newDisplay),"DISPLAY=%s",pFormat->where);
             putenv(newDisplay);
         }
     }
@@ -1268,10 +1269,10 @@ _getFullHostName(char* givenName)
             EQLSTR(givenName,"unix") ||
             EQLSTR(givenName,"localhost")) {
         if(gethostname(shortName,MAXHOSTNAMELEN)) {
-            strcpy(shortName,givenName);
+            _dxf_strcpy_n(shortName, DX_ARRAY_SIZE(shortName),givenName);
         }
     } else {
-        strcpy(shortName,givenName);
+        _dxf_strcpy_n(shortName, DX_ARRAY_SIZE(shortName),givenName);
     }
 
     /*

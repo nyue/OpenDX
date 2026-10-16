@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 #if defined(linux) && (ENABLE_SMP_LINUX == 1)
 
 #include <stdio.h>
@@ -169,7 +170,7 @@ _lock(int l)
 
 	n1 = semctl(locks->_sbufs[sid]._semid, soff, GETVAL);
 
-	sprintf(buf, "_lock: %d %d", n0, n1);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "_lock: %d %d", n0, n1);
         foundlock(locks->_findlock, buf);
     }
 #endif
@@ -201,7 +202,7 @@ _unlock(int l)
 
 	n1 = semctl(locks->_sbufs[sid]._semid, soff, GETVAL);
 
-	sprintf(buf, "_unlock: %d %d", n0, n1);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "_unlock: %d %d", n0, n1);
         foundlock(locks->_findlock, buf);
     }
 #endif

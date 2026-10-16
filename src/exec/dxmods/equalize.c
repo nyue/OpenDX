@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <string.h>
@@ -706,7 +707,7 @@ FuncDistribution (char *f, int nbin, float *pd)
 {
     char	buf[4096];
 
-    sprintf (buf, "histogram function:  %s", f);
+    snprintf(buf, DX_ARRAY_SIZE(buf), "histogram function:  %s", f);
     DXSetError (ERROR_BAD_PARAMETER, "#11838", buf);
     return (ERROR);
 }

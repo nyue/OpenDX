@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <dx/dx.h>
@@ -249,8 +250,8 @@ ExConnectTo(char *host, char *user, char *cwd, int ac, char *av[], char *ep[],
 	 	    if (*path == ':') 
 		        ++path;
 		    s[i] = '\0';
-		    strcat (s, "/");
-		    strcat (s, av[0]);
+		    _dxf_strcat_n(s, DX_ARRAY_SIZE(s), "/");
+		    _dxf_strcat_n(s, DX_ARRAY_SIZE(s), av[0]);
 		    if (stat (s, &sbuffer) < 0) {
 		        /* if the file doesn't exist, go on */
 		        if (errno == ENOENT) 
@@ -293,7 +294,7 @@ ExConnectTo(char *host, char *user, char *cwd, int ac, char *av[], char *ep[],
        if ( ExHostToFQDN( localhost, localhost ) == ERROR )
             goto error_return;
 
-	sprintf(script_name,"/tmp/dx-%s:%d",localhost,getpid());
+	snprintf(script_name, DX_ARRAY_SIZE(script_name),"/tmp/dx-%s:%d",localhost,getpid());
 	findx=0;
 	fargv[findx++] = local_rsh_cmd;
 	fargv[findx++] = host;
@@ -404,12 +405,12 @@ ExConnectTo(char *host, char *user, char *cwd, int ac, char *av[], char *ep[],
 #if DXD_HAS_LIBIOP
     {
     char cmdpvs[1000];
-    strcpy(cmdpvs, fargv[0]);
+    _dxf_strcpy_n(cmdpvs, DX_ARRAY_SIZE(cmdpvs), fargv[0]);
     for(i = 1; i < findx-1; i++) {
-        strcat(cmdpvs, " ");
-        strcat(cmdpvs, fargv[i]);
+        _dxf_strcat_n(cmdpvs, DX_ARRAY_SIZE(cmdpvs), " ");
+        _dxf_strcat_n(cmdpvs, DX_ARRAY_SIZE(cmdpvs), fargv[i]);
     }
-    strcat(cmdpvs, "&");
+    _dxf_strcat_n(cmdpvs, DX_ARRAY_SIZE(cmdpvs), "&");
     ExDebug("*2", "cmd to run %s", cmdpvs);
     system(cmdpvs);
     return(1);
@@ -808,7 +809,7 @@ _dxfExRemote (Object *in, Object *out)
 	    cmd, hostp, flags, nin, nout);
 
     
-    strcpy (buff, hostp);
+    _dxf_strcpy_n(buff, DX_ARRAY_SIZE(buff), hostp);
     hostp = buff;
     userp = strchr (buff, ',');
     if (userp)
@@ -870,7 +871,7 @@ _dxfExRemote (Object *in, Object *out)
 
     cachelist[0] = in[0];
     cachelist[1] = in[1];
-    sprintf(cachetag, "RemoteConnect%d", instance);
+    snprintf(cachetag, DX_ARRAY_SIZE(cachetag), "RemoteConnect%d", instance);
 
     /*
      * if this is a persistent module and you have already opened the
@@ -1126,7 +1127,7 @@ _dxf_ExDeleteRemote (char *name, int instance)
     in[0] = ((Object)id->v.id.dflt->v.constant.obj);
     id = id->next;
     in[1] = ((Object)id->v.id.dflt->v.constant.obj);
-    sprintf(cachetag, "RemoteConnect%d", instance);
+    snprintf(cachetag, DX_ARRAY_SIZE(cachetag), "RemoteConnect%d", instance);
 
     DXSetCacheEntryV(NULL, 0, cachetag, 0, 2, in);
 

@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -383,7 +384,7 @@ _dxf_createWindow(char *displayString,
     iw->cacheTag = getCacheTag(name);
     iw->object = (Object)*p;
 
-    sprintf(buf, "X%d,%s,#X%d", iw->depth, iw->displayString, _dxf_getWindowId(iw));
+    snprintf(buf, DX_ARRAY_SIZE(buf), "X%d,%s,#X%d", iw->depth, iw->displayString, _dxf_getWindowId(iw));
     iw->where = DXAllocate(strlen(buf) + 1);
     strcpy(iw->where, buf);
 
@@ -473,7 +474,7 @@ getWhere(ImageWindow *iw, char *oldWhere)
     if (oldWhere)
     {
 	char buf[1024];
-	sprintf(buf, "%s[%s]", iw->where, oldWhere);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "%s[%s]", iw->where, oldWhere);
 	where = (Object)DXNewString(buf);
     }
     else

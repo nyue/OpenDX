@@ -243,6 +243,7 @@
 
 #define DXD_ENABLE_SOCKET_POINTERS	/* define SFILE in arch.h, os2 */
 #include <dx/dx.h>
+#include <dxbounded.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -377,7 +378,7 @@ void _dxf_ExReadDXRCFiles ()
     one_dxrc (DXRC);					/* local dir */
 
 #if DXD_LACKS_UNIX_UID
-    sprintf(buf, "C:\\%s", DXRC);
+    snprintf(buf, DX_ARRAY_SIZE(buf), "C:\\%s", DXRC);
     stat(buf, &home);
     if(DIFFERENT_FILES (curr, home))
 	one_dxrc (buf);					/* home dir */
@@ -385,7 +386,7 @@ void _dxf_ExReadDXRCFiles ()
 #else
     if ((pass = getpwuid (geteuid ())) != NULL)
     {
-	sprintf (buf, "%s/%s", pass->pw_dir, DXRC);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "%s/%s", pass->pw_dir, DXRC);
 	stat (buf, &home);
 
 	if (DIFFERENT_FILES (curr, home))
@@ -395,14 +396,14 @@ void _dxf_ExReadDXRCFiles ()
 
     if ((root = (char *) getenv ("DXROOT")) != NULL)
     {
-	sprintf (buf, "%s/%s", root, DXRC);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "%s/%s", root, DXRC);
 	stat (buf, &sys);
 
 	if (DIFFERENT_FILES (curr, sys) &&
 	    DIFFERENT_FILES (home, sys))
 	    one_dxrc (buf);				/* system */
 
-	sprintf (buf, "%s/lib/%s", root, SYSDXRC);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "%s/lib/%s", root, SYSDXRC);
 	stat (buf, &sys2);
         
 	if (DIFFERENT_FILES (curr, sys2) &&
@@ -526,12 +527,12 @@ _pushInput (char *name)
 	    break;
 
         if(tmp1 && *tmp1 != '\000') {
-            strcpy(buf, tmp1);
+            _dxf_strcpy_n(buf, DX_ARRAY_SIZE(buf), tmp1);
             if(tmp2 && *tmp2 != '\000')
-                strcat(buf, DX_DIR_SEPARATOR_STR);
+                _dxf_strcat_n(buf, DX_ARRAY_SIZE(buf), DX_DIR_SEPARATOR_STR);
         }
         if(tmp2 && *tmp2 != '\000') 
-            strcat(buf, tmp2);
+            _dxf_strcat_n(buf, DX_ARRAY_SIZE(buf), tmp2);
 
 	tmp2 = _dxf_ExCopyStringLocal (buf);
         if (tmp2 == NULL) {
@@ -573,7 +574,7 @@ _pushInput (char *name)
 	len = ipaths[i].len;
 	if (len <= 0)
 	    continue;
-	strcpy (buf, ipaths[i].path);
+	_dxf_strcpy_n(buf, DX_ARRAY_SIZE(buf), ipaths[i].path);
 #if  defined(DXD_NON_UNIX_DIR_SEPARATOR)
 	buf[len] = '\\';
 #else
@@ -586,9 +587,9 @@ _pushInput (char *name)
     if (fptr == NULL && getenv("DXROOT"))
     {
 #if  defined(DXD_NON_UNIX_DIR_SEPARATOR)
-	sprintf(buf, "%s\\lib\\%s", getenv("DXROOT"), name);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "%s\\lib\\%s", getenv("DXROOT"), name);
 #else
-	sprintf(buf, "%s/lib/%s", getenv("DXROOT"), name);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "%s/lib/%s", getenv("DXROOT"), name);
 #endif
 	fptr = fopen (buf, "r");
     }
@@ -3336,7 +3337,7 @@ yyerror (char *s)
     {
 	if (! isprint (yyText[yycharno - 1]))
 	{
-	    sprintf (buf, "%s (non-printable character 0x%x)",
+	    snprintf(buf, DX_ARRAY_SIZE(buf), "%s (non-printable character 0x%x)",
 		     s, yyText[yycharno - 1]);
 	    s = buf;
 	}

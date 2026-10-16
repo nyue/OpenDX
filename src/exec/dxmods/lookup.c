@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -379,7 +380,7 @@ doLeaf( Object *in, Object *out )
         }
 
         if ( !strcmp( lookup_comp, STR_POSITIONS ) ) {
-            sprintf( value_str, "%s lookup", data_comp );
+            snprintf( value_str, DX_ARRAY_SIZE(value_str), "%s lookup", data_comp );
             value_comp = value_str;
             value_array = ( Array ) DXGetComponentValue( ( Field ) in[ 0 ], value_comp );
 
@@ -390,7 +391,7 @@ doLeaf( Object *in, Object *out )
         }
 
         else {
-            sprintf( value_str, "%s lookup", data_comp );
+            snprintf( value_str, DX_ARRAY_SIZE(value_str), "%s lookup", data_comp );
             value_comp = value_str;
             lookup_array = ( Array ) DXGetComponentValue( ( Field ) in[ 0 ], value_comp );
 

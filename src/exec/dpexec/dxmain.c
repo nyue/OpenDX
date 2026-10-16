@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 #include <dx/dx.h>
 
 #if defined(DDX)
@@ -799,7 +800,7 @@ void _dxf_ExDie (char *format, ...)
      * compile with the metaware compiler.
      */
     va_start(arg,format);
-    vsprintf(buffer, format, arg);
+    vsnprintf(buffer, DX_ARRAY_SIZE(buffer), format, arg);
     va_end(arg);
 
     if(_dxd_exRemoteSlave && _dxd_exMasterfd >= 0)
@@ -855,7 +856,7 @@ static void ExProcessArgs (int argc, char **argv)
             mdffiles[nmdfs++] = optarg;
             break;
         case 'H':
-            strcpy(extesthost, optarg);
+            _dxf_strcpy_n(extesthost, DX_ARRAY_SIZE(extesthost), optarg);
             break;
         case 'L':
 #ifdef DXD_LICENSED_VERSION
@@ -1089,15 +1090,15 @@ static void ExVersion ()
      *  (note the letter following the revision number)
      */
     fflush(stdout);
-    strcpy(buf, EX_NAME);
-    strcat(buf, ", version ");
-    strcat(buf, DXD_VERSION_STRING);
+    _dxf_strcpy_n(buf, DX_ARRAY_SIZE(buf), EX_NAME);
+    _dxf_strcat_n(buf, DX_ARRAY_SIZE(buf), ", version ");
+    _dxf_strcat_n(buf, DX_ARRAY_SIZE(buf), DXD_VERSION_STRING);
 
-    strcat(buf, " (");
-    strcat(buf, __TIME__);
-    strcat(buf, ", ");
-    strcat(buf, __DATE__);
-    strcat(buf, ")\n");
+    _dxf_strcat_n(buf, DX_ARRAY_SIZE(buf), " (");
+    _dxf_strcat_n(buf, DX_ARRAY_SIZE(buf), __TIME__);
+    _dxf_strcat_n(buf, DX_ARRAY_SIZE(buf), ", ");
+    _dxf_strcat_n(buf, DX_ARRAY_SIZE(buf), __DATE__);
+    _dxf_strcat_n(buf, DX_ARRAY_SIZE(buf), ")\n");
     write(fileno(stdout),buf,strlen(buf));
 
     exit (0);
@@ -1683,7 +1684,7 @@ static void ExForkChildren ()
             if (i < 0) {
                 char buffer[256];
 
-                sprintf(buffer, "%d:  MP_MUSTRUN failed", _dxd_exMyPID);
+                snprintf(buffer, DX_ARRAY_SIZE(buffer), "%d:  MP_MUSTRUN failed", _dxd_exMyPID);
                 perror(buffer);
             }
         }

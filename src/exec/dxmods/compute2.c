@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 /***
@@ -117,7 +118,7 @@ m_Compute2(Object *in, Object *out)
 		DXSetError(ERROR_BAD_PARAMETER, "Compute2: Name length exceeds maximum");
 		goto error;
 	    }
-            sprintf(s,"%s=$%d;", name, cnt);
+            snprintf(s, DX_ARRAY_SIZE(s),"%s=$%d;", name, cnt);
 	    ADD_STRING(expression, s, exp_size);
 	    in2[cnt]=in[i+1];
 	    cnt++;

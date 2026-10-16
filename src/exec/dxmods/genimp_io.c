@@ -10,6 +10,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 /*
@@ -198,7 +199,7 @@ _dxf_gi_OpenFile(char *name, FILE **fp, int infofile)
        */
       if (infofile) {
 	if (strchr(outname,'/'))  {
-	    strcpy(infopath,outname);
+	    _dxf_strcpy_n(infopath, DX_ARRAY_SIZE(infopath),outname);
 	    for (i=strlen(outname)-1 ; i>=0 ; i--) {
 		if (infopath[i] == '/') {
 		    infopath[i+1] = '\0';
@@ -1378,7 +1379,7 @@ convert_string(char *s, Type t, void *data, int index,int *nl)
 	if (s[i-2] == '\n') 
 	   s[i-2] = (char)NULL;
 	i = strlen(s) + 1;
-	sprintf(format,"%%%dc",i);
+	snprintf(format, DX_ARRAY_SIZE(format),"%%%dc",i);
 	if (sscanf(s,format,&DREF(char,data,index)) <=0){
 		DXSetError(ERROR_DATA_INVALID,"#10907","string",s);
 		goto error;
@@ -1683,7 +1684,7 @@ extract_fromline(char str[MAX_DSTR],int which)
 	          k++;
 	       if (k>=strlen(str)) break; 
 	       if (isdigit(str[k]) || str[k]=='-' || str[k]=='.'){
-	          strcpy(r,&str[k]);
+	          _dxf_strcpy_n(r, DX_ARRAY_SIZE(r),&str[k]);
 	          if (!convert_string(r,t,_dxd_gi_fromfile[i]->data,index,&nl))
 	             goto error;
 	          if (nl){

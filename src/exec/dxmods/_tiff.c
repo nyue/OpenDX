@@ -10,6 +10,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -1537,7 +1538,7 @@ SizeData * _dxf_ReadImageSizesTIFF
         goto ok;
     }
 
-    if ( ERROR == strcpy ( copyname, name ) )
+    if ( ERROR == _dxf_strcpy_n( copyname, DX_ARRAY_SIZE(copyname), name ) )
         DXSetError
             ( ERROR_UNEXPECTED,
               "#11800", /* C standard library call, %s, returns error */

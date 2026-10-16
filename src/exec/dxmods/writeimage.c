@@ -10,6 +10,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -201,10 +202,10 @@ m_WriteImage ( Object *in, Object *out )
 #endif
 	if (strlen(filename) > MAX_IMAGE_NAMELEN)
 	    DXErrorGoto(ERROR_DATA_INVALID, "output file name length too large.");
-    	strcpy(basename,filename);
+    	_dxf_strcpy_n(basename, DX_ARRAY_SIZE(basename),filename);
     } else {
 	filename = NULL;
-        strcpy(basename,"image");
+        _dxf_strcpy_n(basename, DX_ARRAY_SIZE(basename),"image");
     }
 
 

@@ -11,6 +11,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 #include "_autocolor.h"
 
 /***
@@ -203,7 +204,7 @@ Error m_Color(Object *in, Object *out)
   
     /*  now see what component to operate on */
     if (!in[3]) {
-	strcpy(component,"colors");
+	_dxf_strcpy_n(component, DX_ARRAY_SIZE(component),"colors");
     }
     else {
 	if (DXExtractString((Object)in[3], &tmpcomponent)) {
@@ -231,11 +232,11 @@ Error m_Color(Object *in, Object *out)
 		goto error;	
 	    }
 	    if (!strcmp(tmpcomponent,"frontcolors")) 
-		strcpy(component,"front colors");
+		_dxf_strcpy_n(component, DX_ARRAY_SIZE(component),"front colors");
 	    if (!strcmp(tmpcomponent,"backcolors")) 
-		strcpy(component,"back colors");
+		_dxf_strcpy_n(component, DX_ARRAY_SIZE(component),"back colors");
 	    if (!strcmp(tmpcomponent,"colors")) 
-		strcpy(component,"colors");
+		_dxf_strcpy_n(component, DX_ARRAY_SIZE(component),"colors");
 	}
 	else {
 	    /* component must be a string */

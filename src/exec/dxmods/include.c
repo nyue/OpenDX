@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -429,13 +430,13 @@ Field_Include(Field f, int justcull, int shape, float *min, float *max,
 	/* ...and so does this. */
 	if (dopositions) {
 	    if (DXGetComponentValue(f, "connections"))
-		strcpy(inv_attr, "invalid connections");
+		_dxf_strcpy_n(inv_attr, DX_ARRAY_SIZE(inv_attr), "invalid connections");
 	    else if (DXGetComponentValue(f, "faces"))
-		strcpy(inv_attr, "invalid faces");
+		_dxf_strcpy_n(inv_attr, DX_ARRAY_SIZE(inv_attr), "invalid faces");
 	    else if (DXGetComponentValue(f, "polylines"))
-		strcpy(inv_attr, "invalid polylines");
+		_dxf_strcpy_n(inv_attr, DX_ARRAY_SIZE(inv_attr), "invalid polylines");
 	} else {
-	    strcpy(inv_attr, "invalid positions");
+	    _dxf_strcpy_n(inv_attr, DX_ARRAY_SIZE(inv_attr), "invalid positions");
 	    if (removeconnect) {
 		DXErrorReturn(ERROR_BAD_PARAMETER,
 			      "cannot set pointwise flag to ignore connections because data is dependent on connections");
@@ -447,7 +448,7 @@ Field_Include(Field f, int justcull, int shape, float *min, float *max,
 
 	attr = "positions";
 	dopositions++;
-	strcpy(inv_attr, "invalid connections");
+	_dxf_strcpy_n(inv_attr, DX_ARRAY_SIZE(inv_attr), "invalid connections");
     }
 
     /* this used to be sooner, but now we need to know what the data

@@ -10,6 +10,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 /*
@@ -232,7 +233,7 @@ output_ps(RWImageArgs *iargs, int colormode,int filetype)
             ErrorGotoPlus1 ( ERROR_DATA_INVALID,
                           "Can't open image file (%s)", imagefilename );
     } else {
-        strcpy(imagefilename,"stdout");
+        _dxf_strcpy_n(imagefilename, DX_ARRAY_SIZE(imagefilename),"stdout");
         fp = iargs->pipe;
     }
 
@@ -2059,7 +2060,7 @@ output_miff(RWImageArgs *iargs)
 	}
 
     } else {
-        strcpy(imagefilename,"stdout");
+        _dxf_strcpy_n(imagefilename, DX_ARRAY_SIZE(imagefilename),"stdout");
         fp = iargs->pipe;
     }
 

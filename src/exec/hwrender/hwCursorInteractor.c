@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 /*---------------------------------------------------------------------------*\
@@ -1569,7 +1570,7 @@ CallCursorCallbacks(tdmInteractor I, int reason, int cursor_num,
     return ;
   }
 
-  sprintf (text, "( %8g, %8g, %8g )", R->x, R->y, R->z) ;
+  snprintf(text, DX_ARRAY_SIZE(text), "( %8g, %8g, %8g )", R->x, R->y, R->z) ;
   _dxf_DRAW_CURSOR_COORDS(I, text) ;
 
   EXIT((""));

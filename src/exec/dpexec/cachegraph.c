@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <dx/dx.h>
@@ -299,7 +300,7 @@ void _dxf_ExComputeRecipes(Program *p, int funcInd)
     mod = _dxf_ExGFuncPathToCacheString( n );
     if ( strlen(mod) > sizeof(mod_cache_str)-1 )
     _dxf_ExDie("Module path is too long");
-    strcpy( mod_cache_str, mod );
+    _dxf_strcpy_n( mod_cache_str, DX_ARRAY_SIZE(mod_cache_str), mod );
 
 check_async:
     if(n->flags & (MODULE_ASYNC | MODULE_ASYNCLOCAL)) {

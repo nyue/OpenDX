@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 /*
  * Header: /a/max/homes/max/gresh/code/svs/src/libdx/RCS/axes.c,v 5.0 92/11/12
@@ -533,7 +534,7 @@ mark(
     for (i=0, xwidth=0; i<nx; i++) {
       if (!BETWEEN(a, xlocs[i], b))
 	continue;
-      sprintf(buf, "%s", xlabels[i]);
+      snprintf(buf, DX_ARRAY_SIZE(buf), "%s", xlabels[i]);
       text = DXGeometricText(buf, font, &width);
       _dxfSetTextColor((Field)text,labelcolor);
 
@@ -584,7 +585,7 @@ mark(
     for (i=0, ywidth=0; i<ny; i++) {
       if (!BETWEEN(a, ylocs[i], b))
 	continue;
-      sprintf(buf,"%s", ylabels[i]);
+      snprintf(buf, DX_ARRAY_SIZE(buf),"%s", ylabels[i]);
       text = DXGeometricText(buf, font, &width);
       _dxfSetTextColor((Field)text,labelcolor);
       hdir = sgn.z * flipy;
@@ -868,7 +869,7 @@ void _dxfaaxes_delta(float *o, float *s, float scale, int *n, float *l, float *d
 	val = lo + i*sd;
 	/* check for essentially zero relative to the range */
 	if (ABS(val) < range/100000.) val=0.;
-	sprintf(tbuf, "%.*e", prec, val);
+	snprintf(tbuf, DX_ARRAY_SIZE(tbuf), "%.*e", prec, val);
 	lastz = prec + 1 + (tbuf[0]=='-' ? 1 : 0);     /* least significant digit */
 	for (z=prec, cp= &tbuf[lastz]; z>minprec; --z, --cp)
 	  if (*cp != '0')				
@@ -1742,7 +1743,7 @@ Error _dxfGetFormat(float *locs, char *fmt, int num, float scale)
 
     lg = log10(MAX(ABS(lo),ABS(hi)));
     width = 1 + FL(lg);
-    sprintf(tbuf, "%%%d.%df", width, prec);
+    snprintf(tbuf, DX_ARRAY_SIZE(tbuf), "%%%d.%df", width, prec);
 
     /* look for trailing zeros */
 
@@ -1799,7 +1800,7 @@ Error _dxfGetFormat(float *locs, char *fmt, int num, float scale)
 	val = locs[i]; 
 	/* check for essentially zero relative to the range */
 	if (ABS(val) < range/100000.) val=0.;
-	sprintf(tbuf, "%.*e", prec, val);
+	snprintf(tbuf, DX_ARRAY_SIZE(tbuf), "%.*e", prec, val);
 	lastz = prec + 1 + (tbuf[0]=='-' ? 1 : 0); /* least significant digit */
 	for (z=prec, cp= &tbuf[lastz]; z>minprec; --z, --cp)
 	  if (*cp != '0')				

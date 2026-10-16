@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include "dx/dx.h"
@@ -57,10 +58,10 @@ Error _dxfExportVRML(Object dxobject, char *filename)
    /* open the vrml file */
    if (((cp=strrchr(filename, '.'))!=NULL) &&
 		!strcmp(cp,".wrl") )
-     strcpy(wrlname,filename);
+     _dxf_strcpy_n(wrlname, DX_ARRAY_SIZE(wrlname),filename);
    else{
-     strcpy(wrlname,filename);
-     strcat(wrlname,".wrl");
+     _dxf_strcpy_n(wrlname, DX_ARRAY_SIZE(wrlname),filename);
+     _dxf_strcat_n(wrlname, DX_ARRAY_SIZE(wrlname),".wrl");
    }
    fp = fopen(wrlname,"w");
 

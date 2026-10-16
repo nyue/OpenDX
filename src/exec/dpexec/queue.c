@@ -6,6 +6,7 @@
 /*    "IBM PUBLIC LICENSE - Open Visualization Data Explorer"          */
 /***********************************************************************/
 #include <dx/dx.h>
+#include <dxbounded.h>
 
 #include <dxconfig.h>
 
@@ -214,7 +215,7 @@ void _dxf_ExQueuePrint (EXQueue q)
 
     for (i = 0, e = q->head; e; i++, e = e->next)
     {
-	sprintf (buf, "[%4d] %p <%p %p> ", i, e, e->prev, e->next);
+	snprintf(buf, DX_ARRAY_SIZE(buf), "[%4d] %p <%p %p> ", i, e, e->prev, e->next);
 	(* q->print) (buf + strlen (buf), e->val);
 	DXMessage (buf);
     }

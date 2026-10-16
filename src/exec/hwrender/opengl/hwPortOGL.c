@@ -10,6 +10,7 @@
 \*---------------------------------------------------------------------------*/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -631,14 +632,14 @@ got_visual:
 static GLboolean isVendor(char *vendor)
 {
   char vendor_string[256];
-  strcpy(vendor_string, glGetString(GL_VENDOR));
+  _dxf_strcpy_n(vendor_string, DX_ARRAY_SIZE(vendor_string), glGetString(GL_VENDOR));
   return !strcmp(vendor_string,vendor);
 }
 
 static GLboolean isRenderer(char *renderer)
 {
   char renderer_string[256];
-  strcpy(renderer_string, glGetString(GL_RENDERER));
+  _dxf_strcpy_n(renderer_string, DX_ARRAY_SIZE(renderer_string), glGetString(GL_RENDERER));
   return !strcmp(renderer_string,renderer);
 }
 #endif

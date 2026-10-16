@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 #include "loader.h"
 
 /*
@@ -582,7 +583,7 @@ PFI DXLoadObjFile(char *fname, char *envvar)
      * doesn't start with '/', start prepending dirnames until you find it
      * or you get to the end of the path.
      */
-    strcpy(szName, fname);
+    _dxf_strcpy_n(szName, DX_ARRAY_SIZE(szName), fname);
 
     sprintf(szStr, "%s.dll", szName);
 

@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -930,7 +931,7 @@ GET_POSITIONAL_ERROR:
     {
       if (DXGetObjectClass(in[the_input]) != CLASS_FIELD)
       {
-        sprintf(the_message," %s should be a field", in_name[the_input]);
+        snprintf(the_message, DX_ARRAY_SIZE(the_message)," %s should be a field", in_name[the_input]);
         DXSetError(ERROR_BAD_CLASS, the_message);
         goto error;
       }
@@ -939,14 +940,14 @@ GET_POSITIONAL_ERROR:
       if (! array)
       {
         
-        sprintf(the_message," %s has no data component", in_name[the_input]);
+        snprintf(the_message, DX_ARRAY_SIZE(the_message)," %s has no data component", in_name[the_input]);
         DXSetError(ERROR_MISSING_DATA, the_message);
         goto error;
       }
 
       if (DXGetObjectClass((Object)array) != CLASS_ARRAY)
       {
-        sprintf(the_message,"data component of %s should be an array", in_name[the_input]);
+        snprintf(the_message, DX_ARRAY_SIZE(the_message),"data component of %s should be an array", in_name[the_input]);
         DXSetError(ERROR_BAD_CLASS, the_message);
         goto error;
       }
@@ -958,7 +959,7 @@ GET_POSITIONAL_ERROR:
 
        if (type != TYPE_INT || category != CATEGORY_REAL || !((rank == 0) || ((rank == 1) && (shape == 1))))
 	 {
-	   sprintf(the_message, "input %s", in_name[the_input]);
+	   snprintf(the_message, DX_ARRAY_SIZE(the_message), "input %s", in_name[the_input]);
            DXSetError(ERROR_DATA_INVALID, the_message);
            goto error;
 	 }

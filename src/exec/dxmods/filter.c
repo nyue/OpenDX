@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #define	GROW_BUG_IN_REF		0
@@ -1596,8 +1597,8 @@ static Error _Filter_Field (Field obj, Filter *filter, char *component)
 	goto cleanup;
     }
 
-    strcpy (buf, "original ");
-    strcat (buf, component);
+    _dxf_strcpy_n(buf, DX_ARRAY_SIZE(buf), "original ");
+    _dxf_strcat_n(buf, DX_ARRAY_SIZE(buf), component);
 
     offsets = (int *)DXAllocate(filter->count * sizeof(int));
     if (!offsets)

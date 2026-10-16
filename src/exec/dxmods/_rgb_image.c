@@ -10,6 +10,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <stdio.h>
@@ -142,8 +143,8 @@ write_rgb_or_fb(RWImageArgs *iargs)
 	if (strlen(iargs->basename) > MAX_IMAGE_NAMELEN - 5)
             DXErrorGoto ( ERROR_DATA_INVALID, "image file name too long" );
 		
-	strcpy(sizefilename,iargs->basename);
-	strcat(sizefilename,".size");
+	_dxf_strcpy_n(sizefilename, DX_ARRAY_SIZE(sizefilename),iargs->basename);
+	_dxf_strcat_n(sizefilename, DX_ARRAY_SIZE(sizefilename),".size");
 
         if ( !_dxf_ReadSizeFile ( sizefilename, &filed_sizes ) )
             goto error;
@@ -617,7 +618,7 @@ _dxf_WriteSizeFile ( char *name, SizeData sd )
 	goto error;
     }
 
-    if ( sprintf ( record, "%dx%dx%d\n",
+    if ( snprintf( record, DX_ARRAY_SIZE(record), "%dx%dx%d\n",
                    sd.width, sd.height, ( sd.endframe + 1 ) ) <= 0 )
         DXErrorGoto ( ERROR_INTERNAL, "sprintf()" );
 

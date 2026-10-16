@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <ctype.h>
@@ -482,24 +483,24 @@ static node *ExExtractAttrs(char *attrstr)
    char formatstr[MAX_ATTRLEN+3];
 
    if ((curr_attr=strstr(attrstr, ATTR_DIREROUTE)))  {
-       strcpy (formatstr, ATTR_DIREROUTE);
-       strcat (formatstr, ":%d");
+       _dxf_strcpy_n(formatstr, DX_ARRAY_SIZE(formatstr), ATTR_DIREROUTE);
+       _dxf_strcat_n(formatstr, DX_ARRAY_SIZE(formatstr), ":%d");
        sscanf (curr_attr, formatstr, &tmp);
        attr_node = ExCreateAttrNode (ATTR_DIREROUTE, tmp);
        LIST_APPEND (attrlist, attr_node);
    }
 
    if ((curr_attr=strstr(attrstr, ATTR_CACHE)))  {
-       strcpy (formatstr, ATTR_CACHE);
-       strcat (formatstr, ":%d");
+       _dxf_strcpy_n(formatstr, DX_ARRAY_SIZE(formatstr), ATTR_CACHE);
+       _dxf_strcat_n(formatstr, DX_ARRAY_SIZE(formatstr), ":%d");
        sscanf (curr_attr, formatstr, &tmp);
        attr_node = ExCreateAttrNode (ATTR_CACHE, tmp);
        LIST_APPEND (attrlist, attr_node);
    }
 
    if ((curr_attr=strstr(attrstr, ATTR_RERUNKEY)))  {
-       strcpy (formatstr, ATTR_RERUNKEY);
-       strcat (formatstr, ":%d");
+       _dxf_strcpy_n(formatstr, DX_ARRAY_SIZE(formatstr), ATTR_RERUNKEY);
+       _dxf_strcat_n(formatstr, DX_ARRAY_SIZE(formatstr), ":%d");
        sscanf (curr_attr, formatstr, &tmp);
        attr_node = ExCreateAttrNode (ATTR_RERUNKEY, tmp);
        LIST_APPEND (attrlist, attr_node);

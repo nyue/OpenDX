@@ -10,6 +10,7 @@
  */
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 
 #include <string.h>
@@ -446,7 +447,7 @@ MakeupDefault(char *name,int linenum)
     {
       for(i = 0; i < _dxd_gi_numflds; i++)
 	{
-	  sprintf(s, "field%d", i);
+	  snprintf(s, DX_ARRAY_SIZE(s), "field%d", i);
 	  strcpy(_dxd_gi_var[i]->name, s);
 	}
     }
@@ -785,9 +786,9 @@ get_type(struct parse_state *ps,char **p,Type *type,int *bytes)
           DXAddMessage("#10862","type");
           goto error;
         }
-        if (!strcmp(*p,"byte")) strcpy(signedtype,"ubyte");
-        else if (!strcmp(*p,"int")) strcpy(signedtype,"uint");
-        else if (!strcmp(*p,"short")) strcpy(signedtype,"ushort");
+        if (!strcmp(*p,"byte")) _dxf_strcpy_n(signedtype, DX_ARRAY_SIZE(signedtype),"ubyte");
+        else if (!strcmp(*p,"int")) _dxf_strcpy_n(signedtype, DX_ARRAY_SIZE(signedtype),"uint");
+        else if (!strcmp(*p,"short")) _dxf_strcpy_n(signedtype, DX_ARRAY_SIZE(signedtype),"ushort");
         else{
            DXSetError(ERROR_DATA_INVALID,"#10862","type","unsigned ?");
            goto error;
@@ -800,7 +801,7 @@ get_type(struct parse_state *ps,char **p,Type *type,int *bytes)
           goto error;
         }
         if (!strcmp(*p,"byte")){
-           strcpy(signedtype,"sbyte");
+           _dxf_strcpy_n(signedtype, DX_ARRAY_SIZE(signedtype),"sbyte");
            *p = signedtype;
         }
         else if (!strcmp(*p,"int"))  ;

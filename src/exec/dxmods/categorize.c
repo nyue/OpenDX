@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <dxbounded.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -855,8 +856,8 @@ Categorize( catinfo *cp )
     sortlist = NULL;
     DXDestroyHash( hashtable );
     hashtable = NULL;
-    strcpy( buff, cp->comp_name );
-    strcat( buff, LUT_POSTFIX );
+    _dxf_strcpy_n( buff, DX_ARRAY_SIZE(buff), cp->comp_name );
+    _dxf_strcat_n( buff, DX_ARRAY_SIZE(buff), LUT_POSTFIX );
     DXSetComponentValue( ( Field ) cp->o, buff, ( Object ) cp->unique_array );
 
     /*  Don't think der should be set */
