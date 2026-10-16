@@ -94,6 +94,15 @@
 #define float32 float
 #define float64 double
 
+/* Also read by DXLink (src/uipp/dxl) and src/uipp/base/defines.h */
+#cmakedefine HAVE_GETLOGIN 1
+#cmakedefine HAVE_GETPID 1
+#cmakedefine HAVE_MALLOC_H 1
+#define HAVE_IOSTREAM 1
+#define CXX_HAS_TRUE 1
+#define CXX_HAS_FALSE 1
+#define BSH "@DX_BSH@"
+
 /* Features */
 #define ENABLE_SMP_LINUX 0
 #define RSH ""

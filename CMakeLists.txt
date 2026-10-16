@@ -7,11 +7,16 @@ project(OpenDX VERSION 4.4.4 LANGUAGES C)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_EXTENSIONS ON)
 
+# compile_commands.json for clangd and other editor tooling.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
 endif()
 
 option(DX_BUILD_EXEC "Build the executive (dxexec)" ON)
+# Off by default: it downloads Dear ImGui, GLFW and noodles at configure time.
+option(DX_BUILD_UI "Build the new user interface (dxui2)" OFF)
 
 find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
 
@@ -30,4 +35,13 @@ set(DX_CODEGEN ${CMAKE_SOURCE_DIR}/tools/codegen)
 
 if(DX_BUILD_EXEC)
   add_subdirectory(src/exec)
+endif()
+
+if(DX_BUILD_UI)
+  enable_language(CXX)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+  add_subdirectory(src/uipp/dxl)
+  add_subdirectory(src/ui)
 endif()

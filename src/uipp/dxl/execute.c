@@ -7,6 +7,7 @@
 /***********************************************************************/
 
 #include <dxconfig.h>
+#include <stdint.h>
 #include "../base/defines.h"
 
 
@@ -60,7 +61,7 @@ static DXLError _dxl_ManageExecuteHandlers(DXLConnection *conn, int install,
     if (foreground) {
 	if (install) {
 	    if (!_dxl_SetSystemHandler(conn, PACK_COMPLETE,packetId, FGendMSG,
-			(DXLMessageHandler)_dxl_CompleteExecute, (void*)packetId))
+			(DXLMessageHandler)_dxl_CompleteExecute, (void*)(intptr_t)packetId))
 		return ERROR;
 	} else {
 	    /*

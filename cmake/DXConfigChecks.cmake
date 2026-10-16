@@ -41,7 +41,13 @@ check_symbol_exists(shmat        "sys/shm.h"     HAVE_SHMAT)
 check_symbol_exists(SIGPIPE      "signal.h"      HAVE_SIGPIPE)
 check_symbol_exists(SIGQUIT      "signal.h"      HAVE_SIGQUIT)
 check_symbol_exists(S_ISDIR      "sys/stat.h"    HAS_S_ISDIR)
+check_symbol_exists(getlogin     "unistd.h"      HAVE_GETLOGIN)
+check_symbol_exists(getpid       "unistd.h"      HAVE_GETPID)
+check_include_file(malloc.h HAVE_MALLOC_H)
 unset(CMAKE_REQUIRED_DEFINITIONS)
+
+# Shell DXLink uses to start processes.
+find_program(DX_BSH NAMES sh PATHS /usr/bin /bin NO_DEFAULT_PATH)
 
 # Same encoding as configure.ac: "04.4.4000" for 4.4.4.
 set(DXD_VERSION_STRING
