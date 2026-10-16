@@ -58,6 +58,23 @@
  *   Readers that do not know a chunk type skip it, so this addition keeps
  *   the DXSCENE1 magic.
  *
+ *   DXS_CHUNK_VOLUME payload: a regular grid of cubes rendered as a volume
+ *   (libdx volume.c): colour is light emitted and opacity light absorbed.
+ *   The values are DX's own; how DX turns them into pixels is not yet
+ *   pinned down (measured: the result does not depend on thickness, zoom
+ *   or grid resolution), so readers can only approximate it:
+ *     uint32  counts[3]        grid points along each axis
+ *     uint32  dep              DXS_DEP_POSITIONS (a value per grid point,
+ *                              interpolated) or DXS_DEP_CONNECTIONS (a value
+ *                              per cube, constant within it)
+ *     float32 matrix[16]       grid index (i, j, k) to world, column-major
+ *     float32 colorMultiplier, opacityMultiplier
+ *     float32 colors[3 * values]      values = counts[0]*counts[1]*counts[2]
+ *     float32 opacities[values]       (positions) or the product of
+ *                                     (counts[a] - 1) (connections);
+ *   values are ordered with the last axis varying fastest, as DX stores them.
+ *   Irregular volumes (other cubes, tetrahedra) are not exported.
+ *
  *   DXS_CHUNK_INFO payload:
  *     uint32  skipped[DXS_SKIPPED_COUNT]  what was not exported, by kind
  *     float32 bounds[6]        xmin ymin zmin xmax ymax zmax, world space
@@ -72,6 +89,10 @@
 #define DXS_CHUNK_LIGHT 2
 #define DXS_CHUNK_INFO  3
 #define DXS_CHUNK_SCREEN 4
+#define DXS_CHUNK_VOLUME 5
+
+#define DXS_DEP_POSITIONS   1
+#define DXS_DEP_CONNECTIONS 2
 
 /* DXS_CHUNK_SCREEN positions; the same numbers as DX's SCREEN_* (dx/screen.h). */
 #define DXS_SCREEN_WORLD      0
@@ -92,7 +113,7 @@
 
 /* Indices into DXS_CHUNK_INFO's skipped[]. */
 #define DXS_SKIPPED_SCREEN   0   /* screen objects not exported (none at present) */
-#define DXS_SKIPPED_VOLUME   1   /* cubes, tetrahedra: volume rendering */
+#define DXS_SKIPPED_VOLUME   1   /* irregular volumes (cubes not on a grid, tetrahedra) */
 #define DXS_SKIPPED_TEXTURE  2   /* textured fields (drawn untextured) */
 #define DXS_SKIPPED_CLIPPED  3   /* clipped objects (drawn unclipped) */
 #define DXS_SKIPPED_OTHER    4

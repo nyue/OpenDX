@@ -351,6 +351,7 @@ unusable:
 /* --- fields ----------------------------------------------------------- */
 
 static Error exportField(Ctx *c, Field f, const State *st);
+static Error exportVolume(Ctx *c, Field f, const State *st, Array pa, Array ca, int npos);
 
 /* Emits one mesh. pv/pe: vertex and element index of each output vertex. */
 static Error
@@ -531,6 +532,8 @@ exportField(Ctx *c, Field f, const State *st)
             c->skipped[DXS_SKIPPED_OTHER]++;
             return OK;
         }
+        if (!strcmp(etype, "cubes") && !st->screen)
+            return exportVolume(c, f, st, pa, ca, npos);
         if (!strcmp(etype, "cubes") || !strcmp(etype, "tetrahedra")) {
             c->skipped[DXS_SKIPPED_VOLUME]++;
             return OK;
@@ -715,6 +718,142 @@ done:
     DXFree((Pointer)opa);
     DXFree((Pointer)pv);
     DXFree((Pointer)pe);
+    return ret;
+}
+
+/* --- volumes ---------------------------------------------------------- */
+
+/* A float attribute (e.g. "color multiplier"), or `fallback`. */
+static float
+floatAttribute(Object o, char *name, float fallback)
+{
+    float v;
+    Object a = DXGetAttribute(o, name);
+    if (a && DXExtractFloat(a, &v))
+        return v;
+    DXResetError();
+    return fallback;
+}
+
+/*
+ * A regular grid of cubes as a DXS_CHUNK_VOLUME: grid index to world matrix,
+ * per-point or per-cube colours and opacities. Returns OK without writing
+ * (counting the volume as skipped) for grids it cannot express.
+ */
+static Error
+exportVolume(Ctx *c, Field f, const State *st, Array pa, Array ca, int npos)
+{
+    int n, cn, counts[3], ccounts[3], nelem, nval, i, k;
+    float origin[3], deltas[9], matrix[16], mult[2];
+    float *col = NULL, *opa = NULL, *buf = NULL;
+    int cdep, odep, dep;
+    unsigned int header[4];
+    double bytes;
+    Error ret = ERROR;
+
+    if (!DXQueryGridPositions(pa, &n, counts, origin, deltas) || n != 3 ||
+        !DXQueryGridConnections(ca, &cn, ccounts) || cn != 3 ||
+        counts[0] < 2 || counts[1] < 2 || counts[2] < 2 ||
+        ccounts[0] != counts[0] || ccounts[1] != counts[1] || ccounts[2] != counts[2]) {
+        DXResetError();
+        c->skipped[DXS_SKIPPED_VOLUME]++;
+        return OK;
+    }
+    nelem = (counts[0]-1) * (counts[1]-1) * (counts[2]-1);
+
+    cdep = readComponent(f, "colors", "color map", 3, npos, nelem, &col);
+    odep = readComponent(f, "opacities", "opacity map", 1, npos, nelem, &opa);
+    if (cdep < 0 || odep < 0)
+        goto done;
+    /* One dependency for both; a missing one takes the other's. */
+    dep = cdep != DEP_NONE ? cdep : (odep != DEP_NONE ? odep : DEP_POS);
+    if ((cdep != DEP_NONE && cdep != dep) || (odep != DEP_NONE && odep != dep)) {
+        DXWarning("DxuiScene: volume colours and opacities differ in dependency; skipped");
+        c->skipped[DXS_SKIPPED_VOLUME]++;
+        ret = OK;
+        goto done;
+    }
+    nval = dep == DEP_ELEM ? nelem : npos;
+
+    bytes = 4.0 * (4 + 16 + 2) + 16.0 * nval;
+    if (bytes > 1073741824.0) {              /* 1 GB: beyond a 3D texture */
+        DXWarning("DxuiScene: volume too large, skipped");
+        c->skipped[DXS_SKIPPED_VOLUME]++;
+        ret = OK;
+        goto done;
+    }
+
+    /* Grid index to world: columns are the deltas and the origin, through
+     * the object-to-world matrix (DX row vectors: world = p * A + b). */
+    for (k = 0; k < 3; k++) {
+        int col_;
+        for (col_ = 0; col_ < 3; col_++) {
+            float s = 0;
+            for (i = 0; i < 3; i++)
+                s += deltas[k*3 + i] * st->m.A[i][col_];
+            matrix[k*4 + col_] = s;
+        }
+        matrix[k*4 + 3] = 0.0f;
+    }
+    for (k = 0; k < 3; k++) {
+        float s = st->m.b[k];
+        for (i = 0; i < 3; i++)
+            s += origin[i] * st->m.A[i][k];
+        matrix[12 + k] = s;
+    }
+    matrix[15] = 1.0f;
+    mult[0] = floatAttribute((Object)f, "color multiplier", 1.0f);
+    mult[1] = floatAttribute((Object)f, "opacity multiplier", 1.0f);
+
+    header[0] = (unsigned int)counts[0];
+    header[1] = (unsigned int)counts[1];
+    header[2] = (unsigned int)counts[2];
+    header[3] = dep == DEP_ELEM ? DXS_DEP_CONNECTIONS : DXS_DEP_POSITIONS;
+    if (!writeU32(c, DXS_CHUNK_VOLUME) || !writeU32(c, (unsigned int)bytes) ||
+        !writeWords(c, header, 4) || !writeWords(c, matrix, 16) || !writeWords(c, mult, 2))
+        goto done;
+
+    /* DX's defaults when absent: grey, fully opaque. */
+    if (col) {
+        if (!writeWords(c, col, 3 * (size_t)nval)) goto done;
+    } else {
+        if (!(buf = (float *)DXAllocate((size_t)nval * 3 * sizeof(float)))) goto done;
+        for (i = 0; i < 3 * nval; i++) buf[i] = 0.7f;
+        if (!writeWords(c, buf, 3 * (size_t)nval)) goto done;
+    }
+    if (opa) {
+        if (!writeWords(c, opa, (size_t)nval)) goto done;
+    } else {
+        if (!buf && !(buf = (float *)DXAllocate((size_t)nval * 3 * sizeof(float)))) goto done;
+        for (i = 0; i < nval; i++) buf[i] = 1.0f;
+        if (!writeWords(c, buf, (size_t)nval)) goto done;
+    }
+
+    /* The grid's eight corners for the bounds. */
+    for (i = 0; i < 8; i++) {
+        float p[3], w[3];
+        for (k = 0; k < 3; k++)
+            p[k] = (float)(((i >> k) & 1) ? counts[k] - 1 : 0);
+        for (k = 0; k < 3; k++)
+            w[k] = matrix[12 + k] + p[0]*matrix[k] + p[1]*matrix[4 + k] + p[2]*matrix[8 + k];
+        if (!c->haveBounds) {
+            c->bounds[0] = c->bounds[3] = w[0];
+            c->bounds[1] = c->bounds[4] = w[1];
+            c->bounds[2] = c->bounds[5] = w[2];
+            c->haveBounds = 1;
+        }
+        for (k = 0; k < 3; k++) {
+            if (w[k] < c->bounds[k]) c->bounds[k] = w[k];
+            if (w[k] > c->bounds[3 + k]) c->bounds[3 + k] = w[k];
+        }
+    }
+    c->chunkCount++;
+    ret = OK;
+
+done:
+    DXFree((Pointer)col);
+    DXFree((Pointer)opa);
+    DXFree((Pointer)buf);
     return ret;
 }
 
