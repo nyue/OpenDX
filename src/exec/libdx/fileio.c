@@ -264,7 +264,7 @@ Error _dxffile_open(char *name, int rw)
 	case 2:/* read/write */
 		fd = open(name, O_RDWR);
 		if (fd < 0) {
-			fd = open(name, O_WRONLY | O_CREAT);
+			fd = open(name, O_WRONLY | O_CREAT, 0666);
 			if (fd < 0) {
 				DXSetError(ERROR_DATA_INVALID, 
 				"can't open/create file '%s'", name);
