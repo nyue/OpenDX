@@ -59,7 +59,7 @@ am__objects_1 = ambientlight.lo append.lo arrange.lo attribute.lo \
 	collectmulti.lo collectnamed.lo collectser.lo color.lo \
 	colorbar.lo colormap.lo compute.lo compute2.lo connect.lo
 am__objects_2 = construct.lo convert.lo copy.lo describe.lo \
-	direction.lo display.lo divcurl.lo dxlmessage.lo \
+	direction.lo display.lo divcurl.lo dxlmessage.lo dxuiscene.lo \
 	dxloutvalue.lo echo.lo enumerate.lo equalize.lo export.lo \
 	extract.lo facenormals.lo filter.lo format.lo fourier.lo \
 	getscene.lo glyph.lo gradient.lo grid.lo histogram.lo \
@@ -326,7 +326,7 @@ SOURCES1 = \
 
 SOURCES2 = \
 	construct.c convert.c copy.c describe.c direction.c \
-	display.c divcurl.c dxlmessage.c \
+	display.c divcurl.c dxlmessage.c dxuiscene.c \
 	dxloutvalue.c echo.c enumerate.c equalize.c \
 	export.c extract.c facenormals.c filter.c format.c \
 	fourier.c getscene.c glyph.c gradient.c \

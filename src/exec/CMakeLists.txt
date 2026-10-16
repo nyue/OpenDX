@@ -138,7 +138,7 @@ dx_object_library(dx_dxmods dxmods
     clipplane.c collect.c collectmulti.c collectnamed.c collectser.c color.c
     colorbar.c colormap.c compute.c compute2.c connect.c construct.c convert.c
     copy.c describe.c direction.c display.c divcurl.c dxlmessage.c
-    dxloutvalue.c echo.c enumerate.c equalize.c export.c extract.c
+    dxloutvalue.c dxuiscene.c echo.c enumerate.c equalize.c export.c extract.c
     facenormals.c filter.c format.c fourier.c getscene.c glyph.c gradient.c
     grid.c histogram.c imagemessage.c import.c import_ss.c include.c inquire.c
     isolate.c isosurface.c integer.c integerlist.c keyin.c light.c list.c

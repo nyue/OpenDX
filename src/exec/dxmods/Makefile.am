@@ -50,7 +50,7 @@ SOURCES1 = \
 	colorbar.c colormap.c compute.c compute2.c connect.c 
 SOURCES2 = \
 	construct.c convert.c copy.c describe.c direction.c \
-	display.c divcurl.c dxlmessage.c \
+	display.c divcurl.c dxlmessage.c dxuiscene.c \
 	dxloutvalue.c echo.c enumerate.c equalize.c \
 	export.c extract.c facenormals.c filter.c format.c \
 	fourier.c getscene.c glyph.c gradient.c \

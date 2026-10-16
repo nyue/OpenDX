@@ -470,6 +470,13 @@ FLAGS LOOP
 INPUT done; flag; (none); set to 1 to terminate loop 
 #endif
 
+MODULE DxuiScene
+CATEGORY Rendering
+DESCRIPTION writes a renderable object as a scene file for the GPU renderer of the new UI
+FLAGS SIDE_EFFECT
+INPUT object; object; (none); object to export
+INPUT name; string; (none); file to write
+
 MODULE Echo
 CATEGORY Debugging
 DESCRIPTION echoes a message
