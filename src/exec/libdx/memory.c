@@ -66,7 +66,6 @@
 
 #if linux
 #include <linux/kernel.h>
-#include <linux/sys.h>
 #include <sys/sysinfo.h>
 #endif
 
