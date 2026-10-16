@@ -528,14 +528,19 @@ struct App {
         auto it = gpuScenes.find(id);
         if (it == gpuScenes.end() || !it->second.view || !it->second.view->loaded())
             return {};
-        const auto& sk = it->second.view->scene().skipped;
-        static const char* names[] = {"screen objects", "volumes",
+        const auto& sc = it->second.view->scene();
+        const auto& sk = sc.skipped;
+        static const char* names[] = {"screen objects", "irregular volumes",
                                       "textures", "clipping", "other objects"};
-        std::string out;
+        std::string left;   // what the GPU view does not draw
         for (std::size_t k = 0; k < sk.size(); ++k)
             if (sk[k])
-                out += (out.empty() ? "GPU view leaves out: " : ", ") + std::to_string(sk[k]) +
-                       " " + names[k];
+                left += (left.empty() ? "" : ", ") + std::to_string(sk[k]) + " " + names[k];
+        std::string out;
+        if (!sc.volumes.empty())
+            out = "volumes here are an approximate preview; DX's render (untick GPU) is exact";
+        if (!left.empty())
+            out += (out.empty() ? "" : "; ") + std::string("GPU view leaves out: ") + left;
         return out;
     }
 
@@ -1223,6 +1228,13 @@ int main(int argc, char** argv)
         return app.gpuTexture(id, w, h);
     };
     app.images.gpuNote = [&app](const std::string& id) { return app.gpuNote(id); };
+    // Volumes' GPU rendering is approximate (diary 2026-10-16): those tabs
+    // start on the executive's render.
+    app.images.gpuByDefault = [&app](const std::string& id) {
+        auto it = app.gpuScenes.find(id);
+        return it == app.gpuScenes.end() || !it->second.view || !it->second.view->loaded() ||
+               it->second.view->scene().volumes.empty();
+    };
     app.images.movable = [&app](const std::string& id) {
         auto it = app.cameras.find(id);
         return it != app.cameras.end() && it->second.valid() && app.imageNode(id) >= 0;

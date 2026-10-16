@@ -61,6 +61,9 @@ public:
     // Whether the image's view can be moved (an Image node with a known
     // camera); the mouse hint shows only then.
     std::function<bool(const std::string& id)> movable;
+    // Whether a tab starts on the GPU view (until the user ticks or unticks
+    // it); without this, every tab with a scene does.
+    std::function<bool(const std::string& id)> gpuByDefault;
     bool gpuShown(const std::string& id) const;
     // The executive's image size for `id`; false if not loaded.
     bool imageSize(const std::string& id, int& width, int& height) const;
@@ -76,7 +79,7 @@ private:
     std::filesystem::path dir_;
     std::map<std::string, Image> images_;
     std::map<std::string, std::filesystem::file_time_type> scenes_;
-    std::map<std::string, bool> gpuOff_;   // tabs switched to the executive's picture
+    std::map<std::string, bool> gpuChoice_;   // the user's tick, once given
     unsigned char gamma_[256];
     double lastScan_ = -1.0;
 };

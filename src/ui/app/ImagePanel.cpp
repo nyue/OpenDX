@@ -166,8 +166,12 @@ bool ImagePanel::imageSize(const std::string& id, int& width, int& height) const
 
 bool ImagePanel::gpuShown(const std::string& id) const
 {
-    auto it = gpuOff_.find(id);
-    return gpuTexture && scenes_.count(id) && (it == gpuOff_.end() || !it->second);
+    if (!gpuTexture || !scenes_.count(id))
+        return false;
+    auto it = gpuChoice_.find(id);
+    if (it != gpuChoice_.end())
+        return it->second;
+    return !gpuByDefault || gpuByDefault(id);
 }
 
 std::filesystem::file_time_type ImagePanel::stamp(const std::string& id) const
@@ -189,9 +193,9 @@ ImageGesture ImagePanel::draw()
         if (!image.texture || !ImGui::BeginTabItem(id.c_str()))
             continue;
         if (scenes_.count(id) && gpuTexture) {
-            bool gpu = !gpuOff_[id];
+            bool gpu = gpuShown(id);
             if (ImGui::Checkbox("GPU", &gpu))
-                gpuOff_[id] = !gpu;
+                gpuChoice_[id] = gpu;
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("ticked: drawn here on the GPU\nunticked: the executive's own render");
             ImGui::SameLine();
@@ -201,7 +205,7 @@ ImageGesture ImagePanel::draw()
                                 image.width, image.height);
         else
             ImGui::TextDisabled("%dx%d", image.width, image.height);
-        if (gpuShown(id) && gpuNote) {
+        if (scenes_.count(id) && gpuNote) {
             std::string note = gpuNote(id);
             if (!note.empty())
                 ImGui::TextDisabled("%s", note.c_str());

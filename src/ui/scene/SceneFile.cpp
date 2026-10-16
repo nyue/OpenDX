@@ -157,6 +157,28 @@ bool parseScene(const std::vector<unsigned char>& bytes, Scene& out, std::string
             if (!readMesh(chunk, m, error))
                 return false;
             out.meshes.push_back(std::move(m));
+        } else if (type == DXS_CHUNK_VOLUME) {
+            SceneVolume v;
+            std::uint32_t dep;
+            if (!chunk.u32(v.counts[0]) || !chunk.u32(v.counts[1]) || !chunk.u32(v.counts[2]) ||
+                !chunk.u32(dep))
+                return fail(error, "truncated volume header");
+            if (dep != DXS_DEP_POSITIONS && dep != DXS_DEP_CONNECTIONS)
+                return fail(error, "unknown volume dependency " + std::to_string(dep));
+            v.perCell = dep == DXS_DEP_CONNECTIONS;
+            for (std::uint32_t n : v.counts)
+                if (n < 2 || n > 16384)
+                    return fail(error, "bad volume size");
+            for (float& f : v.matrix)
+                if (!chunk.f32(f))
+                    return fail(error, "truncated volume matrix");
+            if (!chunk.f32(v.colorMultiplier) || !chunk.f32(v.opacityMultiplier))
+                return fail(error, "truncated volume multipliers");
+            auto vc = v.valueCounts();
+            std::size_t n = std::size_t(vc[0]) * vc[1] * vc[2];
+            if (!chunk.floats(v.colors, 3 * n) || !chunk.floats(v.opacities, n))
+                return fail(error, "truncated volume values");
+            out.volumes.push_back(std::move(v));
         } else if (type == DXS_CHUNK_LIGHT) {
             SceneLight l;
             std::uint32_t kind, rel;

@@ -21,8 +21,9 @@ int main(int argc, char** argv)
             ++bad;
             continue;
         }
-        std::printf("ok %s meshes=%zu triangles=%zu lights=%zu skipped=%zu\n", argv[i],
-                    s.meshes.size(), s.triangleCount(), s.lights.size(), s.skippedTotal());
+        std::printf("ok %s meshes=%zu triangles=%zu volumes=%zu lights=%zu skipped=%zu\n",
+                    argv[i], s.meshes.size(), s.triangleCount(), s.volumes.size(), s.lights.size(),
+                    s.skippedTotal());
     }
     return bad ? 1 : 0;
 }

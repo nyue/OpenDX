@@ -32,6 +32,23 @@ struct SceneMesh {
     std::array<float, 3> origin{};
 };
 
+// A regular grid rendered as a volume (DXS_CHUNK_VOLUME): colours emitted and
+// opacities absorbed, as DX holds them. The GPU view only approximates DX's
+// compositing of them (docs/diary/2026-10-16.md).
+struct SceneVolume {
+    std::array<std::uint32_t, 3> counts{};   // grid points per axis
+    bool perCell = false;                     // values per cube, else per point
+    std::array<float, 16> matrix{};          // grid index to world, column-major
+    float colorMultiplier = 1, opacityMultiplier = 1;
+    std::vector<float> colors;               // 3 per value, last axis fastest
+    std::vector<float> opacities;            // 1 per value
+    std::array<std::uint32_t, 3> valueCounts() const
+    {
+        return perCell ? std::array<std::uint32_t, 3>{counts[0] - 1, counts[1] - 1, counts[2] - 1}
+                       : counts;
+    }
+};
+
 struct SceneLight {
     enum class Kind { Ambient = 1, Distant = 2 };
     Kind kind = Kind::Ambient;
@@ -43,6 +60,7 @@ struct SceneLight {
 struct Scene {
     std::vector<SceneMesh> meshes;
     std::vector<SceneLight> lights;
+    std::vector<SceneVolume> volumes;
     std::array<std::uint32_t, 5> skipped{};   // DXS_SKIPPED_* counts
     std::array<float, 6> bounds{};            // world space, min then max
     bool hasBounds = false;
